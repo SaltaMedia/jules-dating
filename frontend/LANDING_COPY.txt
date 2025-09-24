@@ -1,0 +1,24 @@
+LANDING PAGE COPY - Add your content here:
+
+HERO SECTION:
+Subtitle: 
+Description: 
+
+TRUST/CREDIBILITY SECTION:
+Title: 
+Description: 
+
+BENEFITS SECTION:
+Title: 
+Description: 
+
+MANIFESTO SECTION:
+Title: 
+Content (paragraphs):
+
+
+Instructions:
+1. Replace the text after each colon with your actual copy
+2. Save this file
+3. I'll read it and implement it in the landing page
+

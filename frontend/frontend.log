@@ -1,0 +1,20 @@
+
+> jules-style-frontend@0.1.0 dev
+> next dev -p 3001
+
+   ▲ Next.js 15.3.4
+   - Local:        http://localhost:3001
+   - Network:      http://172.25.127.153:3001
+   - Environments: .env.local, .env.development
+
+ ✓ Starting...
+ ✓ Ready in 1058ms
+ ○ Compiling /chat ...
+ ✓ Compiled /chat in 1711ms (1301 modules)
+ GET /chat 200 in 1984ms
+ ✓ Compiled in 163ms (569 modules)
+ ✓ Compiled in 1042ms (1301 modules)
+ ✓ Compiled in 300ms (1301 modules)
+(node:4166) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ GET /chat 200 in 189ms

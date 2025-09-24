@@ -1,0 +1,112 @@
+{
+  "principles": {
+    "fit": "Tailored but not tight",
+    "layering": "Light to heavy, texture variety",
+    "color": "Neutral base, one accent",
+    "proportion": "Balance top and bottom",
+    "details": "Quality over quantity"
+  },
+  "textiles": {
+    "hot_75_95": ["linen", "cotton", "seersucker", "light wool"],
+    "mild_55_75": ["cotton", "wool", "denim", "canvas"],
+    "cool_<55": ["wool", "flannel", "corduroy", "heavy cotton"]
+  },
+  "archetype_rules": {
+    "minimalist": "Clean lines, monochrome, quality basics",
+    "classic": "Timeless pieces, traditional fits, conservative colors",
+    "modern": "Contemporary cuts, subtle details, smart casual",
+    "creative": "Bold colors, unique pieces, artistic flair",
+    "athletic": "Performance fabrics, sporty elements, comfort focus"
+  },
+  "color_trios": [
+    ["navy", "white", "tan"],
+    ["gray", "white", "navy"],
+    ["olive", "white", "brown"],
+    ["black", "white", "gray"],
+    ["navy", "light blue", "white"]
+  ],
+  "body_type_hints": {
+    "athletic": "Fitted tops, straight leg pants",
+    "slim": "Layered looks, textured fabrics",
+    "average": "Most styles work well",
+    "larger": "Dark colors, structured pieces"
+  },
+  "grooming": {
+    "hair": "Clean, styled, appropriate length",
+    "beard": "Groomed, shaped, or clean shaven",
+    "nails": "Clean, trimmed",
+    "skin": "Moisturized, healthy appearance"
+  },
+  "tailoring": {
+    "shirts": "Shoulders fit, slight room in chest",
+    "pants": "Waist fits, slight break at shoes",
+    "jackets": "Shoulders align, slight room to move",
+    "shoes": "Proper fit, clean condition"
+  },
+  "sample_fits": [
+    {
+      "name": "Coffee Classic",
+      "occasion": "date_coffee",
+      "weather": "mild_55_75",
+      "items": ["OCBD (white)", "stone chinos", "minimal white sneakers", "denim jacket"],
+      "why": "Clean, textured look with low-stakes polish",
+      "swaps": ["swap loafers→sneakers for dressier", "swap denim jacket→field jacket for wind"]
+    },
+    {
+      "name": "Relaxed Cool",
+      "occasion": "date_coffee",
+      "weather": "mild_55_75",
+      "items": ["dark henley", "black jeans", "chelsea boots", "light bomber jacket"],
+      "why": "Laid-back but stylish with edge",
+      "swaps": ["swap bomber jacket→hoodie for comfort", "swap chelsea boots→sneakers for casual"]
+    },
+    {
+      "name": "Casual Luxe",
+      "occasion": "date_coffee",
+      "weather": "hot_75_95",
+      "items": ["navy polo", "khaki shorts", "boat shoes", "light sweater (over shoulders)"],
+      "why": "Laid-back yet refined, effortlessly put-together",
+      "swaps": ["swap shorts→chinos for cooler weather", "swap boat shoes→loafers for class"]
+    },
+    {
+      "name": "Smart Casual",
+      "occasion": "date_dinner",
+      "weather": "mild_55_75",
+      "items": ["navy blazer", "white OCBD", "dark jeans", "brown loafers"],
+      "why": "Elevated casual that works for most dinner spots",
+      "swaps": ["swap jeans→chinos for dressier", "swap loafers→oxfords for formal"]
+    },
+    {
+      "name": "Weekend Warrior",
+      "occasion": "casual_weekend",
+      "weather": "mild_55_75",
+      "items": ["gray henley", "olive chinos", "white sneakers", "denim jacket"],
+      "why": "Comfortable but put-together for weekend activities",
+      "swaps": ["swap chinos→jeans for more casual", "swap denim jacket→hoodie for comfort"]
+    },
+    {
+      "name": "Office Ready",
+      "occasion": "work_office",
+      "weather": "mild_55_75",
+      "items": ["navy suit", "white shirt", "brown oxfords", "simple tie"],
+      "why": "Professional and polished for the office",
+      "swaps": ["swap tie→no tie for casual Friday", "swap oxfords→loafers for comfort"]
+    },
+    {
+      "name": "Date Night",
+      "occasion": "date_dinner",
+      "weather": "cool_<55",
+      "items": ["navy sweater", "white OCBD", "gray trousers", "brown boots"],
+      "why": "Sophisticated and warm for evening dates",
+      "swaps": ["swap sweater→blazer for dressier", "swap boots→oxfords for formal"]
+    },
+    {
+      "name": "Summer Casual",
+      "occasion": "casual_weekend",
+      "weather": "hot_75_95",
+      "items": ["white linen shirt", "navy shorts", "boat shoes", "straw hat"],
+      "why": "Light and breathable for hot weather",
+      "swaps": ["swap shorts→linen pants for coverage", "swap boat shoes→sneakers for activity"]
+    }
+  ]
+}

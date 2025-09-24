@@ -1,0 +1,35 @@
+{
+  "conversation_starters": {
+    "principles": [
+      "Ask open-ended questions",
+      "Show genuine curiosity",
+      "Share something personal",
+      "Find common ground"
+    ],
+    "examples": [
+      "What's the most interesting thing that happened to you this week?",
+      "If you could have dinner with anyone, who would it be?",
+      "What's something you're passionate about that most people don't know?"
+    ]
+  },
+  "body_language": {
+    "posture": "Stand tall, shoulders back, open stance",
+    "eye_contact": "Natural, not staring, look away occasionally",
+    "gestures": "Use hands naturally, avoid fidgeting",
+    "smile": "Genuine, not forced, reach your eyes"
+  },
+  "active_listening": {
+    "techniques": [
+      "Nod and acknowledge",
+      "Ask follow-up questions",
+      "Paraphrase what they said",
+      "Show empathy and understanding"
+    ],
+    "avoid": [
+      "Interrupting",
+      "Thinking about your response while they talk",
+      "Checking your phone",
+      "One-upping their stories"
+    ]
+  }
+}

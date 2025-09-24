@@ -1,0 +1,27 @@
+{
+  "first_message": {
+    "principles": [
+      "Reference something from their profile",
+      "Ask a question to start conversation",
+      "Keep it light and positive",
+      "Show genuine interest"
+    ],
+    "examples": [
+      "I love that you're into [hobby]! What got you started?",
+      "That photo at [location] looks amazing. Have you been there before?",
+      "Your profile mentions [interest]. I'd love to hear more about that!"
+    ]
+  },
+  "venue_rules": {
+    "coffee": "Casual, low pressure, easy to extend or end",
+    "dinner": "More formal, plan for 1-2 hours",
+    "drinks": "Evening vibe, can be casual or dressy",
+    "activity": "Shared experience, built-in conversation topics"
+  },
+  "pacing": {
+    "first_date": "Keep it under 2 hours, leave wanting more",
+    "conversation": "Balance talking and listening",
+    "follow_up": "Within 24 hours if interested",
+    "next_steps": "Have a plan but stay flexible"
+  }
+}

@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide scrollbar for horizontal scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  
+  /* Button component variables */
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #6b7280;
+  --secondary-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --accent: #374151;
+  --accent-foreground: #ffffff;
+  --ring: #3b82f6;
+  --input: #374151;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive logo scaling */
+.logo-mobile {
+  transform: scale(2.5) translateX(8px);
+  transform-origin: center;
+}
+
+@media (min-width: 640px) {
+  .logo-tablet {
+    transform: scale(3) translateX(9px);
+    transform-origin: center;
+  }
+}
+
+@media (min-width: 768px) {
+  .logo-desktop {
+    transform: scale(3.75) translateX(10px);
+    transform-origin: center;
+  }
+}
+
+/* Mobile-specific styles - ONLY what's needed for the 5 reported issues */
+@media (max-width: 640px) {
+  /* Prevent horizontal scrolling */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Ensure buttons and inputs are properly sized for touch */
+  button, input, select, textarea {
+    min-height: 44px; /* iOS minimum touch target size */
+  }
+  
+  /* Mobile button class for consistent sizing */
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Mobile scroll container for modals */
+  .mobile-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Ensure sticky header works properly on mobile */
+  .sticky-header {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+  }
+}
