@@ -9,15 +9,20 @@ const api = axios.create({
   },
 });
 
-// Add auth token to requests if available
+// Add auth token and anonymous session to requests if available
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
+    const anonymousSessionId = localStorage.getItem('anonymousSessionId');
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('API Request with token:', token.substring(0, 20) + '...');
+    } else if (anonymousSessionId) {
+      config.headers['X-Anonymous-Session-ID'] = anonymousSessionId;
+      console.log('API Request with anonymous session:', anonymousSessionId.substring(0, 20) + '...');
     } else {
-      console.log('API Request without token');
+      console.log('API Request without token or anonymous session');
     }
   }
   
@@ -31,6 +36,21 @@ api.interceptors.request.use((config) => {
   
   return config;
 });
+
+// Handle anonymous session ID from response headers
+api.interceptors.response.use(
+  (response) => {
+    // Store anonymous session ID if provided
+    const anonymousSessionId = response.headers['x-anonymous-session-id'];
+    if (anonymousSessionId && typeof window !== 'undefined') {
+      localStorage.setItem('anonymousSessionId', anonymousSessionId);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // API client with typed methods
 export const apiClient = {
@@ -168,6 +188,24 @@ export const apiClient = {
       api.delete(`/api/fit-check/${id}`),
     updateNotes: (id: string, notes: string) => 
       api.put(`/api/fit-check/${id}/notes`, { notes }),
+  },
+
+  // Profile pic review endpoints
+  profilePicReviews: {
+    submit: (data: { imageUrl: string; specificQuestion?: string }) => 
+      api.post('/api/profile-pic-review/submit', data),
+    submitAnonymous: (data: { imageUrl: string; specificQuestion?: string }) => 
+      api.post('/api/profile-pic-review/anonymous', data),
+    getHistory: () => 
+      api.get('/api/profile-pic-review/history'),
+    getProfilePicReview: (id: string) => 
+      api.get(`/api/profile-pic-review/${id}`),
+    updateNotes: (id: string, notes: string) => 
+      api.put(`/api/profile-pic-review/${id}/notes`, { notes }),
+    save: (id: string, data: { saved: boolean; savedAt?: string }) => 
+      api.put(`/api/profile-pic-review/${id}/save`, data),
+    delete: (id: string) => 
+      api.delete(`/api/profile-pic-review/${id}`),
   },
 };
 

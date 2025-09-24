@@ -49,6 +49,11 @@ export default function FreeExperiencePage() {
         <div className="text-center text-white max-w-4xl mx-auto w-full">
           {/* Logo */}
           <div className="mb-6 sm:mb-8">
+            <div className="flex justify-center mb-2">
+              <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                BETA
+              </span>
+            </div>
             <div className="flex justify-center mb-6 sm:mb-8">
               <img
                 src="/Jules_Logo_White_Final_NoOutline.png"

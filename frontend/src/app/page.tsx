@@ -1,55 +1,118 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { track } from '@/analytics/client';
 import MeetJulesCarousel from '@/components/MeetJulesCarousel';
 
 export default function WelcomePage() {
+  // Free experience landing page
+  useEffect(() => {
+    // Track page view
+    track('page_visited', {
+      page: '/',
+      category: 'free_experience',
+      action: 'landing_page_visited'
+    });
+    
+    // Track landing page session
+    track('landing_page_session', {
+      page: '/',
+      category: 'free_experience',
+      action: 'landing_page_session_started'
+    });
+  }, []);
+
+  const handleCTAClick = (ctaType: string, source: string) => {
+    // Map ctaType to the correct button text
+    const buttonTextMap: { [key: string]: string } = {
+      'try_free_profile_pic_review': 'Get FREE Profile Pic Review',
+      'get_profile_pic_review': 'Get FREE Profile Pic Review',
+      'get_started_free': 'Get Started for Free',
+      'join_jules_beta': 'Get Started for Free'
+    };
+    
+    track('landing_page_cta_clicked', {
+      cta_type: ctaType,
+      source: source,
+      category: 'free_experience',
+      action: 'cta_button_clicked',
+      button_text: buttonTextMap[ctaType] || 'Unknown Button'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700">
-      {/* Hero Section - Optimized for mobile */}
+      {/* 1. Hero Section */}
       <section className="flex items-center justify-center px-4 py-6 sm:px-6 sm:py-12 min-h-[80vh] sm:min-h-[85vh]">
         <div className="text-center text-white max-w-4xl mx-auto w-full">
-          <div className="mb-6 sm:mb-12">
-            <div className="flex justify-center mb-6 sm:mb-8">
-              <div className="text-center max-w-full -ml-3 sm:-ml-6 md:-ml-8">
-                <div className="text-xs sm:text-base text-gray-400 mb-2 font-medium">beta</div>
-                <img
-                  src="/Jules_Logo_White_Final_NoOutline.png"
-                  alt="Jules"
-                  className="h-12 w-auto sm:h-24 md:h-32 logo-mobile sm:logo-tablet md:logo-desktop"
-                />
-              </div>
+          {/* Logo */}
+          <div className="mb-6 sm:mb-8">
+            <div className="flex justify-center mb-2">
+              <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                BETA
+              </span>
             </div>
-            <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-300 mb-4 sm:mb-6 md:mb-8">
+            <div className="flex justify-center mb-6 sm:mb-8">
+              <img
+                src="/Jules_Logo_White_Final_NoOutline.png"
+                alt="Jules"
+                className="h-28 w-auto sm:h-42 md:h-56"
+              />
+            </div>
+            
+            {/* Headline */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6">
               Better first impressions. More dates.
-            </p>
-          </div>
-
-          <div className="mb-6 sm:mb-8 md:mb-12">
-            <p className="text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed max-w-2xl mx-auto px-2 sm:px-4">
+            </h1>
+            
+            {/* Subhead */}
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-300 leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
               Honest feedback on pics, fits, and texts, so you actually get noticed
             </p>
           </div>
 
-          <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 md:mb-12">
-            <div className="flex flex-col space-y-3 sm:space-y-4 justify-center">
-                      <Link
-                        href="/free-experience"
-                        onClick={() => track('landing_page_cta_clicked', {
-                          cta_type: 'meet_jules',
-                          source: 'landing_page',
-                          button_text: 'Get FREE Profile Pic Review'
-                        })}
-                        className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base md:text-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
-                      >
-                        Get FREE Profile Pic Review
-                      </Link>
-              <div className="text-xs sm:text-sm text-gray-400">
-                <Link href="/login" className="text-purple-300 hover:text-purple-200 underline">
-                  Already signed up? Log-in
-                </Link>
+          {/* CTA Button */}
+          <div className="mb-8 sm:mb-12">
+            <Link
+              href="/free-experience/profile-pic-review"
+              onClick={() => handleCTAClick('try_free_profile_pic_review', 'hero_section')}
+              className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg md:text-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Get FREE Profile Pic Review
+            </Link>
+          </div>
+
+          {/* Visual - Phone Mockup */}
+          <div className="flex justify-center">
+            <div className="relative w-64 sm:w-80 md:w-96">
+              <div className="rounded-[1.5rem] overflow-hidden border border-white/60">
+                <Image
+                  src="/profile-pic-review.png"
+                  alt="Jules giving feedback on a profile picture"
+                  width={400}
+                  height={800}
+                  className="object-cover w-full h-auto"
+                  priority
+                />
               </div>
+            </div>
+          </div>
+
+          {/* Moments that Matter Text */}
+          <div className="mt-8 sm:mt-12 text-center">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-white mb-4 sm:mb-6">
+              Built for Dating Success
+            </h2>
+            <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 text-sm sm:text-base md:text-lg text-gray-300">
+              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">Profile Optimization</span>
+              <span className="text-gray-400">•</span>
+              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">Date Outfits</span>
+              <span className="text-gray-400">•</span>
+              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">Dating Advice</span>
+              <span className="text-gray-400">•</span>
+              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">And More!</span>
             </div>
           </div>
         </div>
@@ -58,16 +121,13 @@ export default function WelcomePage() {
       {/* Semi-transparent separator line */}
       <div className="w-full h-px bg-white/20 mx-auto max-w-4xl"></div>
 
-      {/* How Jules Works Section - Mobile optimized */}
+      {/* 2. How Jules Works Section */}
       <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
               How Jules Works
             </h2>
-            <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-300">
-              From Profile Pics to Dating Success
-            </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
@@ -78,7 +138,7 @@ export default function WelcomePage() {
                 </svg>
               </div>
               <h4 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 text-blue-300">Chat</h4>
-              <p className="text-gray-300 text-xs sm:text-sm md:text-base">Get dating advice and relationship guidance from Jules, your confident wingwoman</p>
+              <p className="text-gray-300 text-xs sm:text-sm md:text-base">Get dating advice and relationship guidance from Jules, your confident wingwoman.</p>
             </div>
             
             <div className="bg-gradient-to-br from-purple-500/20 to-blue-600/20 backdrop-blur-sm rounded-lg p-4 sm:p-6 md:p-8 border border-purple-500/30 text-center">
@@ -100,64 +160,144 @@ export default function WelcomePage() {
               <h4 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 text-blue-300">Fit Check</h4>
               <p className="text-gray-300 text-xs sm:text-sm md:text-base">Get outfit advice for dates and special occasions from Jules.</p>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* Meet Jules Carousel Section */}
+      {/* 3. Screenshots / Jules in Action */}
       <MeetJulesCarousel />
 
-      {/* Why Jules Works Section - Mobile optimized */}
+      {/* Semi-transparent separator line */}
+      <div className="w-full h-px bg-white/20 mx-auto max-w-4xl"></div>
+
+
+      {/* 4. Try for Free Section */}
       <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 bg-white/5 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
-              Why Jules Works
-            </h2>
-            <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-300">
-              The Only Stylist Trained by Experts
-            </h3>
-          </div>
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6">
+            Try for Free
+          </h2>
+          <p className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-12 max-w-3xl mx-auto">
+            Jules is currently in Beta. Creating an account and using Jules is currently <span className="font-bold text-white">FREE</span> to all users. We will just ask for some feedback to help improve the experience.
+          </p>
+          
+          {/* Comparison Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+            {/* Free Card - Highlighted */}
+            <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm rounded-lg p-6 sm:p-8 border-2 border-blue-500/50 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                  Start Here
+                </span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
+                Profile Pic Review
+              </h3>
+              <p className="text-gray-300 mb-6">
+                Start with one free Profile Pic Review! Unlock Chat and Fit Check when you join Jules Dating (free while in beta).
+              </p>
+                      <Link
+                        href="/free-experience/profile-pic-review"
+                        onClick={() => handleCTAClick('get_profile_pic_review', 'free_card')}
+                        className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full text-base font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg w-full"
+                      >
+                        Get FREE Profile Pic Review
+                      </Link>
+            </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 sm:p-8 md:p-12 border border-white/20">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-12">
-              <div className="text-center">
-                <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 text-blue-300">Built by Professionals</h4>
-                <p className="text-gray-300 text-xs sm:text-sm md:text-base">Created with input from men and women who know the challenges of style and confidence.</p>
-              </div>
-              
-              <div className="text-center">
-                <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 text-purple-300">Informed by Psychology</h4>
-                <p className="text-gray-300 text-xs sm:text-sm md:text-base">Backed by clinical insight into what actually builds self-esteem.</p>
-              </div>
-              
-              <div className="text-center">
-                <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 text-blue-300">Styled by Experts</h4>
-                <p className="text-gray-300 text-xs sm:text-sm md:text-base">Years of real stylist experience baked in.</p>
-              </div>
-
-              <div className="text-center">
-                <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 text-indigo-300">Proprietary Training</h4>
-                <p className="text-gray-300 text-xs sm:text-sm md:text-base">A unique dataset built by Jules Labs and you. Jules learns from your preferences, style, and feedback, so every session feels more personal.</p>
-              </div>
+            {/* Premium Card */}
+            <div className="bg-gradient-to-br from-gray-700/20 to-gray-800/20 backdrop-blur-sm rounded-lg p-6 sm:p-8 border border-gray-600/30">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
+                Premium
+              </h3>
+              <p className="text-gray-300 mb-6">
+                Unlock Chat and Fit Check when you join Jules Dating (free while in beta).
+              </p>
+              <Link
+                href="/register"
+                onClick={() => handleCTAClick('get_started_free', 'premium_card')}
+                className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full text-base font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg w-full"
+              >
+                Get Started for Free
+              </Link>
+              <p className="text-sm text-gray-400 mt-2">
+                Join Jules Dating
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Closing Section - Mobile optimized */}
+      {/* Semi-transparent separator line */}
+      <div className="w-full h-px bg-white/20 mx-auto max-w-4xl"></div>
+
+      {/* 5. Why Jules (3 Value Props) */}
       <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8">
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Built by Stylists */}
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-500/30 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-semibold text-white mb-3">Built by Experts</h3>
+              <p className="text-gray-300 text-base sm:text-lg">
+                Created with input from professionals in the field who know the challenges of dating, style, and confidence.
+              </p>
+            </div>
+            
+            {/* Psychology-Informed */}
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-purple-500/30 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-semibold text-white mb-3">Psychology-Informed</h3>
+              <p className="text-gray-300 text-base sm:text-lg">
+                Confidence backed by science and clinical outcomes
+              </p>
+            </div>
+            
+            {/* Instant Feedback */}
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-indigo-500/30 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-semibold text-white mb-3">Instant Feedback</h3>
+              <p className="text-gray-300 text-base sm:text-lg">
+                Immediate, actionable advice whenever you need it
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Semi-transparent separator line */}
+      <div className="w-full h-px bg-white/20 mx-auto max-w-4xl"></div>
+
+      {/* 6. Final CTA */}
+      <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 bg-white/5 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 sm:mb-8">
-            Look Sharp. Feel Confident. Date Who You Are.
-          </h2>
-                  <Link
-                    href="/free-experience"
-                    className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base md:text-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
-                  >
-                    Get FREE Profile Pic Review
-                  </Link>
+          <p className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-12">
+            Help craft the future of dating success
+          </p>
+          <div className="max-w-md mx-auto">
+            <Link
+              href="/register"
+              onClick={() => handleCTAClick('join_jules_dating', 'final_cta')}
+              className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-full text-base sm:text-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg w-full"
+            >
+              Join Jules Beta FREE
+            </Link>
+          </div>
         </div>
       </section>
 
