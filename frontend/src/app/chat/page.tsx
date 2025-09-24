@@ -19,6 +19,7 @@ interface Message {
   hasMore?: boolean;
   totalFound?: number;
   userImage?: string; // Base64 encoded image from user upload
+  imageContext?: string; // Context information about uploaded images
 }
 
 interface Product {
