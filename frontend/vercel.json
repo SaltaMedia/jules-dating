@@ -1,10 +1,10 @@
 {
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://jules-sr66.onrender.com"
+    "NEXT_PUBLIC_API_URL": "https://api.dating.juleslabs.com"
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_URL": "https://jules-sr66.onrender.com"
+      "NEXT_PUBLIC_API_URL": "https://api.dating.juleslabs.com"
     }
   },
   "rewrites": [
@@ -14,7 +14,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-sr66.onrender.com/api/$1"
+      "destination": "https://api.dating.juleslabs.com/api/$1"
     }
   ],
   "headers": [
