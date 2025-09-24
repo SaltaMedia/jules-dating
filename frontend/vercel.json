@@ -1,10 +1,10 @@
 {
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://api.dating.juleslabs.com"
+    "NEXT_PUBLIC_API_URL": "https://dating.juleslabs.com/api"
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_URL": "https://api.dating.juleslabs.com"
+      "NEXT_PUBLIC_API_URL": "https://dating.juleslabs.com/api"
     }
   },
   "rewrites": [
@@ -14,7 +14,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://api.dating.juleslabs.com/api/$1"
+      "destination": "https://dating.juleslabs.com/api/$1"
     }
   ],
   "headers": [
