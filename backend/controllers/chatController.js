@@ -1076,8 +1076,10 @@ IMPORTANT: You have full vision capabilities. Analyze the image content directly
     res.json(responseData);
 
   } catch (error) {
-    console.error('Chat with image error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('🚨 CHAT WITH IMAGE ERROR:', error);
+    console.error('🚨 ERROR MESSAGE:', error.message);
+    console.error('🚨 ERROR STACK:', error.stack);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
 
