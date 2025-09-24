@@ -27,6 +27,8 @@ export default function FreeExperienceProfilePicReviewPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<ProfilePicReview | null>(null);
   const [showConversionPrompt, setShowConversionPrompt] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
+  const [usageInfo, setUsageInfo] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -47,6 +49,26 @@ export default function FreeExperienceProfilePicReviewPage() {
       category: 'free_experience',
       action: 'profile_pic_review_accessed_from_free_experience'
     });
+
+    // Initialize anonymous session
+    const initSession = async () => {
+      try {
+        const response = await fetch('/api/anonymous/usage');
+        if (response.ok) {
+          const data = await response.json();
+          const sessionIdFromHeader = response.headers.get('X-Anonymous-Session-ID');
+          setSessionId(sessionIdFromHeader || '');
+          setUsageInfo(data.usage);
+        } else if (response.status === 400) {
+          // Handle rate limit or session error
+          const errorData = await response.json();
+          console.error('Session initialization failed:', errorData);
+        }
+      } catch (error) {
+        console.error('Failed to initialize session:', error);
+      }
+    };
+    initSession();
   }, []);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +89,11 @@ export default function FreeExperienceProfilePicReviewPage() {
       return;
     }
 
+    if (!sessionId) {
+      alert('Session not ready. Please refresh the page and try again.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       // First, upload the image to Cloudinary
@@ -79,13 +106,20 @@ export default function FreeExperienceProfilePicReviewPage() {
       }
 
       const uploadResponse = await api.post('/api/images/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'X-Anonymous-Session-ID': sessionId
+        }
       });
 
       // Then submit the profile pic review with the image URL using anonymous endpoint
-      const response = await apiClient.profilePicReviews.submitAnonymous({
+      const response = await api.post('/api/profile-pic-review/anonymous', {
         imageUrl: uploadResponse.data.imageUrl,
         specificQuestion: specificQuestion.trim() || undefined
+      }, {
+        headers: {
+          'X-Anonymous-Session-ID': sessionId
+        }
       });
 
       setFeedback(response.data.profilePicReview);
@@ -220,10 +254,10 @@ export default function FreeExperienceProfilePicReviewPage() {
                 <div className="sticky bottom-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 pt-4 pb-2 -mx-4 px-4">
                   <button
                     onClick={handleSubmit}
-                    disabled={!selectedImage || isLoading}
+                    disabled={!selectedImage || isLoading || !sessionId}
                     className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mobile-button"
                   >
-                    {isLoading ? 'Analyzing...' : 'Get FREE Profile Pic Review'}
+                    {!sessionId ? 'Initializing...' : isLoading ? 'Analyzing...' : 'Get FREE Profile Pic Review'}
                   </button>
                 </div>
               </div>
