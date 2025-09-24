@@ -19,6 +19,9 @@ const {
 // Import Passport configuration
 require('./config/passport');
 
+// Import email scheduler
+const { startEmailScheduler } = require('./utils/emailScheduler');
+
 const app = express();
 const PORT = process.env.PORT || 4002;
 
@@ -301,6 +304,9 @@ const server = app.listen(PORT, () => {
     environment: process.env.NODE_ENV || 'development',
     healthCheck: `http://localhost:${PORT}/api/health`
   });
+  
+  // Start email scheduler after server is running
+  startEmailScheduler();
 });
 
 // Connect to MongoDB and initialize optimizations (non-blocking)

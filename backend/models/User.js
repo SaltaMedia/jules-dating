@@ -225,6 +225,17 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  followUpEmailSent: {
+    type: Boolean,
+    default: false
+  },
+  followUpEmailScheduled: {
+    type: Date,
+    default: function() {
+      // Schedule follow-up email for 4 days after signup
+      return new Date(Date.now() + (4 * 24 * 60 * 60 * 1000));
+    }
+  },
   
   // GDPR Consent Management
   consentPreferences: {
