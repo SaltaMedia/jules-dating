@@ -14,7 +14,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://dating.juleslabs.com/api/$1"
+      "destination": "https://jules-dating.onrender.com/api/$1"
     }
   ],
   "headers": [
