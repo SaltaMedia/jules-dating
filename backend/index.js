@@ -118,7 +118,7 @@ function getSessionSecret() {
 }
 
 // Session configuration
-app.use(session({
+const sessionConfig = {
   secret: getSessionSecret(),
   resave: false,
   saveUninitialized: false,
@@ -127,7 +127,18 @@ app.use(session({
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
-}));
+};
+
+// Use Redis store for production, MemoryStore for development
+if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
+  const RedisStore = require('connect-redis');
+  const redis = require('redis');
+  const redisClient = redis.createClient({ url: process.env.REDIS_URL });
+  redisClient.connect().catch(console.error);
+  sessionConfig.store = new RedisStore({ client: redisClient });
+}
+
+app.use(session(sessionConfig));
 
 // Passport middleware
 app.use(passport.initialize());

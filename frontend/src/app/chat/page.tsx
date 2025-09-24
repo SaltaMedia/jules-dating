@@ -7,6 +7,7 @@ import ProductGrid from '../../components/ProductGrid';
 import ImageGrid from '../../components/ImageGrid';
 import { apiClient } from '../../lib/api';
 import { track } from '@/analytics/client';
+import { captureImageMobile, openFilePicker } from '../../lib/cameraUtils';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -795,6 +796,7 @@ function ChatPageContent() {
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        capture="environment"
         onChange={handleImageUpload}
         className="hidden"
         id="chat-image-upload"
@@ -1118,9 +1120,22 @@ function ChatPageContent() {
           <div className="flex space-x-3 sm:space-x-4">
             {/* Photo Upload Button */}
             <button
-              onClick={() => {
-                console.log('+ Button clicked - opening file dialog');
-                fileInputRef.current?.click();
+              onClick={async () => {
+                console.log('+ Button clicked - opening mobile camera or file dialog');
+                try {
+                  // Try mobile camera first (includes capture="environment" for direct camera access)
+                  const file = await captureImageMobile();
+                  if (file) {
+                    handleImageUpload({ target: { files: [file] } } as React.ChangeEvent<HTMLInputElement>);
+                  }
+                } catch (error) {
+                  console.error('Error accessing camera, falling back to file picker:', error);
+                  // Fallback to regular file picker
+                  const file = await openFilePicker();
+                  if (file) {
+                    handleImageUpload({ target: { files: [file] } } as React.ChangeEvent<HTMLInputElement>);
+                  }
+                }
               }}
               className="bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg p-2 sm:p-3 hover:bg-white/30 transition-all duration-200 flex items-center justify-center text-white"
               title="Add Photo"
