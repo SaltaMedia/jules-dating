@@ -36,9 +36,24 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 router.get('/google/callback', 
-  passport.authenticate('google', { 
-    failureRedirect: (process.env.FRONTEND_URL || 'http://localhost:3002') + '/login?error=oauth_failed' 
-  }), 
+  (req, res, next) => {
+    passport.authenticate('google', { 
+      failureRedirect: (process.env.FRONTEND_URL || 'http://localhost:3002') + '/login?error=oauth_failed' 
+    }, (err, user, info) => {
+      if (err) {
+        console.error('OAuth authentication error:', err);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3002';
+        return res.redirect(`${frontendUrl}/login?error=oauth_error`);
+      }
+      if (!user) {
+        console.log('OAuth authentication failed:', info);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3002';
+        return res.redirect(`${frontendUrl}/login?error=oauth_failed`);
+      }
+      req.user = user;
+      next();
+    })(req, res, next);
+  },
   googleCallback
 );
 
