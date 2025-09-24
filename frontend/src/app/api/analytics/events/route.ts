@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002';
 
 // Event validation schema
 const validateEvent = (event: any) => {

@@ -38,7 +38,7 @@ export const apiClient = {
   get: (url: string) => api.get(url),
   post: (url: string, data?: any, config?: any) => api.post(url, data, config),
   put: (url: string, data?: any, config?: any) => api.put(url, data, config),
-  delete: (url: string) => api.delete(url),
+  delete: (url: string, config?: any) => api.delete(url, config),
 
   // Chat endpoints
   chat: {
@@ -69,10 +69,7 @@ export const apiClient = {
       formData.append('context', JSON.stringify(context));
       if (userId) formData.append('userId', userId);
       
-      console.log('🚨 DEBUG: FormData entries:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value);
-      }
+      console.log('🚨 DEBUG: FormData created with image and message');
       
       return api.post('/api/chat/with-image', formData, {
         headers: {

@@ -73,7 +73,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     // Use environment-specific API URL - ensure production URL is used in production
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:4002' : 'https://jules-sr66.onrender.com');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:4002' : 'https://jules-dating-backend.onrender.com');
     console.log('🔧 OAuth Redirect:', `${apiUrl}/api/auth/google`);
     window.location.href = `${apiUrl}/api/auth/google`;
   };
