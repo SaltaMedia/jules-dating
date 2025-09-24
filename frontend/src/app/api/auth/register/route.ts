@@ -6,7 +6,13 @@ export async function POST(request: NextRequest) {
     
     // Forward the request to the backend
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
-    const response = await fetch(`${backendUrl}/api/auth/register`, {
+    const fullUrl = `${backendUrl}/api/auth/register`;
+    
+    console.log('Registration route - Backend URL:', backendUrl);
+    console.log('Registration route - Full URL:', fullUrl);
+    console.log('Registration route - Request body:', body);
+    
+    const response = await fetch(fullUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -14,14 +20,16 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    console.log('Registration route - Response status:', response.status);
     const data = await response.json();
+    console.log('Registration route - Response data:', data);
     
     // Return the response from the backend
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error('Registration API route error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
