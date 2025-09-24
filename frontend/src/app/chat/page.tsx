@@ -1126,14 +1126,28 @@ function ChatPageContent() {
                   // Try mobile camera first (includes capture="environment" for direct camera access)
                   const file = await captureImageMobile();
                   if (file) {
-                    handleImageUpload({ target: { files: [file] } } as React.ChangeEvent<HTMLInputElement>);
+                    // Create a proper event object for handleImageUpload
+                    const mockEvent = {
+                      target: { files: [file] },
+                      currentTarget: { files: [file] },
+                      preventDefault: () => {},
+                      stopPropagation: () => {}
+                    } as unknown as React.ChangeEvent<HTMLInputElement>;
+                    handleImageUpload(mockEvent);
                   }
                 } catch (error) {
                   console.error('Error accessing camera, falling back to file picker:', error);
                   // Fallback to regular file picker
                   const file = await openFilePicker();
                   if (file) {
-                    handleImageUpload({ target: { files: [file] } } as React.ChangeEvent<HTMLInputElement>);
+                    // Create a proper event object for handleImageUpload
+                    const mockEvent = {
+                      target: { files: [file] },
+                      currentTarget: { files: [file] },
+                      preventDefault: () => {},
+                      stopPropagation: () => {}
+                    } as unknown as React.ChangeEvent<HTMLInputElement>;
+                    handleImageUpload(mockEvent);
                   }
                 }
               }}

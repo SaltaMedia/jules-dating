@@ -131,11 +131,16 @@ const sessionConfig = {
 
 // Use Redis store for production, MemoryStore for development
 if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
-  const RedisStore = require('connect-redis');
-  const redis = require('redis');
-  const redisClient = redis.createClient({ url: process.env.REDIS_URL });
-  redisClient.connect().catch(console.error);
-  sessionConfig.store = new RedisStore({ client: redisClient });
+  try {
+    const RedisStore = require('connect-redis').default;
+    const redis = require('redis');
+    const redisClient = redis.createClient({ url: process.env.REDIS_URL });
+    redisClient.connect().catch(console.error);
+    sessionConfig.store = new RedisStore({ client: redisClient });
+    logInfo('✅ Using Redis store for sessions');
+  } catch (error) {
+    logWarn('❌ Failed to setup Redis store, falling back to MemoryStore:', error.message);
+  }
 } else {
   // For development or when Redis is not available, use MemoryStore
   // This will show the warning but won't break the app
