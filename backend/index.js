@@ -136,6 +136,10 @@ if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
   const redisClient = redis.createClient({ url: process.env.REDIS_URL });
   redisClient.connect().catch(console.error);
   sessionConfig.store = new RedisStore({ client: redisClient });
+} else {
+  // For development or when Redis is not available, use MemoryStore
+  // This will show the warning but won't break the app
+  logWarn('Using MemoryStore for sessions - not recommended for production');
 }
 
 app.use(session(sessionConfig));
@@ -163,18 +167,18 @@ const atlasUri = process.env.MONGODB_URI;
 let MONGODB_URI;
 
 if (atlasUri && atlasUri.includes('mongodb+srv://')) {
-  if (!atlasUri.includes('/jules-style')) {
+  if (!atlasUri.includes('/jules_dating')) {
     // Fix the URI construction - insert database name before query parameters
     // Original: mongodb+srv://user:pass@cluster.mongodb.net/?params
-    // Fixed:    mongodb+srv://user:pass@cluster.mongodb.net/jules-style?params
-    MONGODB_URI = atlasUri.replace('mongodb.net/?', 'mongodb.net/jules-style?');
+    // Fixed:    mongodb+srv://user:pass@cluster.mongodb.net/jules_dating?params
+    MONGODB_URI = atlasUri.replace('mongodb.net/?', 'mongodb.net/jules_dating?');
     console.log('🔧 Fixed Atlas URI with database name:', MONGODB_URI);
   } else {
     MONGODB_URI = atlasUri;
     console.log('✅ Atlas URI already has database name:', MONGODB_URI);
   }
 } else {
-  MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/jules-style';
+  MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/jules_dating';
   console.log('🔧 Using local MongoDB URI:', MONGODB_URI);
 }
 
