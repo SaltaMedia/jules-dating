@@ -285,7 +285,7 @@ async function chat(req, res) {
   console.log('🚨 DEBUG: CHAT FUNCTION CALLED - This should appear for follow-up messages');
   try {
     
-    const { message, context, userId } = req.body;
+    const { message, context } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -297,8 +297,8 @@ async function chat(req, res) {
       return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
 
-    // Use authenticated user ID if available, otherwise fall back to request body
-    const actualUserId = req.user?.id || userId || 'anonymous';
+    // Use authenticated user ID only - never trust userId from request body for security
+    const actualUserId = req.user?.id || 'anonymous';
     
     // Check if this is an anonymous user and get remaining usage
     let remainingUsage = null;
@@ -545,9 +545,9 @@ ${userContext}` : '';
     const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${productInstructions}${imageInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
     
     // Debug: Log user context for troubleshooting
-    console.log(`DEBUG: User context for ${userId}:`, fullSystemPrompt.includes('USER CONTEXT:') ? 'User context loaded' : 'No user context found');
+    console.log(`DEBUG: User context for ${actualUserId}:`, fullSystemPrompt.includes('USER CONTEXT:') ? 'User context loaded' : 'No user context found');
     if (fullSystemPrompt.includes('USER CONTEXT:')) {
-      console.log(`DEBUG: User context details for ${userId}:`, userContext);
+      console.log(`DEBUG: User context details for ${actualUserId}:`, userContext);
     }
 
     // Prepare messages for OpenAI API
@@ -673,7 +673,7 @@ ${userContext}` : '';
         const inspirationResponse = await axios.post(`${req.protocol}://${req.get('host')}/api/inspiration/test`, {
           message,
           context: conversationMessages,
-          userId: userId
+          userId: actualUserId
         }, {
           headers: {
             'Content-Type': 'application/json'
@@ -751,20 +751,20 @@ You've used all 5 of your free messages! Sign up to continue chatting with Jules
     updateState.lastIntent = intent;
 
     // === BACKGROUND PROCESSING - Move learning system to background ===
-    if (userId && userId !== 'anonymous' && userId !== 'test') {
+    if (actualUserId && actualUserId !== 'anonymous' && actualUserId !== 'test') {
       // Process learning in background (non-blocking)
       setImmediate(async () => {
         try {
-          const insights = await ConversationLearning.extractInsights(userId, message, conversationMessages);
+          const insights = await ConversationLearning.extractInsights(actualUserId, message, conversationMessages);
           if (insights) {
-            const profileUpdated = await ConversationLearning.updateProfileWithInsights(userId, insights);
+            const profileUpdated = await ConversationLearning.updateProfileWithInsights(actualUserId, insights);
             if (profileUpdated) {
-              console.log(`Learning system: Profile updated for user ${userId}`);
+              console.log(`Learning system: Profile updated for user ${actualUserId}`);
               
               // Clear user context cache when learning occurs to ensure fresh data
               const UserContextCache = require('../utils/userContextCache');
-              UserContextCache.clearUserCache(userId);
-              console.log(`Cache cleared for user ${userId} due to learning`);
+              UserContextCache.clearUserCache(actualUserId);
+              console.log(`Cache cleared for user ${actualUserId} due to learning`);
             }
           }
         } catch (error) {
@@ -867,7 +867,7 @@ You've used all 5 of your free messages! Sign up to continue chatting with Jules
 async function chatWithImage(req, res) {
   try {
     
-    const { message, imageUrl, context, userId } = req.body;
+    const { message, imageUrl, context } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -883,8 +883,8 @@ async function chatWithImage(req, res) {
       return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
 
-    // Use authenticated user ID if available, otherwise fall back to request body
-    const actualUserId = req.user?.id || userId || 'anonymous';
+    // Use authenticated user ID only - never trust userId from request body for security
+    const actualUserId = req.user?.id || 'anonymous';
     
     // Load existing conversation from database for authenticated users
     let conversationMessages = [];
