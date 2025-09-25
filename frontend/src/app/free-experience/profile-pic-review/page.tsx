@@ -53,16 +53,15 @@ export default function FreeExperienceProfilePicReviewPage() {
     // Initialize anonymous session
     const initSession = async () => {
       try {
-        const response = await fetch('/api/anonymous/usage');
-        if (response.ok) {
-          const data = await response.json();
-          const sessionIdFromHeader = response.headers.get('X-Anonymous-Session-ID');
+        const response = await api.get('/api/anonymous/usage');
+        if (response.status === 200) {
+          const data = response.data;
+          const sessionIdFromHeader = response.headers['x-anonymous-session-id'];
           setSessionId(sessionIdFromHeader || '');
           setUsageInfo(data.usage);
         } else if (response.status === 400) {
           // Handle rate limit or session error
-          const errorData = await response.json();
-          console.error('Session initialization failed:', errorData);
+          console.error('Session initialization failed:', response.data);
         }
       } catch (error) {
         console.error('Failed to initialize session:', error);
@@ -116,10 +115,6 @@ export default function FreeExperienceProfilePicReviewPage() {
       const response = await api.post('/api/profile-pic-review/anonymous', {
         imageUrl: uploadResponse.data.imageUrl,
         specificQuestion: specificQuestion.trim() || undefined
-      }, {
-        headers: {
-          'X-Anonymous-Session-ID': sessionId
-        }
       });
 
       setFeedback(response.data.profilePicReview);
@@ -294,28 +289,6 @@ export default function FreeExperienceProfilePicReviewPage() {
 
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={() => {
-                        setFeedback(null);
-                        setSelectedImage(null);
-                        setSelectedFile(null);
-                        setSpecificQuestion('');
-                        setShowConversionPrompt(false);
-                      }}
-                      className="flex-1 bg-white/20 text-white py-2 rounded-lg hover:bg-white/30 transition-colors"
-                    >
-                      Try Another Photo
-                    </button>
-                    <Link
-                      href="/register"
-                      onClick={() => track('conversion_prompt_clicked', {
-                        source: 'profile_pic_review',
-                        action: 'signup_from_feedback'
-                      })}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 text-center"
-                    >
-                      Sign Up for More Reviews
-                    </Link>
                   </div>
                 </div>
 
