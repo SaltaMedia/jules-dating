@@ -306,41 +306,29 @@ function AnonymousChatPageContent() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto">
-                <button
-                  onClick={() => setInput("What should I wear to a first date?")}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl hover:bg-white/20 transition-all duration-200 text-left"
-                >
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl text-left">
                   <div className="text-lg mb-2">💕</div>
                   <h3 className="font-semibold text-sm mb-1">First Date Outfit</h3>
                   <p className="text-xs opacity-90">Get advice for that special night</p>
-                </button>
+                </div>
                 
-                <button
-                  onClick={() => setInput("What are the best casual shoes under $100?")}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl hover:bg-white/20 transition-all duration-200 text-left"
-                >
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl text-left">
                   <div className="text-lg mb-2">👟</div>
                   <h3 className="font-semibold text-sm mb-1">Shoe Recommendations</h3>
                   <p className="text-xs opacity-90">Find the perfect casual kicks</p>
-                </button>
+                </div>
                 
-                <button
-                  onClick={() => setInput("How do I build a capsule wardrobe?")}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl hover:bg-white/20 transition-all duration-200 text-left"
-                >
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl text-left">
                   <div className="text-lg mb-2">👔</div>
                   <h3 className="font-semibold text-sm mb-1">Capsule Wardrobe</h3>
                   <p className="text-xs opacity-90">Build a versatile wardrobe</p>
-                </button>
+                </div>
 
-                <button
-                  onClick={() => setInput("What colors work best for my skin tone?")}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl hover:bg-white/20 transition-all duration-200 text-left"
-                >
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white p-4 rounded-xl text-left">
                   <div className="text-lg mb-2">🎨</div>
                   <h3 className="font-semibold text-sm mb-1">Color Matching</h3>
                   <p className="text-xs opacity-90">Find your perfect color palette</p>
-                </button>
+                </div>
               </div>
             </div>
           )}
