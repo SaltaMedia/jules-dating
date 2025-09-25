@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Forward the request to the backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:4002' : 'https://jules-dating-backend.onrender.com');
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:4002' : 'https://jules-dating.onrender.com');
     const response = await fetch(`${backendUrl}/api/analytics/dashboard?timeRange=${timeRange}`, {
       method: 'GET',
       headers: {

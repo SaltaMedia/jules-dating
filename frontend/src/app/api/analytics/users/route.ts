@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const backendUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://jules-dating-backend.onrender.com' 
+      ? 'https://jules-dating.onrender.com' 
       : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002');
     
     const url = new URL(request.url);

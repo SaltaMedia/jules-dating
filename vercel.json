@@ -3,11 +3,11 @@
   "outputDirectory": "frontend/.next",
   "installCommand": "cd frontend && npm install",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://dating.juleslabs.com/api"
+    "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com"
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_URL": "https://dating.juleslabs.com/api"
+      "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com"
     }
   },
   "rewrites": [
@@ -17,7 +17,43 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating.onrender.com/api/$1"
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "GET"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "POST"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "PUT"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "DELETE"
+        }
+      ]
     }
   ],
   "headers": [

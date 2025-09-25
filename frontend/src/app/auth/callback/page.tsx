@@ -38,7 +38,8 @@ function AuthCallbackContent() {
     try {
       setStatus('Fetching user data...');
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
+      const response = await fetch(`${apiUrl}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

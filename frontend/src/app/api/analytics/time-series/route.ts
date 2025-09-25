@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating-backend.onrender.com';
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
 
 export async function GET(request: NextRequest) {
   try {
