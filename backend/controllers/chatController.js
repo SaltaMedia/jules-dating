@@ -186,9 +186,8 @@ async function determineIntent(message, conversationContext = [], conversationSt
     const classifierPrompt = `You are an intent classifier for Jules, a men's style assistant. Analyze the user's message and conversation context to determine the appropriate response mode.
 
 Available intents:
-- style_feedback: General style advice, outfit recommendations, fashion guidance
+- style_feedback: General style advice, outfit recommendations, fashion guidance, brand recommendations, shopping guidance
 - style_images: Visual inspiration requests, "show me pics", "examples", "inspiration"
-- product_recommendation: Explicit shopping requests, "where to buy", "show me links", "help me find products", "I want to buy", OR follow-up requests for more product options after Jules has already recommended products
 - confidence_boost: Emotional support, feeling down, confidence issues
 - user_satisfaction: User expresses satisfaction with outfit/style, feeling good, confident, happy with current look
 - conversation: General chat, casual conversation, responses to suggestions, clarifications, requests for response variations or refinements
@@ -211,14 +210,13 @@ Analyze the user's message and conversation context to determine their intent. C
 6. **Refinement requests** - If the user is asking for variations, improvements, or refinements to Jules's previous response (like "smoother", "better", "different version"), classify based on the ORIGINAL context, not as a new request
 
 IMPORTANT: 
-- If Jules recently recommended products and the user is asking for more/different/other options, this should be classified as product_recommendation, not conversation.
 - If the user is asking for refinements or variations to Jules's previous response, maintain the same intent as the original conversation context.
-- **STYLE ADVICE vs SHOPPING**: Questions like "maybe white sneakers?" or "would this work?" are style_feedback (asking for advice), NOT product_recommendation (asking to shop). Only classify as product_recommendation if user explicitly wants to buy/find products.
-- **CONTEXT MATTERS**: If user is asking about specific items in the context of ongoing style discussion, it's style_feedback unless they explicitly ask for shopping help.
+- **ALL SHOPPING REQUESTS**: Questions about "where to buy", "show me links", "help me find products", "I want to buy", or any shopping-related requests should be classified as style_feedback. Jules will provide brand recommendations and shopping guidance through style advice.
+- **CONTEXT MATTERS**: If user is asking about specific items in the context of ongoing style discussion, it's style_feedback. Jules focuses on style advice and brand recommendations rather than product links.
 
 Focus on understanding the user's actual needs from the conversation context, not just matching keywords. Consider the natural flow of conversation and what would be most helpful for Jules to provide.
 
-Respond with just the intent name (e.g., "style_feedback", "product_recommendation", "conversation", "user_satisfaction").`;
+Respond with just the intent name (e.g., "style_feedback", "style_images", "conversation", "user_satisfaction").`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -230,7 +228,7 @@ Respond with just the intent name (e.g., "style_feedback", "product_recommendati
     const response = completion.choices[0].message.content.trim();
     
     // Parse direct response (no JSON)
-    const validIntents = ['style_feedback', 'style_images', 'product_recommendation', 'confidence_boost', 'user_satisfaction', 'conversation'];
+    const validIntents = ['style_feedback', 'style_images', 'confidence_boost', 'user_satisfaction', 'conversation'];
     
     if (validIntents.includes(response)) {
       return response;
@@ -471,73 +469,7 @@ USER SATISFACTION MODE - CRITICAL INSTRUCTIONS:
 - Focus on validating their confidence rather than trying to "improve" their look`;
     }
 
-    // Special handling for product recommendation intent
-    let productInstructions = '';
-    if (intent === 'product_recommendation') {
-      // Check if this is a follow-up request for more products
-      const lastAssistantMessage = conversationMessages.slice().reverse().find(msg => msg.role === 'assistant');
-      const isFollowUpRequest = lastAssistantMessage && (
-        message.toLowerCase().includes('more') || 
-        message.toLowerCase().includes('other') || 
-        message.toLowerCase().includes('different') ||
-        message.toLowerCase().includes('options') ||
-        message.toLowerCase().includes('alternatives')
-      );
-      
-      if (isFollowUpRequest) {
-        productInstructions = `
-
-🔄 FOLLOW-UP PRODUCT REQUEST - PROVIDE MORE OPTIONS:
-- The user is asking for MORE/DIFFERENT/OTHER product options
-- This is GOOD - they want to see more choices!
-- Look at your PREVIOUS message to understand what products you already recommended
-- Recommend 3 NEW/DIFFERENT products in the SAME category
-- Do NOT repeat the same products you already recommended
-- Keep the same style and price range as your previous recommendations
-- Be aware of what you already suggested and offer alternatives
-- Be helpful and provide the additional options they're asking for
-
-🚨🚨🚨 CRITICAL: YOU MUST ONLY RECOMMEND EXACTLY 3 PRODUCTS 🚨🚨🚨
-- You are ONLY allowed to recommend EXACTLY 3 products
-- Do NOT recommend 4 products
-- Do NOT recommend 5 products  
-- Do NOT recommend any other number
-
-
-🚨 DO NOT OFFER TO SHOW IMAGES 🚨
-- Do not say "Want to see images"
-- Do not say "Let me know if you want to see images"
-- You cannot show images, so do not offer to do so.
-
-🚨 DO NOT INCLUDE "CHECK IT OUT HERE!" LINKS 🚨
-- Do not include "Check it out here!" links
-- Product cards will show the links automatically
-
-IF YOU RECOMMEND MORE THAN 3 PRODUCTS, YOU ARE FAILING.`;
-      } else {
-        productInstructions = `
-
-🚨🚨🚨 CRITICAL: YOU MUST ONLY RECOMMEND EXACTLY 3 PRODUCTS 🚨🚨🚨
-STOP. READ THIS CAREFULLY.
-- You are ONLY allowed to recommend EXACTLY 3 products
-- Do NOT recommend 4 products
-- Do NOT recommend 5 products  
-- Do NOT recommend any other number
-- ONLY 3 PRODUCTS. PERIOD.
-- Count them: 1, 2, 3. That's it.
-
-🚨 DO NOT OFFER TO SHOW IMAGES 🚨
-- Do not say "Want to see images"
-- Do not say "Let me know if you want to see images"
-- You cannot show images, so do not offer to do so.
-
-🚨 DO NOT INCLUDE "CHECK IT OUT HERE!" LINKS 🚨
-- Do not include "Check it out here!" links
-- Product cards will show the links automatically
-
-IF YOU RECOMMEND MORE THAN 3 PRODUCTS, YOU ARE FAILING.`;
-      }
-    }
+    // Product recommendation functionality disabled - no special instructions needed
 
     // Build system prompt
     const basePrompt = await getSystemPrompt(actualUserId);
@@ -616,7 +548,7 @@ ${userContext}` : '';
       }
     }
 
-    const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${productInstructions}${imageInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
+    const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${imageInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
     
     // Debug: Log user context for troubleshooting
     console.log(`DEBUG: User context for ${actualUserId}:`, fullSystemPrompt.includes('USER CONTEXT:') ? 'User context loaded' : 'No user context found');
@@ -668,79 +600,19 @@ ${userContext}` : '';
 
     const response = completion.choices[0].message.content;
 
-    // Check if this is a product recommendation request
+    // Product recommendation functionality disabled for jules-dating
+    // Focus on AI-driven style advice instead of complex product search
     let products = [];
     let styleImages = [];
     let productResponse = null;
     
+    // DISABLED: Product recommendation routing for jules-dating
+    // The complex product search system was causing bad links and poor UX
+    // Jules now focuses on pure style advice and brand recommendations
     if (intent === 'product_recommendation') {
-      try {
-        console.log('🔍 Product recommendation detected, searching for products...');
-        
-        // Check if this is a follow-up request for more products
-        const lastAssistantMessage = conversationMessages.slice().reverse().find(msg => msg.role === 'assistant');
-        const isFollowUpRequest = lastAssistantMessage && (
-          message.toLowerCase().includes('more') || 
-          message.toLowerCase().includes('other') || 
-          message.toLowerCase().includes('different') ||
-          message.toLowerCase().includes('options') ||
-          message.toLowerCase().includes('alternatives')
-        );
-        
-        if (isFollowUpRequest) {
-          console.log('🔄 Follow-up product request detected, using NEW response context...');
-          // For follow-up requests, use Jules's NEW response as context
-          const conversationWithNewResponse = [
-            ...conversationMessages,
-            { role: 'assistant', content: response } // Use Jules's NEW response
-          ];
-          
-          // Call the products endpoint with NEW response context
-          const productsResponse = await axios.post(`${req.protocol}://${req.get('host')}/api/products/test`, {
-            message,
-            conversation: { messages: conversationWithNewResponse },
-            isFollowUp: true,
-            previousRecommendations: lastAssistantMessage.content
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (productsResponse.data.products && productsResponse.data.products.length > 0) {
-            console.log(`✅ Found ${productsResponse.data.products.length} follow-up products`);
-            products = productsResponse.data.products;
-          } else {
-            console.log('❌ No follow-up products found');
-          }
-        } else {
-          // Regular product recommendation
-          const conversationWithResponse = [
-            ...conversationMessages,
-            { role: 'assistant', content: response }
-          ];
-          
-          // Call the products endpoint with Jules's complete response
-          const productsResponse = await axios.post(`${req.protocol}://${req.get('host')}/api/products/test`, {
-            message,
-            conversation: { messages: conversationWithResponse }
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (productsResponse.data.products && productsResponse.data.products.length > 0) {
-            console.log(`✅ Found ${productsResponse.data.products.length} products`);
-            products = productsResponse.data.products;
-          } else {
-            console.log('❌ No products found');
-          }
-        }
-      } catch (error) {
-        console.error('Product search error:', error.message);
-        // Continue without products if search fails
-      }
+      console.log('🚫 Product recommendation disabled - Jules will provide style advice instead');
+      // Convert product_recommendation to style_feedback for better user experience
+      intent = 'style_feedback';
     }
     
     // Check if this is a style images request

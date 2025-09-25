@@ -122,9 +122,11 @@ body {
   /* Messages area improvements */
   .messages-area {
     padding-top: 120px !important; /* Increased to ensure first message is visible */
-    padding-bottom: 110px !important; /* Adjusted for new input positioning */
+    padding-bottom: 250px !important; /* CRITICAL: Much more space to ensure last message is fully visible above input field */
     -webkit-overflow-scrolling: touch;
-    min-height: calc(100vh - 230px); /* Adjusted for new layout */
+    min-height: calc(100vh - 370px); /* Adjusted for new layout */
+    margin-bottom: 0 !important; /* Remove any conflicting margins */
+    background-color: rgba(255, 0, 0, 0.1) !important; /* TEMPORARY: Red tint to verify CSS is loading */
   }
   
   /* Fix message bubble text visibility */
@@ -188,7 +190,7 @@ body {
       padding-left: 8px !important;
       padding-right: 8px !important;
       padding-top: 140px !important; /* Extra padding for small screens to prevent header overlap */
-      padding-bottom: 130px !important; /* Adjusted for new layout */
+      padding-bottom: 180px !important; /* Extra padding for small screens to prevent input overlap */
     }
     
     .sticky-header {
@@ -199,13 +201,18 @@ body {
     .input-area {
       padding-left: 8px !important;
       padding-right: 8px !important;
-      bottom: 56px !important; /* Adjust for new bottom navigation height */
+      bottom: 64px !important; /* Adjust for new bottom navigation height */
     }
   }
   
   /* Additional fix for message visibility */
   .message-bubble {
     margin-bottom: 8px !important; /* Tighter spacing between message bubbles */
+  }
+  
+  /* Ensure last message is fully visible above input field */
+  .messages-area > div:last-child {
+    margin-bottom: 40px !important; /* Extra margin for the last message to ensure it's visible above input */
   }
   
   /* Ensure first message is visible */

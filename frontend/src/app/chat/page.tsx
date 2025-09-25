@@ -844,8 +844,14 @@ function ChatPageContent() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 messages-area overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <div 
+        className="flex-1 messages-area overflow-y-auto"
+        style={{
+          paddingTop: '120px',
+          paddingBottom: '100px'
+        }}
+      >
+        <div className="max-w-4xl mx-auto space-y-4 p-4">
           {messages.length === 0 && (
             <div className="text-center text-gray-300 pt-4 pb-8 px-4">
               {/* New Welcome Message with Two-Line Heading */}

@@ -208,7 +208,7 @@ const submitProfilePicReview = async (req, res) => {
       userId,
       sessionId: req.sessionId || 'authenticated',
       eventType: 'feature_usage',
-      category: 'fit_check',
+      category: 'profile_pic_review',
       action: 'profile_pic_review_submitted',
       properties: {
         rating,
@@ -269,7 +269,7 @@ const submitAnonymousProfilePicReview = async (req, res) => {
       userId: sessionId,
       sessionId: sessionId,
       eventType: 'feature_usage',
-      category: 'fit_check',
+      category: 'profile_pic_review',
       action: 'anonymous_profile_pic_review_submitted',
       properties: {
         rating,
@@ -378,7 +378,7 @@ const saveProfilePicReview = async (req, res) => {
       userId,
       sessionId: req.sessionId || 'authenticated',
       eventType: 'feature_usage',
-      category: 'fit_check',
+      category: 'profile_pic_review',
       action: 'profile_pic_review_saved',
       properties: {
         rating: profilePicReview.rating,

@@ -290,8 +290,14 @@ function AnonymousChatPageContent() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 messages-area overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <div 
+        className="flex-1 messages-area overflow-y-auto"
+        style={{
+          paddingTop: '120px',
+          paddingBottom: '100px'
+        }}
+      >
+        <div className="max-w-4xl mx-auto space-y-4 p-4">
           {messages.length === 0 && (
             <div className="text-center text-gray-300 pt-8 pb-8 px-4">
               <div className="mb-6">
@@ -492,7 +498,7 @@ function AnonymousChatPageContent() {
       )}
 
       {/* Sticky Input */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
+      <div className="fixed bottom-14 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
         <div className="max-w-4xl mx-auto">
           
           <div className="flex space-x-3 sm:space-x-4">
