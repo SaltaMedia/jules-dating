@@ -29,6 +29,7 @@ export default function FreeExperienceProfilePicReviewPage() {
   const [showConversionPrompt, setShowConversionPrompt] = useState(false);
   const [sessionId, setSessionId] = useState<string>('');
   const [usageInfo, setUsageInfo] = useState<any>(null);
+  const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -53,15 +54,16 @@ export default function FreeExperienceProfilePicReviewPage() {
     // Initialize anonymous session
     const initSession = async () => {
       try {
-        const response = await api.get('/api/anonymous/usage');
-        if (response.status === 200) {
-          const data = response.data;
-          const sessionIdFromHeader = response.headers['x-anonymous-session-id'];
+        const response = await fetch('/api/anonymous/usage');
+        if (response.ok) {
+          const data = await response.json();
+          const sessionIdFromHeader = response.headers.get('X-Anonymous-Session-ID');
           setSessionId(sessionIdFromHeader || '');
           setUsageInfo(data.usage);
         } else if (response.status === 400) {
           // Handle rate limit or session error
-          console.error('Session initialization failed:', response.data);
+          const errorData = await response.json();
+          console.error('Session initialization failed:', errorData);
         }
       } catch (error) {
         console.error('Failed to initialize session:', error);
@@ -104,26 +106,57 @@ export default function FreeExperienceProfilePicReviewPage() {
         formData.append('image', file);
       }
 
-      const uploadResponse = await api.post('/api/images/upload', formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          'X-Anonymous-Session-ID': sessionId
-        }
+      const uploadResponse = await fetch('/api/images/anonymous', {
+        method: 'POST',
+        headers: {
+          'X-Anonymous-Session-ID': sessionId || '',
+        },
+        body: formData,
       });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        if (uploadResponse.status === 429) {
+          // Show the backend message for rate limiting
+          setError(errorData.message || 'You\'ve used your free image upload! Sign up to get unlimited uploads.');
+          return;
+        }
+        throw new Error(errorData.message || 'Failed to upload image');
+      }
+
+      const uploadData = await uploadResponse.json();
 
       // Then submit the profile pic review with the image URL using anonymous endpoint
-      const response = await api.post('/api/profile-pic-review/anonymous', {
-        imageUrl: uploadResponse.data.imageUrl,
-        specificQuestion: specificQuestion.trim() || undefined
+      const response = await fetch('/api/profile-pic-review/anonymous', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Anonymous-Session-ID': sessionId || '',
+        },
+        body: JSON.stringify({
+          imageUrl: uploadData.imageUrl,
+          specificQuestion: specificQuestion.trim() || undefined
+        }),
       });
 
-      setFeedback(response.data.profilePicReview);
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 429) {
+          // Show the backend message for rate limiting
+          setError(errorData.message || 'You\'ve used your free profile pic review! Sign up to get unlimited reviews.');
+          return;
+        }
+        throw new Error(errorData.message || 'Failed to submit profile pic review');
+      }
+
+      const responseData = await response.json();
+      setFeedback(responseData.profilePicReview);
       setShowConversionPrompt(true);
 
       // Track profile pic review upload success
       track('anonymous_profile_pic_review_uploaded', { 
         has_specific_question: !!specificQuestion,
-        rating: response.data.profilePicReview.rating
+        rating: responseData.profilePicReview.rating
       });
     } catch (error) {
       console.error('Error submitting profile pic review:', error);
