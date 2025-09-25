@@ -23,8 +23,9 @@ const {
 } = require('../controllers/authController');
 
 // Local authentication routes
-router.post('/register', validateRegister, register);
-router.post('/login', validateLogin, login);
+// Temporarily disable validation to test password issue
+router.post('/register', register);
+router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/logout', logout);
