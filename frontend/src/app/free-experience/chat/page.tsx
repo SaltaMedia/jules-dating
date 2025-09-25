@@ -290,7 +290,7 @@ function AnonymousChatPageContent() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 messages-area overflow-y-auto p-4 pb-32 pt-20">
+      <div className="flex-1 messages-area overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-gray-300 pt-8 pb-8 px-4">
@@ -339,13 +339,14 @@ function AnonymousChatPageContent() {
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-4 ${
+                className={`max-w-[80%] rounded-lg p-4 message-bubble ${
                   message.role === 'user'
                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                     : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
                 }`}
               >
                 <div className="text-white leading-relaxed">
+                  
                   <ReactMarkdown
                     components={{
                       a: ({ node, ...props }) => (
@@ -491,7 +492,7 @@ function AnonymousChatPageContent() {
       )}
 
       {/* Sticky Input */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4">
+      <div className="bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
         <div className="max-w-4xl mx-auto">
           
           <div className="flex space-x-3 sm:space-x-4">

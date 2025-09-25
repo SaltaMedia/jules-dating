@@ -72,16 +72,21 @@ body {
   }
 }
 
-/* Mobile-specific styles - ONLY what's needed for the 5 reported issues */
+/* Mobile-specific styles - Enhanced for better mobile experience */
 @media (max-width: 640px) {
-  /* Prevent horizontal scrolling */
+  /* Prevent horizontal scrolling and ensure proper viewport handling */
   body {
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
   
   /* Ensure buttons and inputs are properly sized for touch */
   button, input, select, textarea {
     min-height: 44px; /* iOS minimum touch target size */
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
   }
   
   /* Mobile button class for consistent sizing */
@@ -89,6 +94,7 @@ body {
     min-height: 44px;
     min-width: 44px;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   
   /* Mobile scroll container for modals */
@@ -97,11 +103,122 @@ body {
     overscroll-behavior: contain;
   }
   
-  /* Ensure sticky header works properly on mobile */
+  /* Enhanced sticky header for mobile */
   .sticky-header {
     position: -webkit-sticky !important;
     position: sticky !important;
     top: 0 !important;
     z-index: 40 !important;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  
+  /* Fix chat container layout */
+  .chat-container {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Messages area improvements */
+  .messages-area {
+    padding-top: 120px !important; /* Increased to ensure first message is visible */
+    padding-bottom: 180px !important; /* Increased to account for input area + navigation */
+    -webkit-overflow-scrolling: touch;
+    min-height: calc(100vh - 300px); /* Increased to ensure proper content height */
+    margin-bottom: 80px; /* Additional margin to prevent overlap */
+  }
+  
+  /* Fix message bubble text visibility */
+  .message-bubble {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.5;
+  }
+  
+  /* Ensure text is visible in message bubbles */
+  .message-bubble * {
+    color: inherit !important;
+    opacity: 1 !important;
+  }
+  
+  /* Fix input area positioning */
+  .input-area {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+    margin-bottom: 80px; /* Increased to account for bottom navigation height */
+    position: fixed !important;
+    bottom: 80px !important; /* Position above bottom navigation */
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 45 !important;
+  }
+  
+  /* Additional mobile-specific improvements */
+  .mobile-nav-item {
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+  }
+  
+  /* Ensure bottom navigation doesn't overlap content */
+  .mobile-navigation {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 50 !important;
+    height: 64px !important; /* Fixed height for navigation */
+  }
+  
+  /* Ensure text areas are properly sized */
+  textarea {
+    min-height: 44px;
+    max-height: 120px;
+    resize: vertical;
+  }
+  
+  /* Fix any potential overflow issues */
+  .max-w-4xl {
+    max-width: calc(100vw - 32px);
+  }
+  
+  /* Ensure proper spacing for very small screens */
+  @media (max-width: 375px) {
+    .messages-area {
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+      padding-top: 140px !important; /* Extra padding for small screens to prevent header overlap */
+      padding-bottom: 200px !important; /* Extra padding for small screens */
+    }
+    
+    .sticky-header {
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+    }
+    
+    .input-area {
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+      bottom: 70px !important; /* Adjust for smaller screens */
+    }
+  }
+  
+  /* Additional fix for message visibility */
+  .message-bubble {
+    margin-bottom: 16px !important; /* Ensure space between messages */
+  }
+  
+  /* Ensure first message is visible */
+  .messages-area > div:first-child {
+    margin-top: 20px !important;
+    padding-top: 10px !important;
+  }
+  
+  /* Ensure last message is visible */
+  .messages-area > div:last-child {
+    padding-bottom: 20px !important;
   }
 }

@@ -844,7 +844,7 @@ function ChatPageContent() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 messages-area overflow-y-auto p-4 pb-20 pt-20">
+      <div className="flex-1 messages-area overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-gray-300 pt-4 pb-8 px-4">
@@ -898,15 +898,13 @@ function ChatPageContent() {
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-4 ${
+                className={`max-w-[80%] rounded-lg p-4 message-bubble ${
                   message.role === 'user'
                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                     : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
                 }`}
               >
-                <div 
-                  className="text-white leading-relaxed"
-                >
+                <div className="text-white leading-relaxed">
                   {/* Show user uploaded image if present */}
                   {message.userImage && (
                     <div className="mb-3">
@@ -918,10 +916,6 @@ function ChatPageContent() {
                     </div>
                   )}
                   
-                  {/* Debug: Show raw content */}
-                  <div style={{display: 'none'}}>
-                    Raw content: {JSON.stringify(message.content)}
-                  </div>
                   
                   <ReactMarkdown
                     components={{
@@ -1021,7 +1015,7 @@ function ChatPageContent() {
                       title="Recommended Products"
                       subtitle="Here are some products that match your style"
                       onAddToWishlist={handleAddToWishlist}
-                      showWishlistButton={true}
+                      showWishlistButton={false}
                       hasMore={false}
                       totalFound={message.products?.length || 0}
                     />
@@ -1036,7 +1030,7 @@ function ChatPageContent() {
                       <ImageGrid 
                         images={message.images}
                         onAddToWishlist={handleAddImageToWishlist}
-                        showWishlistButton={true}
+                        showWishlistButton={false}
                       />
                     </div>
                   );
@@ -1080,7 +1074,7 @@ function ChatPageContent() {
       </div>
 
       {/* Sticky Input */}
-      <div className="fixed bottom-16 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4">
+      <div className="bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
         <div className="max-w-4xl mx-auto">
           {queuedMessage && (
             <div className="mb-2 p-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-blue-200 text-sm">
