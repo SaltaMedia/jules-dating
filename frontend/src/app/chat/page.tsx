@@ -904,7 +904,7 @@ function ChatPageContent() {
                     : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
                 }`}
               >
-                <div className="text-white leading-relaxed">
+                <div className="text-white leading-tight">
                   {/* Show user uploaded image if present */}
                   {message.userImage && (
                     <div className="mb-3">
@@ -989,14 +989,14 @@ function ChatPageContent() {
                         const isWhyILove = content.includes('Why I love these:');
                         const isEmptyOrWhitespace = content.trim() === '';
                         
-                        // Add more spacing for product lines and their descriptions
-                        let spacingClass = 'mb-3';
+                        // Add tighter spacing for better message density
+                        let spacingClass = 'mb-1';
                         if (isProductLine) {
-                          spacingClass = 'mb-12'; // Much more space after product lines
+                          spacingClass = 'mb-6'; // Reduced space after product lines
                         } else if (isWhyILove) {
-                          spacingClass = 'mb-8'; // More space after descriptions
+                          spacingClass = 'mb-4'; // Reduced space after descriptions
                         } else if (isEmptyOrWhitespace) {
-                          spacingClass = 'mb-6'; // More space for empty lines
+                          spacingClass = 'mb-3'; // Reduced space for empty lines
                         }
                         
                         return <p {...props} className={spacingClass} />;

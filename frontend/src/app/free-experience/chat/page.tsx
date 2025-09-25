@@ -345,7 +345,7 @@ function AnonymousChatPageContent() {
                     : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
                 }`}
               >
-                <div className="text-white leading-relaxed">
+                <div className="text-white leading-tight">
                   
                   <ReactMarkdown
                     components={{
@@ -367,13 +367,13 @@ function AnonymousChatPageContent() {
                         const isWhyILove = content.includes('Why I love these:');
                         const isEmptyOrWhitespace = content.trim() === '';
                         
-                        let spacingClass = 'mb-3';
+                        let spacingClass = 'mb-1';
                         if (isProductLine) {
-                          spacingClass = 'mb-12';
+                          spacingClass = 'mb-6'; // Reduced space after product lines
                         } else if (isWhyILove) {
-                          spacingClass = 'mb-8';
+                          spacingClass = 'mb-4'; // Reduced space after descriptions
                         } else if (isEmptyOrWhitespace) {
-                          spacingClass = 'mb-6';
+                          spacingClass = 'mb-3'; // Reduced space for empty lines
                         }
                         
                         return <p {...props} className={spacingClass} />;
