@@ -796,7 +796,6 @@ function ChatPageContent() {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleImageUpload}
         className="hidden"
         id="chat-image-upload"
@@ -1120,36 +1119,8 @@ function ChatPageContent() {
           <div className="flex space-x-3 sm:space-x-4">
             {/* Photo Upload Button */}
             <button
-              onClick={async () => {
-                console.log('+ Button clicked - opening mobile camera or file dialog');
-                try {
-                  // Try mobile camera first (includes capture="environment" for direct camera access)
-                  const file = await captureImageMobile();
-                  if (file) {
-                    // Create a proper event object for handleImageUpload
-                    const mockEvent = {
-                      target: { files: [file] },
-                      currentTarget: { files: [file] },
-                      preventDefault: () => {},
-                      stopPropagation: () => {}
-                    } as unknown as React.ChangeEvent<HTMLInputElement>;
-                    handleImageUpload(mockEvent);
-                  }
-                } catch (error) {
-                  console.error('Error accessing camera, falling back to file picker:', error);
-                  // Fallback to regular file picker
-                  const file = await openFilePicker();
-                  if (file) {
-                    // Create a proper event object for handleImageUpload
-                    const mockEvent = {
-                      target: { files: [file] },
-                      currentTarget: { files: [file] },
-                      preventDefault: () => {},
-                      stopPropagation: () => {}
-                    } as unknown as React.ChangeEvent<HTMLInputElement>;
-                    handleImageUpload(mockEvent);
-                  }
-                }
+              onClick={() => {
+                fileInputRef.current?.click();
               }}
               className="bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg p-2 sm:p-3 hover:bg-white/30 transition-all duration-200 flex items-center justify-center text-white"
               title="Add Photo"
