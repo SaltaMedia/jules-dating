@@ -844,7 +844,7 @@ function ChatPageContent() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 messages-area overflow-y-auto p-4 pb-32 pt-24 sm:pt-20">
+      <div className="flex-1 messages-area overflow-y-auto p-4 pb-20 pt-20">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-gray-300 pt-4 pb-8 px-4">
@@ -862,13 +862,12 @@ function ChatPageContent() {
                     "What's a smooth way to ask her out again?",
                     "Help me plan a date outfit"
                   ].map((suggestion, index) => (
-                    <button
+                    <div
                       key={index}
-                      onClick={() => setInput(suggestion)}
-                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 text-sm sm:text-base"
+                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm sm:text-base"
                     >
                       {suggestion}
-                    </button>
+                    </div>
                   ))}
                 </div>
                 
