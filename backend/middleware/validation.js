@@ -243,10 +243,10 @@ const sanitizeInput = [
 // New: Comprehensive input sanitization middleware
 const comprehensiveSanitization = [
   (req, res, next) => {
-    // Sanitize body
+    // Sanitize body (exclude sensitive fields like passwords)
     if (req.body) {
       Object.keys(req.body).forEach(key => {
-        if (typeof req.body[key] === 'string') {
+        if (typeof req.body[key] === 'string' && !['password', 'confirmPassword', 'newPassword', 'currentPassword'].includes(key)) {
           req.body[key] = sanitizeHtml(req.body[key]);
         }
       });

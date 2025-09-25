@@ -4,6 +4,7 @@ const Conversation = require('../models/Conversation');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const ChatSession = require('../models/ChatSession');
+const ProfilePicReview = require('../models/ProfilePicReview');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
@@ -48,18 +49,21 @@ async function getSystemPrompt(userId) {
 ---
 
 ### CORE PRINCIPLE
-Your motto is: **Date Who You Are.**  
-Style builds confidence when it's true to the person.  It helps men get the most out of themsleves and helps them level up their dating life and dating profile perception — not a costume, not blind trend-chasing. Jules helps men look sharp, current, and authentic to their life stage.
+Your motto is: **Better First Impressions = Better Connections.**  
+Style, photos, and words shape attraction — but so do confidence, humor, and presence. Jules helps men sharpen their look and their approach: from profile pics and bios to texts, date outfits, and conversation.
 
 ---
 
 ### CONTEXT AWARENESS
-- Always reference the user's age, lifestyle, budget, body type, and past conversations.  
+- Respond to the current question first, then reference past context only if it's directly relevant.
+- Use the user's age, lifestyle, budget, body type, and relevant past conversations to enhance your advice when appropriate.
 - Use name naturally in conversation
-- Adapt outfit advice so it feels authentic. A man in his 40s should look confident and current, not like he borrowed from a 22-year-old.  
+- Adapt dating advice by age, lifestyle, and goals (hookup vs serious).
+- Balance honesty with encouragement — confidence matters more than perfection.
+- Style recs stay tied to dating context (profile photos, first dates, meeting her friends)
 - Balance **on-trend elements** (cuts, colors, textures, seasonal pieces) with **timeless staples** (clean tailoring, neutral basics, classic footwear).  
 - Keep advice fresh — don't default to the same formulas. Outfit ideas should feel specific to the question and context, reflecting current trends, diverse options, and user preferences.                                                                                                                                                                       
-- Respect the user's preferences but don't be limited by them. Push horizons when it makes sense, but always keep recommendations wearable and true to the person.
+- Respect the user's preferences but don't be limited by them. Push horizons when it makes sense, but always keep recommendations  true to the person.
 
 **REALISTIC EXPECTATIONS:**
 - Focus on how clothes look and fit, not on what they'll achieve
@@ -94,9 +98,12 @@ Style builds confidence when it's true to the person.  It helps men get the most
 
 ---
 
-### STYLE EXAMPLES (Guides — not scripts)
-These are **illustrations of tone and pacing**. They show how Jules balances wit, blunt honesty, and practical style advice. Always generate original, in-context responses — never reuse wording.
+### EXAMPLES (Guides — not scripts)
+These are **illustrations of tone and pacing**. They show how Jules balances wit, blunt honesty, and practical dating advice. Always generate original, in-context responses — never reuse wording.
 
+- **Texting:** "If you open with 'hey,' I will personally delete your account. Try something that hooks her, like…"
+- **Profile feedback:** "Your bio reads like a résumé. Where's the personality? Women don't want your LinkedIn headline."
+- **Date prep:** "Dinner's fine, but coffee at 8pm screams 'networking.' Pick something with energy."
 - **When something doesn't work:** Call it out directly but keep it playful (e.g., point out if it feels outdated, mismatched, or not right for the vibe).  
 - **When something does work:** Highlight *why* it's strong — clean fit, current cut, right for the occasion — without exaggeration or clichés.  
 - **When recommending:** Mix timeless staples (tailored shirt, clean sneakers, classic chinos) with on-trend accents (color, cut, detail) that suit the user's age and lifestyle.  
@@ -105,12 +112,12 @@ These are **illustrations of tone and pacing**. They show how Jules balances wit
 
 ### PRODUCT + FUNCTION
 Jules is part of the Jules Style App. Core features:  
-1. **Chat with Jules (active):** Talk about style, dating, confidence, and life advice.  
-2. **Fit Check (active):** Direct users to the Fit Check section to upload outfit photos for feedback.  
-3. **Closet (active):** Build/manage wardrobe items and base recommendations on what users own.  
-4. **Personalized Recommendations (active):** Suggest products and outfits based on preferences, budget, and body type.  
-5. **Outfit Building (active):** Create complete outfits for different occasions.  
-6. **Community (coming soon):** Share and get outfit feedback.  
+1. **Chat with Jules (active):** Talk about style, dating, confidence, and life advice. Mention you help with bios, opening lines, and conversation practice. 
+2. **Fit Check (active):** Direct users to the Fit Check section to upload outfit photos for feedback.
+3. **Profile Pic Review (active):** Direct users to the Profile Pic Review section to upload profile pics for feedback.
+
+
+  
 
 When asked "what can you do," explain these naturally in conversation. Always mention Fit Check for outfit feedback.  
 
@@ -122,6 +129,7 @@ When asked "what can you do," explain these naturally in conversation. Always me
 - Respect user satisfaction: if they say they're good with an outfit, acknowledge it and offer tweaks only if invited.  
 - Use style to build confidence — advice should make them feel capable, not dependent.  
 - Push users beyond comfort zones when appropriate, but never dress them out of character.
+- **CRITICAL: Always consider the conversation context. If someone asks for help with something but doesn't provide the details, ask for the details first before giving advice.**
 
 **Conversation Starters:**
 - Keep greetings simple and natural: "Hey [name]" or "What's up?" 
@@ -143,7 +151,7 @@ When asked "what can you do," explain these naturally in conversation. Always me
 Every response should feel like Jules herself:  
 - Confident, stylish, witty, and a little flirty.  
 - Balancing timeless and current style.  
-- Helping men "wear who they are" while pushing them to show up sharper, bolder, and more confident.`;
+- Jules = stylish, witty wingwoman who sharpens the whole package: look, words, and vibe.`;
   
   return basePrompt;
 }
@@ -180,7 +188,7 @@ async function determineIntent(message, conversationContext = [], conversationSt
 Available intents:
 - style_feedback: General style advice, outfit recommendations, fashion guidance
 - style_images: Visual inspiration requests, "show me pics", "examples", "inspiration"
-- product_recommendation: Shopping requests, product links, "where to buy", "show me links", specific product requests, OR follow-up requests for more product options after Jules has already recommended products
+- product_recommendation: Explicit shopping requests, "where to buy", "show me links", "help me find products", "I want to buy", OR follow-up requests for more product options after Jules has already recommended products
 - confidence_boost: Emotional support, feeling down, confidence issues
 - user_satisfaction: User expresses satisfaction with outfit/style, feeling good, confident, happy with current look
 - conversation: General chat, casual conversation, responses to suggestions, clarifications, requests for response variations or refinements
@@ -205,6 +213,8 @@ Analyze the user's message and conversation context to determine their intent. C
 IMPORTANT: 
 - If Jules recently recommended products and the user is asking for more/different/other options, this should be classified as product_recommendation, not conversation.
 - If the user is asking for refinements or variations to Jules's previous response, maintain the same intent as the original conversation context.
+- **STYLE ADVICE vs SHOPPING**: Questions like "maybe white sneakers?" or "would this work?" are style_feedback (asking for advice), NOT product_recommendation (asking to shop). Only classify as product_recommendation if user explicitly wants to buy/find products.
+- **CONTEXT MATTERS**: If user is asking about specific items in the context of ongoing style discussion, it's style_feedback unless they explicitly ask for shopping help.
 
 Focus on understanding the user's actual needs from the conversation context, not just matching keywords. Consider the natural flow of conversation and what would be most helpful for Jules to provide.
 
@@ -237,6 +247,35 @@ Respond with just the intent name (e.g., "style_feedback", "product_recommendati
 // Function to get mode-specific instructions
 function getModeInstructions(mode) {
   return julesConfig.modes[mode]?.style || julesConfig.modes.conversation.style;
+}
+
+// Function to retrieve profile pic review data for context
+async function getProfilePicReviewContext(userId, imageUrl) {
+  try {
+    if (!userId || userId === 'anonymous' || userId === 'test') {
+      return null;
+    }
+
+    // Look for profile pic review with matching image URL
+    const profilePicReview = await ProfilePicReview.findOne({
+      userId: userId,
+      originalImageUrl: imageUrl
+    }).sort({ createdAt: -1 }); // Get most recent review
+
+    if (profilePicReview) {
+      return {
+        rating: profilePicReview.rating,
+        analysis: profilePicReview.advice,
+        reviewId: profilePicReview._id,
+        createdAt: profilePicReview.createdAt
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error retrieving profile pic review context:', error);
+    return null;
+  }
 }
 
 // Function to strip closers from responses
@@ -349,33 +388,57 @@ async function chat(req, res) {
       content: message
     };
     
-    // Check for image context in conversation for follow-up messages
+    // PARALLEL API CALLS - Start intent classification and context building simultaneously
+    const [intent, userContext] = await Promise.all([
+      determineIntent(message, conversationMessages, conversation?.state || {}),
+      UserContextCache.getUserContext(actualUserId)
+    ]);
+
+    // Check for image context in conversation, but only use it if intent is image-related
     const hasImageContext = conversationMessages.some(msg => msg.imageContext?.hasImage);
+    
+    // Define intents that should include image context (style-related intents)
+    const imageRelatedIntents = ['style_feedback', 'style_images'];
+    const shouldIncludeImageContext = hasImageContext && imageRelatedIntents.includes(intent);
     
     let shouldUseVisionModel = false;
     let imageUrlForVision = null;
     
-    if (hasImageContext) {
+    if (shouldIncludeImageContext) {
       // Find the most recent message with image context
       const recentImageMessage = conversationMessages
         .filter(msg => msg.imageContext?.hasImage)
         .slice(-1)[0];
       
       if (recentImageMessage?.imageContext?.thumbnailUrl) {
+        // Convert thumbnail URL to full resolution for profile pic review lookup
+        const fullImageUrl = recentImageMessage.imageContext.thumbnailUrl
+          .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
+        
+        // Check if we have a profile pic review for this image
+        const profilePicReviewContext = await getProfilePicReviewContext(actualUserId, fullImageUrl);
+        
         // Add image context to current user message
         userMessage.imageContext = {
           hasImage: true,
           thumbnailUrl: recentImageMessage.imageContext.thumbnailUrl,
-          analysis: recentImageMessage.imageContext.analysis
+          analysis: recentImageMessage.imageContext.analysis,
+          ...(profilePicReviewContext && { 
+            profilePicReview: profilePicReviewContext 
+          })
         };
         
-        // Convert thumbnail URL to full resolution for vision model
-        imageUrlForVision = recentImageMessage.imageContext.thumbnailUrl
-          .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
+        imageUrlForVision = fullImageUrl;
         shouldUseVisionModel = true;
         
-        console.log('🖼️ Adding image context to follow-up message');
+        if (profilePicReviewContext) {
+          console.log(`🖼️ Found profile pic review context: rating ${profilePicReviewContext.rating}/10`);
+        } else {
+          console.log('🖼️ No profile pic review context found, will use vision model');
+        }
       }
+    } else if (hasImageContext) {
+      console.log(`🖼️ Image context available but intent '${intent}' doesn't require it - focusing on current question`);
     }
     
     conversationMessages.push(userMessage);
@@ -390,12 +453,6 @@ async function chat(req, res) {
     });
 
     console.log(`💬 Processing ${conversationMessages.length} conversation messages`);
-
-    // PARALLEL API CALLS - Start intent classification and context building simultaneously
-    const [intent, userContext] = await Promise.all([
-      determineIntent(message, conversationMessages, conversation?.state || {}),
-      UserContextCache.getUserContext(actualUserId)
-    ]);
 
     const modeInstructions = getModeInstructions(intent);
 
@@ -531,7 +588,23 @@ ${userContext}` : '';
     // Add image context instructions if we have image context
     let imageInstructions = '';
     if (shouldUseVisionModel && imageUrlForVision) {
-      imageInstructions = `
+      // Check if we have profile pic review context
+      const hasProfilePicReview = userMessage.imageContext?.profilePicReview;
+      
+      if (hasProfilePicReview) {
+        imageInstructions = `
+
+### PROFILE PIC REVIEW CONTEXT MODE - CRITICAL INSTRUCTIONS:
+- You have already reviewed this image in Profile Pic Review and gave it a ${hasProfilePicReview.rating}/10 rating
+- Your previous analysis was: "${hasProfilePicReview.analysis.substring(0, 200)}..."
+- The user is now asking follow-up questions about the SAME image
+- Use your previous rating and analysis as the foundation for your response
+- Do NOT give a different rating - stick with your original ${hasProfilePicReview.rating}/10 rating
+- Reference your previous feedback and build upon it
+- Be consistent with your previous analysis
+- If the user asks for a new rating, remind them you already rated it ${hasProfilePicReview.rating}/10`;
+      } else {
+        imageInstructions = `
 
 ### IMAGE CONTEXT MODE - CRITICAL INSTRUCTIONS:
 - You CAN see and analyze the image in this message
@@ -540,6 +613,7 @@ ${userContext}` : '';
 - Provide specific visual details based on what you can see in the image
 - Do NOT say "I can't see the image" or "I can't determine from the image"
 - You are looking at the same image the user uploaded earlier`;
+      }
     }
 
     const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${productInstructions}${imageInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
@@ -578,8 +652,12 @@ ${userContext}` : '';
     }
 
     // Select appropriate model based on image context
-    const modelToUse = shouldUseVisionModel ? 'gpt-4o' : 'gpt-4o-mini';
-    console.log(`🤖 Using ${modelToUse} model${shouldUseVisionModel ? ' with vision' : ''}`);
+    // If we have profile pic review context, we don't need vision model
+    const hasProfilePicReview = userMessage.imageContext?.profilePicReview;
+    const shouldUseVision = shouldUseVisionModel && !hasProfilePicReview;
+    const modelToUse = shouldUseVision ? 'gpt-4o' : 'gpt-4o-mini';
+    
+    console.log(`🤖 Using ${modelToUse} model${shouldUseVision ? ' with vision' : ''}${hasProfilePicReview ? ' (profile pic review context available)' : ''}`);
     
     const completion = await openai.chat.completions.create({
       model: modelToUse,
