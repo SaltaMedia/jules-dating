@@ -122,10 +122,9 @@ body {
   /* Messages area improvements */
   .messages-area {
     padding-top: 120px !important; /* Increased to ensure first message is visible */
-    padding-bottom: 180px !important; /* Increased to account for input area + navigation */
+    padding-bottom: 110px !important; /* Adjusted for new input positioning */
     -webkit-overflow-scrolling: touch;
-    min-height: calc(100vh - 300px); /* Increased to ensure proper content height */
-    margin-bottom: 80px; /* Additional margin to prevent overlap */
+    min-height: calc(100vh - 230px); /* Adjusted for new layout */
   }
   
   /* Fix message bubble text visibility */
@@ -145,22 +144,18 @@ body {
   /* Fix input area positioning */
   .input-area {
     padding-bottom: env(safe-area-inset-bottom, 16px);
-    margin-bottom: 80px; /* Increased to account for bottom navigation height */
-    position: fixed !important;
-    bottom: 80px !important; /* Position above bottom navigation */
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 45 !important;
+    padding-top: 12px; /* Add padding above the input for better centering */
+    padding-bottom: 12px; /* Add padding below the input for better centering */
   }
   
   /* Additional mobile-specific improvements */
   .mobile-nav-item {
-    min-height: 60px;
+    min-height: 48px; /* Reduced from 60px */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px 4px;
+    padding: 4px 2px 8px 2px; /* Add bottom padding to lift icons from bottom edge */
   }
   
   /* Ensure bottom navigation doesn't overlap content */
@@ -170,7 +165,9 @@ body {
     left: 0 !important;
     right: 0 !important;
     z-index: 50 !important;
-    height: 64px !important; /* Fixed height for navigation */
+    height: 56px !important; /* Increased slightly to accommodate bottom padding */
+    padding-bottom: 8px; /* Add padding to lift content from bottom edge */
+    touch-action: manipulation; /* Ensure touch events work properly */
   }
   
   /* Ensure text areas are properly sized */
@@ -191,7 +188,7 @@ body {
       padding-left: 8px !important;
       padding-right: 8px !important;
       padding-top: 140px !important; /* Extra padding for small screens to prevent header overlap */
-      padding-bottom: 200px !important; /* Extra padding for small screens */
+      padding-bottom: 130px !important; /* Adjusted for new layout */
     }
     
     .sticky-header {
@@ -202,7 +199,7 @@ body {
     .input-area {
       padding-left: 8px !important;
       padding-right: 8px !important;
-      bottom: 70px !important; /* Adjust for smaller screens */
+      bottom: 56px !important; /* Adjust for new bottom navigation height */
     }
   }
   

@@ -492,7 +492,7 @@ function AnonymousChatPageContent() {
       )}
 
       {/* Sticky Input */}
-      <div className="bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
         <div className="max-w-4xl mx-auto">
           
           <div className="flex space-x-3 sm:space-x-4">

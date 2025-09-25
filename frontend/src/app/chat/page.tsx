@@ -1074,7 +1074,7 @@ function ChatPageContent() {
       </div>
 
       {/* Sticky Input */}
-      <div className="bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
+      <div className="fixed bottom-14 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
         <div className="max-w-4xl mx-auto">
           {queuedMessage && (
             <div className="mb-2 p-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-blue-200 text-sm">
