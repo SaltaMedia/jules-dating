@@ -114,19 +114,19 @@ body {
   
   /* Fix chat container layout */
   .chat-container {
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   
   /* Messages area improvements */
   .messages-area {
-    padding-top: 120px !important; /* Increased to ensure first message is visible */
-    padding-bottom: 250px !important; /* CRITICAL: Much more space to ensure last message is fully visible above input field */
+    padding-top: 80px !important; /* Reduced to match inline style */
+    padding-bottom: 80px !important; /* Reduced to match inline style */
     -webkit-overflow-scrolling: touch;
-    min-height: calc(100vh - 370px); /* Adjusted for new layout */
+    flex: 1;
+    overflow-y: auto;
     margin-bottom: 0 !important; /* Remove any conflicting margins */
-    background-color: rgba(255, 0, 0, 0.1) !important; /* TEMPORARY: Red tint to verify CSS is loading */
   }
   
   /* Fix message bubble text visibility */
@@ -146,8 +146,6 @@ body {
   /* Fix input area positioning */
   .input-area {
     padding-bottom: env(safe-area-inset-bottom, 16px);
-    padding-top: 12px; /* Add padding above the input for better centering */
-    padding-bottom: 12px; /* Add padding below the input for better centering */
   }
   
   /* Additional mobile-specific improvements */

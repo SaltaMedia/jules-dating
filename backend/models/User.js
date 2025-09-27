@@ -60,13 +60,13 @@ const userSchema = new mongoose.Schema({
     // Lifestyle & Context
     weeklyEnvironment: {
       type: String,
-      enum: ['Office', 'Outdoors', 'Home', 'Nightlife', 'Gym', 'Travel', 'Remote'],
+      enum: ['Office', 'Outdoors', 'Home', 'Nightlife', 'Gym', 'Travel', 'Remote', 'Other'],
       default: 'Office'
     },
     topActivities: [String],
     socialEventFrequency: {
       type: String,
-      enum: ['Never', 'Occasionally', 'Weekly', 'Multiple times a week', 'Out on weekends'],
+      enum: ['Never', 'Occasionally', 'Weekly', 'Multiple times a week', 'Out on weekends', 'Chill'],
       default: 'Occasionally'
     },
     worksOut: {

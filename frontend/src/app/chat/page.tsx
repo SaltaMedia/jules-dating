@@ -812,7 +812,7 @@ function ChatPageContent() {
       )}
 
       {/* Sticky Header */}
-      <div className="sticky top-0 z-40 bg-white/10 backdrop-blur-sm border-b border-white/20 p-3 sm:p-4 sticky-header">
+      <div className="sticky top-0 z-40 bg-white/10 backdrop-blur-sm border-b border-white/20 p-3 sm:p-4 sticky-header flex-shrink-0">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <img
@@ -847,8 +847,8 @@ function ChatPageContent() {
       <div 
         className="flex-1 messages-area overflow-y-auto"
         style={{
-          paddingTop: '120px',
-          paddingBottom: '100px'
+          paddingTop: '80px',
+          paddingBottom: '120px'
         }}
       >
         <div className="max-w-4xl mx-auto space-y-4 p-4">
@@ -1080,7 +1080,7 @@ function ChatPageContent() {
       </div>
 
       {/* Sticky Input */}
-      <div className="fixed bottom-14 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area">
+      <div className="sticky bottom-16 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           {queuedMessage && (
             <div className="mb-2 p-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-blue-200 text-sm">

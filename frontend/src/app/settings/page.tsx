@@ -183,7 +183,7 @@ export default function SettingsPage() {
 
   // Load chat sessions when Chat History tab is selected
   useEffect(() => {
-    if (currentSection === sections.length - 1) { // Chat History is the last tab
+    if (currentSection === 3) { // Chat History is at index 3
       loadChatSessions();
     }
   }, [currentSection, searchQuery]);
@@ -500,7 +500,7 @@ export default function SettingsPage() {
     
     // Handle new custom sections
     if (sectionName === 'Profile Basics') {
-      return data.name.trim() !== '' && data.age.trim() !== '' && data.zipCode.trim() !== '';
+      return data.name.trim() !== '' && data.email.trim() !== '' && data.age.trim() !== '' && data.zipCode.trim() !== '';
     }
     
     if (sectionName === 'Style') {
@@ -1063,6 +1063,20 @@ export default function SettingsPage() {
                   value={data.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter your first name or nickname"
+                  className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white placeholder-gray-300 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={data.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="Enter your email address"
                   className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white placeholder-gray-300 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
