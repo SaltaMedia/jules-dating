@@ -80,15 +80,11 @@ const register = asyncHandler(async (req, res) => {
     throw new ConflictError('User already exists with this email');
   }
 
-  // Hash password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  // Create new user
+  // Create new user (password will be hashed by User model pre-save hook)
   const user = new User({
     name,
     email,
-    password: hashedPassword,
+    password,
     onboarding: {
       completed: false,
       name: name,
@@ -170,8 +166,16 @@ const login = asyncHandler(async (req, res) => {
 
     // Check if user has a password (OAuth users can also set passwords)
     console.log('🔍 Login attempt - User has password:', !!user.password);
-    if (!user.password) {
+    console.log('🔍 Login attempt - User has Google ID:', !!user.googleId);
+    
+    // If user has no password AND has a Google ID, they're OAuth-only
+    if (!user.password && user.googleId) {
       throw new AuthenticationError('This account was created with Google. Please use the "Continue with Google" button to sign in.');
+    }
+    
+    // If user has no password and no Google ID, something is wrong
+    if (!user.password && !user.googleId) {
+      throw new AuthenticationError('Account configuration error. Please contact support.');
     }
 
     // Check password

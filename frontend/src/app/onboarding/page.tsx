@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { track } from '@/analytics/client';
+import BottomNavigation from '@/components/BottomNavigation';
 
 export default function OnboardingPage() {
   const [isVisible, setIsVisible] = useState(true);
@@ -24,8 +25,8 @@ export default function OnboardingPage() {
       category: 'onboarding',
       action: 'modal_closed_with_x'
     });
-    // Redirect to main page after closing
-    router.push('/');
+    // Redirect to chat page after closing
+    router.push('/chat');
   };
 
   const handleOptionClick = (option: string) => {
@@ -146,6 +147,9 @@ export default function OnboardingPage() {
           </p>
         </div>
       </div>
+      
+      {/* Footer Navigation */}
+      <BottomNavigation />
     </div>
   );
 }

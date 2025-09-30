@@ -224,12 +224,7 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     // Use environment variable for API URL - with fallback for development
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:4002' : undefined);
-    
-    // Validate API URL in production
-    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_API_URL) {
-      throw new Error('NEXT_PUBLIC_API_URL environment variable is required in production');
-    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:4002' : 'https://jules-dating.onrender.com');
     
     return [
       {

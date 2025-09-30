@@ -117,16 +117,16 @@ export default function RegisterPage() {
           // Clear pending fit check
           localStorage.removeItem('pendingFitCheck');
           
-          // Redirect to onboarding experience (fit check is now saved in their account)
-          router.push('/onboarding-experience');
+          // Redirect to onboarding (fit check is now saved in their account)
+          router.push('/onboarding');
         } catch (fitCheckError) {
           console.error('Failed to save fit check:', fitCheckError);
-          // Still redirect to onboarding experience, but the fit check won't be saved
-          router.push('/onboarding-experience');
+          // Still redirect to onboarding, but the fit check won't be saved
+          router.push('/onboarding');
         }
         } else {
-          // No pending fit check, redirect to onboarding experience
-          router.push('/onboarding-experience');
+          // No pending fit check, redirect to onboarding
+          router.push('/onboarding');
         }
     } catch (error: any) {
       console.error('Registration error:', error.response?.data);
@@ -150,7 +150,7 @@ export default function RegisterPage() {
 
   const handleGoogleLogin = () => {
     // Use environment-specific API URL - ensure production URL is used in production
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:4002' : 'https://jules-sr66.onrender.com');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:4002' : 'https://jules-dating.onrender.com');
     console.log('🔧 OAuth Redirect:', `${apiUrl}/api/auth/google`);
     window.location.href = `${apiUrl}/api/auth/google`;
   };

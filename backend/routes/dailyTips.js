@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const analyticsService = require('../utils/analyticsService');
 const { 
   getTodaysTip, 
   markTipAsRead, 
@@ -16,6 +17,19 @@ router.get('/today', auth, async (req, res) => {
     if (!tip) {
       return res.status(404).json({ error: 'No tip available for today' });
     }
+    
+    // Track analytics
+    analyticsService.trackEvent({
+      userId: req.user.userId,
+      sessionId: req.sessionId || 'authenticated',
+      eventType: 'feature_usage',
+      category: 'tips',
+      action: 'daily_tip_viewed',
+      properties: {
+        tipId: tip._id,
+        tipCategory: tip.category
+      }
+    });
     
     res.json({ tip });
   } catch (error) {

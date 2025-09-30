@@ -63,6 +63,22 @@ interface DashboardMetrics {
     averageRating: number;
   };
   
+  // Profile Pic Review Analytics
+  profilePicReviewAnalytics: {
+    profilePicReviewVisits: number;
+    profilePicReviewCompletions: number;
+    profilePicReviewsSaved: number;
+    completionRate: string;
+    averageRating: string;
+  };
+  
+  // Tips Analytics
+  tipsAnalytics: {
+    tipPageViews: number;
+    tipsRead: number;
+    engagementRate: string;
+  };
+  
   // Closet Analytics
   closetAnalytics: {
     usersWithItems: Array<{ itemCount: number; userCount: number }>;
@@ -389,6 +405,8 @@ const AnalyticsDashboard = () => {
           <TabsTrigger value="onboarding" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Onboarding</TabsTrigger>
           <TabsTrigger value="chat" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Chat Analytics</TabsTrigger>
           <TabsTrigger value="fit-check" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Fit Check</TabsTrigger>
+          <TabsTrigger value="profile-pic-review" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Profile Pic Reviews</TabsTrigger>
+          <TabsTrigger value="tips" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Tips</TabsTrigger>
           <TabsTrigger value="closet" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Closet</TabsTrigger>
           <TabsTrigger value="users" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Users</TabsTrigger>
           <TabsTrigger value="errors" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm">Errors</TabsTrigger>
@@ -660,6 +678,64 @@ const AnalyticsDashboard = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Average Jules Rating</span>
                   <span className="font-semibold text-gray-900">{metrics?.fitCheckAnalytics?.averageRating?.toFixed(1) || '0.0'}/5.0</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Profile Pic Review Tab */}
+        <TabsContent value="profile-pic-review" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-white border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-gray-900">Profile Pic Review Analytics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Profile Pic Reviews</span>
+                  <span className="font-semibold text-gray-900">{formatNumber(metrics?.profilePicReviewAnalytics?.profilePicReviewVisits)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Completions</span>
+                  <span className="font-semibold text-gray-900">{formatNumber(metrics?.profilePicReviewAnalytics?.profilePicReviewCompletions)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Reviews Saved</span>
+                  <span className="font-semibold text-gray-900">{formatNumber(metrics?.profilePicReviewAnalytics?.profilePicReviewsSaved)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Completion Rate</span>
+                  <span className="font-semibold text-gray-900">{metrics?.profilePicReviewAnalytics?.completionRate || '0%'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Average Jules Rating</span>
+                  <span className="font-semibold text-gray-900">{metrics?.profilePicReviewAnalytics?.averageRating || '0.0'}/5.0</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Tips Tab */}
+        <TabsContent value="tips" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-white border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-gray-900">Daily Tips Analytics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Tip Page Views</span>
+                  <span className="font-semibold text-gray-900">{formatNumber(metrics?.tipsAnalytics?.tipPageViews)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Tips Read</span>
+                  <span className="font-semibold text-gray-900">{formatNumber(metrics?.tipsAnalytics?.tipsRead)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Engagement Rate</span>
+                  <span className="font-semibold text-gray-900">{metrics?.tipsAnalytics?.engagementRate || '0%'}</span>
                 </div>
               </CardContent>
             </Card>

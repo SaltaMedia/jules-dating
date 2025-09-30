@@ -53,7 +53,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [pathname]);
   
-  // Hide bottom navigation on login, onboarding, home page, auth pages, forgot password, reset password, landing-new, admin pages, and free experience pages
+  // Hide bottom navigation on login, onboarding, home page, auth pages, forgot password, reset password, landing-new, admin pages, and free experience pages (except chat)
   const hideBottomNav = isClient && (pathname === '/login' || 
                        pathname === '/onboarding' || 
                        pathname === '/' ||
@@ -64,7 +64,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
                        pathname?.startsWith('/auth/') ||
                        pathname?.startsWith('/admin/') ||
                        pathname === '/free-experience' ||
-                       pathname?.startsWith('/free-experience/'));
+                       (pathname?.startsWith('/free-experience/') && pathname !== '/free-experience/chat'));
 
 
   

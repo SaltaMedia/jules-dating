@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Forward the request to the backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-sr66.onrender.com';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
     const response = await fetch(`${backendUrl}/api/auth/login`, {
       method: 'POST',
       headers: {

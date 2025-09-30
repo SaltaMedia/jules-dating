@@ -659,6 +659,12 @@ class AnalyticsService {
     // Calculate fit check analytics
     const fitCheckAnalytics = this.calculateFitCheckAnalytics(eventsByType);
     
+    // Calculate profile pic review analytics
+    const profilePicReviewAnalytics = this.calculateProfilePicReviewAnalytics(eventsByType);
+    
+    // Calculate tips analytics
+    const tipsAnalytics = this.calculateTipsAnalytics(eventsByType);
+    
     // Calculate closet analytics
     const closetAnalytics = this.calculateClosetAnalytics(eventsByType);
     
@@ -712,6 +718,12 @@ class AnalyticsService {
       
       // Fit Check Analytics
       fitCheckAnalytics,
+      
+      // Profile Pic Review Analytics
+      profilePicReviewAnalytics,
+      
+      // Tips Analytics
+      tipsAnalytics,
       
       // Closet Analytics
       closetAnalytics,
@@ -885,6 +897,49 @@ class AnalyticsService {
     };
   }
 
+  // Calculate profile pic review analytics
+  calculateProfilePicReviewAnalytics(eventsByType) {
+    const profilePicReviews = [
+      ...(eventsByType['profile_pic_review_submitted'] || []),
+      ...(eventsByType['anonymous_profile_pic_review_submitted'] || [])
+    ];
+    
+    const profilePicReviewsSaved = eventsByType['profile_pic_review_saved'] || [];
+    
+    // Calculate average rating from reviews
+    let totalRating = 0;
+    let ratingCount = 0;
+    
+    profilePicReviews.forEach(review => {
+      if (review.properties && review.properties.rating) {
+        totalRating += review.properties.rating;
+        ratingCount++;
+      }
+    });
+    
+    const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : 0;
+    
+    return {
+      profilePicReviewVisits: profilePicReviews.length,
+      profilePicReviewCompletions: profilePicReviews.length,
+      profilePicReviewsSaved: profilePicReviewsSaved.length,
+      completionRate: profilePicReviews.length > 0 ? '100%' : '0%',
+      averageRating: averageRating
+    };
+  }
+
+  // Calculate tips analytics
+  calculateTipsAnalytics(eventsByType) {
+    const tipViews = eventsByType['daily_tip_viewed'] || [];
+    const tipReads = eventsByType['daily_tip_read'] || [];
+    
+    return {
+      tipPageViews: tipViews.length,
+      tipsRead: tipReads.length,
+      engagementRate: tipViews.length > 0 ? `${((tipReads.length / tipViews.length) * 100).toFixed(1)}%` : '0%'
+    };
+  }
+
   // Calculate closet analytics
   calculateClosetAnalytics(eventsByType) {
     const closetItems = eventsByType['closet_item_added'] || [];
@@ -965,9 +1020,18 @@ class AnalyticsService {
 
   // Calculate top features
   calculateTopFeatures(eventsByType) {
+    const profilePicReviewEvents = [
+      ...(eventsByType['profile_pic_review_submitted'] || []),
+      ...(eventsByType['anonymous_profile_pic_review_submitted'] || [])
+    ];
+    
+    const tipEvents = eventsByType['daily_tip_viewed'] || [];
+    
     const features = [
       { feature: 'Chat', count: (eventsByType['chat_message_sent'] || []).length, uniqueUsers: new Set((eventsByType['chat_message_sent'] || []).map(e => e.user_id)).size },
       { feature: 'Fit Check', count: (eventsByType['fit_check_uploaded'] || []).length, uniqueUsers: new Set((eventsByType['fit_check_uploaded'] || []).map(e => e.user_id)).size },
+      { feature: 'Profile Pic Review', count: profilePicReviewEvents.length, uniqueUsers: new Set(profilePicReviewEvents.map(e => e.user_id)).size },
+      { feature: 'Daily Tips', count: tipEvents.length, uniqueUsers: new Set(tipEvents.map(e => e.user_id)).size },
       { feature: 'Closet', count: (eventsByType['closet_item_added'] || []).length, uniqueUsers: new Set((eventsByType['closet_item_added'] || []).map(e => e.user_id)).size },
       { feature: 'Wishlist', count: (eventsByType['wishlist_item_added'] || []).length, uniqueUsers: new Set((eventsByType['wishlist_item_added'] || []).map(e => e.user_id)).size }
     ];

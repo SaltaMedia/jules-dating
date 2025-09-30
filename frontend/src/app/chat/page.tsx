@@ -7,6 +7,7 @@ import ProductGrid from '../../components/ProductGrid';
 import ImageGrid from '../../components/ImageGrid';
 import { apiClient } from '../../lib/api';
 import { track } from '@/analytics/client';
+import { captureImageMobile, openFilePicker } from '../../lib/cameraUtils';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +20,7 @@ interface Message {
   hasMore?: boolean;
   totalFound?: number;
   userImage?: string; // Base64 encoded image from user upload
+  imageContext?: string; // Context information about uploaded images
 }
 
 interface Product {
@@ -810,7 +812,7 @@ function ChatPageContent() {
       )}
 
       {/* Sticky Header */}
-      <div className="sticky top-0 z-40 bg-white/10 backdrop-blur-sm border-b border-white/20 p-3 sm:p-4 sticky-header">
+      <div className="sticky top-0 z-40 bg-white/10 backdrop-blur-sm border-b border-white/20 p-3 sm:p-4 sticky-header flex-shrink-0">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <img
@@ -842,8 +844,14 @@ function ChatPageContent() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 messages-area overflow-y-auto p-4 pb-32 pt-24 sm:pt-20">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <div 
+        className="flex-1 messages-area overflow-y-auto"
+        style={{
+          paddingTop: '80px',
+          paddingBottom: '120px'
+        }}
+      >
+        <div className="max-w-4xl mx-auto space-y-4 p-4">
           {messages.length === 0 && (
             <div className="text-center text-gray-300 pt-4 pb-8 px-4">
               {/* New Welcome Message with Two-Line Heading */}
@@ -860,13 +868,12 @@ function ChatPageContent() {
                     "What's a smooth way to ask her out again?",
                     "Help me plan a date outfit"
                   ].map((suggestion, index) => (
-                    <button
+                    <div
                       key={index}
-                      onClick={() => setInput(suggestion)}
-                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 text-sm sm:text-base"
+                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm sm:text-base"
                     >
                       {suggestion}
-                    </button>
+                    </div>
                   ))}
                 </div>
                 
@@ -897,15 +904,13 @@ function ChatPageContent() {
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-4 ${
+                className={`max-w-[80%] rounded-lg p-4 message-bubble ${
                   message.role === 'user'
                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                     : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
                 }`}
               >
-                <div 
-                  className="text-white leading-relaxed"
-                >
+                <div className="text-white leading-tight">
                   {/* Show user uploaded image if present */}
                   {message.userImage && (
                     <div className="mb-3">
@@ -917,10 +922,6 @@ function ChatPageContent() {
                     </div>
                   )}
                   
-                  {/* Debug: Show raw content */}
-                  <div style={{display: 'none'}}>
-                    Raw content: {JSON.stringify(message.content)}
-                  </div>
                   
                   <ReactMarkdown
                     components={{
@@ -994,14 +995,14 @@ function ChatPageContent() {
                         const isWhyILove = content.includes('Why I love these:');
                         const isEmptyOrWhitespace = content.trim() === '';
                         
-                        // Add more spacing for product lines and their descriptions
-                        let spacingClass = 'mb-3';
+                        // Add tighter spacing for better message density
+                        let spacingClass = 'mb-1';
                         if (isProductLine) {
-                          spacingClass = 'mb-12'; // Much more space after product lines
+                          spacingClass = 'mb-6'; // Reduced space after product lines
                         } else if (isWhyILove) {
-                          spacingClass = 'mb-8'; // More space after descriptions
+                          spacingClass = 'mb-4'; // Reduced space after descriptions
                         } else if (isEmptyOrWhitespace) {
-                          spacingClass = 'mb-6'; // More space for empty lines
+                          spacingClass = 'mb-3'; // Reduced space for empty lines
                         }
                         
                         return <p {...props} className={spacingClass} />;
@@ -1020,7 +1021,7 @@ function ChatPageContent() {
                       title="Recommended Products"
                       subtitle="Here are some products that match your style"
                       onAddToWishlist={handleAddToWishlist}
-                      showWishlistButton={true}
+                      showWishlistButton={false}
                       hasMore={false}
                       totalFound={message.products?.length || 0}
                     />
@@ -1035,7 +1036,7 @@ function ChatPageContent() {
                       <ImageGrid 
                         images={message.images}
                         onAddToWishlist={handleAddImageToWishlist}
-                        showWishlistButton={true}
+                        showWishlistButton={false}
                       />
                     </div>
                   );
@@ -1079,7 +1080,7 @@ function ChatPageContent() {
       </div>
 
       {/* Sticky Input */}
-      <div className="fixed bottom-16 left-0 right-0 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4">
+      <div className="sticky bottom-16 z-40 bg-white/10 backdrop-blur-sm border-t border-white/20 p-3 sm:p-4 input-area flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           {queuedMessage && (
             <div className="mb-2 p-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-blue-200 text-sm">
@@ -1118,7 +1119,6 @@ function ChatPageContent() {
             {/* Photo Upload Button */}
             <button
               onClick={() => {
-                console.log('+ Button clicked - opening file dialog');
                 fileInputRef.current?.click();
               }}
               className="bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg p-2 sm:p-3 hover:bg-white/30 transition-all duration-200 flex items-center justify-center text-white"

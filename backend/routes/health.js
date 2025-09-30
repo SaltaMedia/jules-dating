@@ -18,7 +18,7 @@ router.get('/healthz', asyncHandler(async (req, res) => {
   
   res.status(statusCode).json({
     status: isHealthy ? 'ok' : 'error',
-    service: 'jules-style-backend',
+    service: 'jules-dating-backend',
     timestamp: new Date().toISOString()
   });
 }));
@@ -41,7 +41,7 @@ router.get('/metrics', asyncHandler(async (req, res) => {
 // System information
 router.get('/info', asyncHandler(async (req, res) => {
   const info = {
-    service: 'jules-style-backend',
+    service: 'jules-dating-backend',
     version: '1.0.0',
     environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString(),

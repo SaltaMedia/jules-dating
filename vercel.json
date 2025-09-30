@@ -1,0 +1,95 @@
+{
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/.next",
+  "installCommand": "cd frontend && npm install",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin/$1"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "GET"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "POST"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "PUT"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://jules-dating.onrender.com/api/$1",
+      "has": [
+        {
+          "type": "method",
+          "value": "DELETE"
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        }
+      ]
+    }
+  ]
+}

@@ -117,39 +117,36 @@ const sendWelcomeEmail = async (email, name) => {
     const mailOptions = {
       from: `"Jules" <${process.env.GMAIL_USER}>`,
       to: email,
-      subject: 'Welcome to the Jules Beta 🎉',
+      subject: 'Welcome to Jules Beta!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #333; padding: 30px; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px;">Jules</h1>
-            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Wear Who You Are</p>
+            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Welcome to Jules Beta!</p>
           </div>
           
           <div style="padding: 30px; background: #f8f9fa;">
-            <h2 style="color: #333; margin-bottom: 20px;">You're in!</h2>
-            
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
-              Fast answers. Upload a fit, describe what you're wearing, or ask for ideas. You'll get clear guidance in seconds.
+              Hey ${name || 'there'},
             </p>
             
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
-              Work in progress. This is a beta, so expect a few rough edges. That's the point...you get to shape how she evolves.
+              Thanks for being part of Jules beta. This is an early build, and your feedback is a big part of how we make it better.
             </p>
             
-            <h3 style="color: #333; margin-bottom: 15px;">How to start:</h3>
+            <h3 style="color: #333; margin-bottom: 15px;">What you'll get:</h3>
             <ul style="color: #666; line-height: 1.6; margin-bottom: 25px; padding-left: 20px;">
-              <li>Head to <a href="https://app.juleslabs.com" style="color: #667eea;">app.juleslabs.com</a></li>
-              <li>Upload or describe an outfit</li>
-              <li>Try out Fit Checks, Closet, and Chat</li>
+              <li>Honest feedback on your pics, fits, and texts</li>
+              <li>A chance to see how Jules can help you stand out in dating</li>
+              <li>Occasional updates from me as we improve the experience</li>
             </ul>
             
-            <h3 style="color: #333; margin-bottom: 15px;">Feedback matters.</h3>
-            <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
-              We don't care about polite nods—we need real, blunt feedback. Did Jules help? Did she miss? Tell us so we can make her better. Feel free to email directly.
+            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+              I'll send you a follow-up email soon with a quick way to share your thoughts. In the meantime, dive in and see what Jules can do.
             </p>
             
-            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
-              You'll also get occasional updates from us as the product improves and a survey asking for feedback.
+            <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
+              Appreciate you being here,
             </p>
             
             <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
@@ -179,7 +176,90 @@ const sendWelcomeEmail = async (email, name) => {
   }
 };
 
+// Send follow-up feedback email (4 days after signup)
+const sendFollowUpEmail = async (email, name) => {
+  try {
+    const transporter = createTransporter();
+    
+    if (!transporter) {
+      logError('Email transporter not available');
+      return false;
+    }
+
+    const mailOptions = {
+      from: `"Jules" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: 'Help me make Jules better (takes 2 mins)',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #333; padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Jules</h1>
+            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Dating Beta</p>
+          </div>
+          
+          <div style="padding: 30px; background: #f8f9fa;">
+            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+              Hey ${name || 'there'},
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+              You've had a little time with the Jules Dating beta. Now I'd love your feedback—it'll directly shape what we build next.
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+              Here's the short form (2 minutes tops):
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://docs.google.com/forms/d/1ZCeLJgyvD40i42igJMOUxpO9BMX3NYrR_VNn4We_07c/edit" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; 
+                        padding: 15px 30px; 
+                        text-decoration: none; 
+                        border-radius: 8px; 
+                        font-weight: bold; 
+                        display: inline-block;">
+                👉 Give Feedback Here
+              </a>
+            </div>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+              We're keeping this early, scrappy, and honest. Your input means a lot - good, bad, great, or brutal.
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
+              Thanks for helping us build something that actually makes life a little bit better.
+            </p>
+            
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+              <p style="color: #333; margin: 0; font-size: 14px;">
+                Steve<br>
+                Founder, Jules Labs
+              </p>
+            </div>
+          </div>
+          
+          <div style="background: #333; padding: 20px; text-align: center;">
+            <p style="color: #999; margin: 0; font-size: 14px;">
+              © 2025 Jules Labs, LLC. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    logInfo(`Follow-up email sent to ${email}: ${info.messageId}`);
+    return true;
+    
+  } catch (error) {
+    logError(`Failed to send follow-up email to ${email}:`, error);
+    return false;
+  }
+};
+
 module.exports = {
   sendPasswordResetEmail,
-  sendWelcomeEmail
+  sendWelcomeEmail,
+  sendFollowUpEmail
 };

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Forward the request to the backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-sr66.onrender.com';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
     const response = await fetch(`${backendUrl}/api/auth/me`, {
       method: 'GET',
       headers: {

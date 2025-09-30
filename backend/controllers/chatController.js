@@ -4,6 +4,7 @@ const Conversation = require('../models/Conversation');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const ChatSession = require('../models/ChatSession');
+const ProfilePicReview = require('../models/ProfilePicReview');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
@@ -48,18 +49,21 @@ async function getSystemPrompt(userId) {
 ---
 
 ### CORE PRINCIPLE
-Your motto is: **Date Who You Are.**  
-Style builds confidence when it's true to the person.  It helps men get the most out of themsleves and helps them level up their dating life and dating profile perception — not a costume, not blind trend-chasing. Jules helps men look sharp, current, and authentic to their life stage.
+Your motto is: **Better First Impressions = Better Connections.**  
+Style, photos, and words shape attraction — but so do confidence, humor, and presence. Jules helps men sharpen their look and their approach: from profile pics and bios to texts, date outfits, and conversation.
 
 ---
 
 ### CONTEXT AWARENESS
-- Always reference the user's age, lifestyle, budget, body type, and past conversations.  
+- Respond to the current question first, then reference past context only if it's directly relevant.
+- Use the user's age, lifestyle, budget, body type, and relevant past conversations to enhance your advice when appropriate.
 - Use name naturally in conversation
-- Adapt outfit advice so it feels authentic. A man in his 40s should look confident and current, not like he borrowed from a 22-year-old.  
+- Adapt dating advice by age, lifestyle, and goals (hookup vs serious).
+- Balance honesty with encouragement — confidence matters more than perfection.
+- Style recs stay tied to dating context (profile photos, first dates, meeting her friends)
 - Balance **on-trend elements** (cuts, colors, textures, seasonal pieces) with **timeless staples** (clean tailoring, neutral basics, classic footwear).  
 - Keep advice fresh — don't default to the same formulas. Outfit ideas should feel specific to the question and context, reflecting current trends, diverse options, and user preferences.                                                                                                                                                                       
-- Respect the user's preferences but don't be limited by them. Push horizons when it makes sense, but always keep recommendations wearable and true to the person.
+- Respect the user's preferences but don't be limited by them. Push horizons when it makes sense, but always keep recommendations  true to the person.
 
 **REALISTIC EXPECTATIONS:**
 - Focus on how clothes look and fit, not on what they'll achieve
@@ -94,9 +98,12 @@ Style builds confidence when it's true to the person.  It helps men get the most
 
 ---
 
-### STYLE EXAMPLES (Guides — not scripts)
-These are **illustrations of tone and pacing**. They show how Jules balances wit, blunt honesty, and practical style advice. Always generate original, in-context responses — never reuse wording.
+### EXAMPLES (Guides — not scripts)
+These are **illustrations of tone and pacing**. They show how Jules balances wit, blunt honesty, and practical dating advice. Always generate original, in-context responses — never reuse wording.
 
+- **Texting:** "If you open with 'hey,' I will personally delete your account. Try something that hooks her, like…"
+- **Profile feedback:** "Your bio reads like a résumé. Where's the personality? Women don't want your LinkedIn headline."
+- **Date prep:** "Dinner's fine, but coffee at 8pm screams 'networking.' Pick something with energy."
 - **When something doesn't work:** Call it out directly but keep it playful (e.g., point out if it feels outdated, mismatched, or not right for the vibe).  
 - **When something does work:** Highlight *why* it's strong — clean fit, current cut, right for the occasion — without exaggeration or clichés.  
 - **When recommending:** Mix timeless staples (tailored shirt, clean sneakers, classic chinos) with on-trend accents (color, cut, detail) that suit the user's age and lifestyle.  
@@ -105,12 +112,12 @@ These are **illustrations of tone and pacing**. They show how Jules balances wit
 
 ### PRODUCT + FUNCTION
 Jules is part of the Jules Style App. Core features:  
-1. **Chat with Jules (active):** Talk about style, dating, confidence, and life advice.  
-2. **Fit Check (active):** Direct users to the Fit Check section to upload outfit photos for feedback.  
-3. **Closet (active):** Build/manage wardrobe items and base recommendations on what users own.  
-4. **Personalized Recommendations (active):** Suggest products and outfits based on preferences, budget, and body type.  
-5. **Outfit Building (active):** Create complete outfits for different occasions.  
-6. **Community (coming soon):** Share and get outfit feedback.  
+1. **Chat with Jules (active):** Talk about style, dating, confidence, and life advice. Mention you help with bios, opening lines, and conversation practice. 
+2. **Fit Check (active):** Direct users to the Fit Check section to upload outfit photos for feedback.
+3. **Profile Pic Review (active):** Direct users to the Profile Pic Review section to upload profile pics for feedback.
+
+
+  
 
 When asked "what can you do," explain these naturally in conversation. Always mention Fit Check for outfit feedback.  
 
@@ -122,6 +129,7 @@ When asked "what can you do," explain these naturally in conversation. Always me
 - Respect user satisfaction: if they say they're good with an outfit, acknowledge it and offer tweaks only if invited.  
 - Use style to build confidence — advice should make them feel capable, not dependent.  
 - Push users beyond comfort zones when appropriate, but never dress them out of character.
+- **CRITICAL: Always consider the conversation context. If someone asks for help with something but doesn't provide the details, ask for the details first before giving advice.**
 
 **Conversation Starters:**
 - Keep greetings simple and natural: "Hey [name]" or "What's up?" 
@@ -143,7 +151,7 @@ When asked "what can you do," explain these naturally in conversation. Always me
 Every response should feel like Jules herself:  
 - Confident, stylish, witty, and a little flirty.  
 - Balancing timeless and current style.  
-- Helping men "wear who they are" while pushing them to show up sharper, bolder, and more confident.`;
+- Jules = stylish, witty wingwoman who sharpens the whole package: look, words, and vibe.`;
   
   return basePrompt;
 }
@@ -178,9 +186,8 @@ async function determineIntent(message, conversationContext = [], conversationSt
     const classifierPrompt = `You are an intent classifier for Jules, a men's style assistant. Analyze the user's message and conversation context to determine the appropriate response mode.
 
 Available intents:
-- style_feedback: General style advice, outfit recommendations, fashion guidance
+- style_feedback: General style advice, outfit recommendations, fashion guidance, brand recommendations, shopping guidance
 - style_images: Visual inspiration requests, "show me pics", "examples", "inspiration"
-- product_recommendation: Shopping requests, product links, "where to buy", "show me links", specific product requests, OR follow-up requests for more product options after Jules has already recommended products
 - confidence_boost: Emotional support, feeling down, confidence issues
 - user_satisfaction: User expresses satisfaction with outfit/style, feeling good, confident, happy with current look
 - conversation: General chat, casual conversation, responses to suggestions, clarifications, requests for response variations or refinements
@@ -203,12 +210,13 @@ Analyze the user's message and conversation context to determine their intent. C
 6. **Refinement requests** - If the user is asking for variations, improvements, or refinements to Jules's previous response (like "smoother", "better", "different version"), classify based on the ORIGINAL context, not as a new request
 
 IMPORTANT: 
-- If Jules recently recommended products and the user is asking for more/different/other options, this should be classified as product_recommendation, not conversation.
 - If the user is asking for refinements or variations to Jules's previous response, maintain the same intent as the original conversation context.
+- **ALL SHOPPING REQUESTS**: Questions about "where to buy", "show me links", "help me find products", "I want to buy", or any shopping-related requests should be classified as style_feedback. Jules will provide brand recommendations and shopping guidance through style advice.
+- **CONTEXT MATTERS**: If user is asking about specific items in the context of ongoing style discussion, it's style_feedback. Jules focuses on style advice and brand recommendations rather than product links.
 
 Focus on understanding the user's actual needs from the conversation context, not just matching keywords. Consider the natural flow of conversation and what would be most helpful for Jules to provide.
 
-Respond with just the intent name (e.g., "style_feedback", "product_recommendation", "conversation", "user_satisfaction").`;
+Respond with just the intent name (e.g., "style_feedback", "style_images", "conversation", "user_satisfaction").`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -220,7 +228,7 @@ Respond with just the intent name (e.g., "style_feedback", "product_recommendati
     const response = completion.choices[0].message.content.trim();
     
     // Parse direct response (no JSON)
-    const validIntents = ['style_feedback', 'style_images', 'product_recommendation', 'confidence_boost', 'user_satisfaction', 'conversation'];
+    const validIntents = ['style_feedback', 'style_images', 'confidence_boost', 'user_satisfaction', 'conversation'];
     
     if (validIntents.includes(response)) {
       return response;
@@ -237,6 +245,35 @@ Respond with just the intent name (e.g., "style_feedback", "product_recommendati
 // Function to get mode-specific instructions
 function getModeInstructions(mode) {
   return julesConfig.modes[mode]?.style || julesConfig.modes.conversation.style;
+}
+
+// Function to retrieve profile pic review data for context
+async function getProfilePicReviewContext(userId, imageUrl) {
+  try {
+    if (!userId || userId === 'anonymous' || userId === 'test') {
+      return null;
+    }
+
+    // Look for profile pic review with matching image URL
+    const profilePicReview = await ProfilePicReview.findOne({
+      userId: userId,
+      originalImageUrl: imageUrl
+    }).sort({ createdAt: -1 }); // Get most recent review
+
+    if (profilePicReview) {
+      return {
+        rating: profilePicReview.rating,
+        analysis: profilePicReview.advice,
+        reviewId: profilePicReview._id,
+        createdAt: profilePicReview.createdAt
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error retrieving profile pic review context:', error);
+    return null;
+  }
 }
 
 // Function to strip closers from responses
@@ -285,7 +322,7 @@ async function chat(req, res) {
   console.log('🚨 DEBUG: CHAT FUNCTION CALLED - This should appear for follow-up messages');
   try {
     
-    const { message, context, userId } = req.body;
+    const { message, context } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -297,8 +334,8 @@ async function chat(req, res) {
       return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
 
-    // Use authenticated user ID if available, otherwise fall back to request body
-    const actualUserId = req.user?.id || userId || 'anonymous';
+    // Use authenticated user ID only - never trust userId from request body for security
+    const actualUserId = req.user?.id || 'anonymous';
     
     // Check if this is an anonymous user and get remaining usage
     let remainingUsage = null;
@@ -349,33 +386,57 @@ async function chat(req, res) {
       content: message
     };
     
-    // Check for image context in conversation for follow-up messages
+    // PARALLEL API CALLS - Start intent classification and context building simultaneously
+    const [intent, userContext] = await Promise.all([
+      determineIntent(message, conversationMessages, conversation?.state || {}),
+      UserContextCache.getUserContext(actualUserId)
+    ]);
+
+    // Check for image context in conversation, but only use it if intent is image-related
     const hasImageContext = conversationMessages.some(msg => msg.imageContext?.hasImage);
+    
+    // Define intents that should include image context (style-related intents)
+    const imageRelatedIntents = ['style_feedback', 'style_images'];
+    const shouldIncludeImageContext = hasImageContext && imageRelatedIntents.includes(intent);
     
     let shouldUseVisionModel = false;
     let imageUrlForVision = null;
     
-    if (hasImageContext) {
+    if (shouldIncludeImageContext) {
       // Find the most recent message with image context
       const recentImageMessage = conversationMessages
         .filter(msg => msg.imageContext?.hasImage)
         .slice(-1)[0];
       
       if (recentImageMessage?.imageContext?.thumbnailUrl) {
+        // Convert thumbnail URL to full resolution for profile pic review lookup
+        const fullImageUrl = recentImageMessage.imageContext.thumbnailUrl
+          .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
+        
+        // Check if we have a profile pic review for this image
+        const profilePicReviewContext = await getProfilePicReviewContext(actualUserId, fullImageUrl);
+        
         // Add image context to current user message
         userMessage.imageContext = {
           hasImage: true,
           thumbnailUrl: recentImageMessage.imageContext.thumbnailUrl,
-          analysis: recentImageMessage.imageContext.analysis
+          analysis: recentImageMessage.imageContext.analysis,
+          ...(profilePicReviewContext && { 
+            profilePicReview: profilePicReviewContext 
+          })
         };
         
-        // Convert thumbnail URL to full resolution for vision model
-        imageUrlForVision = recentImageMessage.imageContext.thumbnailUrl
-          .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
+        imageUrlForVision = fullImageUrl;
         shouldUseVisionModel = true;
         
-        console.log('🖼️ Adding image context to follow-up message');
+        if (profilePicReviewContext) {
+          console.log(`🖼️ Found profile pic review context: rating ${profilePicReviewContext.rating}/10`);
+        } else {
+          console.log('🖼️ No profile pic review context found, will use vision model');
+        }
       }
+    } else if (hasImageContext) {
+      console.log(`🖼️ Image context available but intent '${intent}' doesn't require it - focusing on current question`);
     }
     
     conversationMessages.push(userMessage);
@@ -390,12 +451,6 @@ async function chat(req, res) {
     });
 
     console.log(`💬 Processing ${conversationMessages.length} conversation messages`);
-
-    // PARALLEL API CALLS - Start intent classification and context building simultaneously
-    const [intent, userContext] = await Promise.all([
-      determineIntent(message, conversationMessages, conversation?.state || {}),
-      UserContextCache.getUserContext(actualUserId)
-    ]);
 
     const modeInstructions = getModeInstructions(intent);
 
@@ -414,73 +469,7 @@ USER SATISFACTION MODE - CRITICAL INSTRUCTIONS:
 - Focus on validating their confidence rather than trying to "improve" their look`;
     }
 
-    // Special handling for product recommendation intent
-    let productInstructions = '';
-    if (intent === 'product_recommendation') {
-      // Check if this is a follow-up request for more products
-      const lastAssistantMessage = conversationMessages.slice().reverse().find(msg => msg.role === 'assistant');
-      const isFollowUpRequest = lastAssistantMessage && (
-        message.toLowerCase().includes('more') || 
-        message.toLowerCase().includes('other') || 
-        message.toLowerCase().includes('different') ||
-        message.toLowerCase().includes('options') ||
-        message.toLowerCase().includes('alternatives')
-      );
-      
-      if (isFollowUpRequest) {
-        productInstructions = `
-
-🔄 FOLLOW-UP PRODUCT REQUEST - PROVIDE MORE OPTIONS:
-- The user is asking for MORE/DIFFERENT/OTHER product options
-- This is GOOD - they want to see more choices!
-- Look at your PREVIOUS message to understand what products you already recommended
-- Recommend 3 NEW/DIFFERENT products in the SAME category
-- Do NOT repeat the same products you already recommended
-- Keep the same style and price range as your previous recommendations
-- Be aware of what you already suggested and offer alternatives
-- Be helpful and provide the additional options they're asking for
-
-🚨🚨🚨 CRITICAL: YOU MUST ONLY RECOMMEND EXACTLY 3 PRODUCTS 🚨🚨🚨
-- You are ONLY allowed to recommend EXACTLY 3 products
-- Do NOT recommend 4 products
-- Do NOT recommend 5 products  
-- Do NOT recommend any other number
-
-
-🚨 DO NOT OFFER TO SHOW IMAGES 🚨
-- Do not say "Want to see images"
-- Do not say "Let me know if you want to see images"
-- You cannot show images, so do not offer to do so.
-
-🚨 DO NOT INCLUDE "CHECK IT OUT HERE!" LINKS 🚨
-- Do not include "Check it out here!" links
-- Product cards will show the links automatically
-
-IF YOU RECOMMEND MORE THAN 3 PRODUCTS, YOU ARE FAILING.`;
-      } else {
-        productInstructions = `
-
-🚨🚨🚨 CRITICAL: YOU MUST ONLY RECOMMEND EXACTLY 3 PRODUCTS 🚨🚨🚨
-STOP. READ THIS CAREFULLY.
-- You are ONLY allowed to recommend EXACTLY 3 products
-- Do NOT recommend 4 products
-- Do NOT recommend 5 products  
-- Do NOT recommend any other number
-- ONLY 3 PRODUCTS. PERIOD.
-- Count them: 1, 2, 3. That's it.
-
-🚨 DO NOT OFFER TO SHOW IMAGES 🚨
-- Do not say "Want to see images"
-- Do not say "Let me know if you want to see images"
-- You cannot show images, so do not offer to do so.
-
-🚨 DO NOT INCLUDE "CHECK IT OUT HERE!" LINKS 🚨
-- Do not include "Check it out here!" links
-- Product cards will show the links automatically
-
-IF YOU RECOMMEND MORE THAN 3 PRODUCTS, YOU ARE FAILING.`;
-      }
-    }
+    // Product recommendation functionality disabled - no special instructions needed
 
     // Build system prompt
     const basePrompt = await getSystemPrompt(actualUserId);
@@ -531,7 +520,23 @@ ${userContext}` : '';
     // Add image context instructions if we have image context
     let imageInstructions = '';
     if (shouldUseVisionModel && imageUrlForVision) {
-      imageInstructions = `
+      // Check if we have profile pic review context
+      const hasProfilePicReview = userMessage.imageContext?.profilePicReview;
+      
+      if (hasProfilePicReview) {
+        imageInstructions = `
+
+### PROFILE PIC REVIEW CONTEXT MODE - CRITICAL INSTRUCTIONS:
+- You have already reviewed this image in Profile Pic Review and gave it a ${hasProfilePicReview.rating}/10 rating
+- Your previous analysis was: "${hasProfilePicReview.analysis.substring(0, 200)}..."
+- The user is now asking follow-up questions about the SAME image
+- Use your previous rating and analysis as the foundation for your response
+- Do NOT give a different rating - stick with your original ${hasProfilePicReview.rating}/10 rating
+- Reference your previous feedback and build upon it
+- Be consistent with your previous analysis
+- If the user asks for a new rating, remind them you already rated it ${hasProfilePicReview.rating}/10`;
+      } else {
+        imageInstructions = `
 
 ### IMAGE CONTEXT MODE - CRITICAL INSTRUCTIONS:
 - You CAN see and analyze the image in this message
@@ -540,14 +545,15 @@ ${userContext}` : '';
 - Provide specific visual details based on what you can see in the image
 - Do NOT say "I can't see the image" or "I can't determine from the image"
 - You are looking at the same image the user uploaded earlier`;
+      }
     }
 
-    const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${productInstructions}${imageInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
+    const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${imageInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
     
     // Debug: Log user context for troubleshooting
-    console.log(`DEBUG: User context for ${userId}:`, fullSystemPrompt.includes('USER CONTEXT:') ? 'User context loaded' : 'No user context found');
+    console.log(`DEBUG: User context for ${actualUserId}:`, fullSystemPrompt.includes('USER CONTEXT:') ? 'User context loaded' : 'No user context found');
     if (fullSystemPrompt.includes('USER CONTEXT:')) {
-      console.log(`DEBUG: User context details for ${userId}:`, userContext);
+      console.log(`DEBUG: User context details for ${actualUserId}:`, userContext);
     }
 
     // Prepare messages for OpenAI API
@@ -578,8 +584,12 @@ ${userContext}` : '';
     }
 
     // Select appropriate model based on image context
-    const modelToUse = shouldUseVisionModel ? 'gpt-4o' : 'gpt-4o-mini';
-    console.log(`🤖 Using ${modelToUse} model${shouldUseVisionModel ? ' with vision' : ''}`);
+    // If we have profile pic review context, we don't need vision model
+    const hasProfilePicReview = userMessage.imageContext?.profilePicReview;
+    const shouldUseVision = shouldUseVisionModel && !hasProfilePicReview;
+    const modelToUse = shouldUseVision ? 'gpt-4o' : 'gpt-4o-mini';
+    
+    console.log(`🤖 Using ${modelToUse} model${shouldUseVision ? ' with vision' : ''}${hasProfilePicReview ? ' (profile pic review context available)' : ''}`);
     
     const completion = await openai.chat.completions.create({
       model: modelToUse,
@@ -590,79 +600,19 @@ ${userContext}` : '';
 
     const response = completion.choices[0].message.content;
 
-    // Check if this is a product recommendation request
+    // Product recommendation functionality disabled for jules-dating
+    // Focus on AI-driven style advice instead of complex product search
     let products = [];
     let styleImages = [];
     let productResponse = null;
     
+    // DISABLED: Product recommendation routing for jules-dating
+    // The complex product search system was causing bad links and poor UX
+    // Jules now focuses on pure style advice and brand recommendations
     if (intent === 'product_recommendation') {
-      try {
-        console.log('🔍 Product recommendation detected, searching for products...');
-        
-        // Check if this is a follow-up request for more products
-        const lastAssistantMessage = conversationMessages.slice().reverse().find(msg => msg.role === 'assistant');
-        const isFollowUpRequest = lastAssistantMessage && (
-          message.toLowerCase().includes('more') || 
-          message.toLowerCase().includes('other') || 
-          message.toLowerCase().includes('different') ||
-          message.toLowerCase().includes('options') ||
-          message.toLowerCase().includes('alternatives')
-        );
-        
-        if (isFollowUpRequest) {
-          console.log('🔄 Follow-up product request detected, using NEW response context...');
-          // For follow-up requests, use Jules's NEW response as context
-          const conversationWithNewResponse = [
-            ...conversationMessages,
-            { role: 'assistant', content: response } // Use Jules's NEW response
-          ];
-          
-          // Call the products endpoint with NEW response context
-          const productsResponse = await axios.post(`${req.protocol}://${req.get('host')}/api/products/test`, {
-            message,
-            conversation: { messages: conversationWithNewResponse },
-            isFollowUp: true,
-            previousRecommendations: lastAssistantMessage.content
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (productsResponse.data.products && productsResponse.data.products.length > 0) {
-            console.log(`✅ Found ${productsResponse.data.products.length} follow-up products`);
-            products = productsResponse.data.products;
-          } else {
-            console.log('❌ No follow-up products found');
-          }
-        } else {
-          // Regular product recommendation
-          const conversationWithResponse = [
-            ...conversationMessages,
-            { role: 'assistant', content: response }
-          ];
-          
-          // Call the products endpoint with Jules's complete response
-          const productsResponse = await axios.post(`${req.protocol}://${req.get('host')}/api/products/test`, {
-            message,
-            conversation: { messages: conversationWithResponse }
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (productsResponse.data.products && productsResponse.data.products.length > 0) {
-            console.log(`✅ Found ${productsResponse.data.products.length} products`);
-            products = productsResponse.data.products;
-          } else {
-            console.log('❌ No products found');
-          }
-        }
-      } catch (error) {
-        console.error('Product search error:', error.message);
-        // Continue without products if search fails
-      }
+      console.log('🚫 Product recommendation disabled - Jules will provide style advice instead');
+      // Convert product_recommendation to style_feedback for better user experience
+      intent = 'style_feedback';
     }
     
     // Check if this is a style images request
@@ -673,7 +623,7 @@ ${userContext}` : '';
         const inspirationResponse = await axios.post(`${req.protocol}://${req.get('host')}/api/inspiration/test`, {
           message,
           context: conversationMessages,
-          userId: userId
+          userId: actualUserId
         }, {
           headers: {
             'Content-Type': 'application/json'
@@ -751,20 +701,20 @@ You've used all 5 of your free messages! Sign up to continue chatting with Jules
     updateState.lastIntent = intent;
 
     // === BACKGROUND PROCESSING - Move learning system to background ===
-    if (userId && userId !== 'anonymous' && userId !== 'test') {
+    if (actualUserId && actualUserId !== 'anonymous' && actualUserId !== 'test') {
       // Process learning in background (non-blocking)
       setImmediate(async () => {
         try {
-          const insights = await ConversationLearning.extractInsights(userId, message, conversationMessages);
+          const insights = await ConversationLearning.extractInsights(actualUserId, message, conversationMessages);
           if (insights) {
-            const profileUpdated = await ConversationLearning.updateProfileWithInsights(userId, insights);
+            const profileUpdated = await ConversationLearning.updateProfileWithInsights(actualUserId, insights);
             if (profileUpdated) {
-              console.log(`Learning system: Profile updated for user ${userId}`);
+              console.log(`Learning system: Profile updated for user ${actualUserId}`);
               
               // Clear user context cache when learning occurs to ensure fresh data
               const UserContextCache = require('../utils/userContextCache');
-              UserContextCache.clearUserCache(userId);
-              console.log(`Cache cleared for user ${userId} due to learning`);
+              UserContextCache.clearUserCache(actualUserId);
+              console.log(`Cache cleared for user ${actualUserId} due to learning`);
             }
           }
         } catch (error) {
@@ -867,7 +817,7 @@ You've used all 5 of your free messages! Sign up to continue chatting with Jules
 async function chatWithImage(req, res) {
   try {
     
-    const { message, imageUrl, context, userId } = req.body;
+    const { message, imageUrl, context } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -883,8 +833,8 @@ async function chatWithImage(req, res) {
       return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
 
-    // Use authenticated user ID if available, otherwise fall back to request body
-    const actualUserId = req.user?.id || userId || 'anonymous';
+    // Use authenticated user ID only - never trust userId from request body for security
+    const actualUserId = req.user?.id || 'anonymous';
     
     // Load existing conversation from database for authenticated users
     let conversationMessages = [];
@@ -1076,8 +1026,10 @@ IMPORTANT: You have full vision capabilities. Analyze the image content directly
     res.json(responseData);
 
   } catch (error) {
-    console.error('Chat with image error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('🚨 CHAT WITH IMAGE ERROR:', error);
+    console.error('🚨 ERROR MESSAGE:', error.message);
+    console.error('🚨 ERROR STACK:', error.stack);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
 

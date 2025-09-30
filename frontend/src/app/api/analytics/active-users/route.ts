@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Forward the request to the backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating-backend.onrender.com';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
     const response = await fetch(`${backendUrl}/api/analytics/active-users`, {
       method: 'GET',
       headers: {

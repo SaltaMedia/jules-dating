@@ -8,6 +8,12 @@ const chatSessionsRoutes = require('./chatSessions');
 const { anonymousSession, requireAnonymousSession } = require('../middleware/anonymousSession');
 const { rateLimiter, incrementUsage, FREE_LIMITS } = require('../middleware/rateLimiter');
 
+// Configure Cloudinary
+const cloudinary = require('cloudinary').v2;
+if (process.env.CLOUDINARY_URL) {
+  cloudinary.config({ url: process.env.CLOUDINARY_URL });
+}
+
 // Configure multer for image uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -47,7 +53,7 @@ router.post('/with-image',
       // If image is uploaded, process it and add imageUrl to body
       if (req.file) {
         
-        const cloudinary = require('cloudinary').v2;
+        // Use the already configured cloudinary instance
         
         // Upload to Cloudinary
         const result = await new Promise((resolve, reject) => {
@@ -72,8 +78,10 @@ router.post('/with-image',
       
       next();
     } catch (error) {
-      console.error('Error uploading image:', error);
-      res.status(500).json({ error: 'Failed to upload image' });
+      console.error('🚨 IMAGE UPLOAD ERROR:', error);
+      console.error('🚨 ERROR MESSAGE:', error.message);
+      console.error('🚨 ERROR STACK:', error.stack);
+      res.status(500).json({ error: 'Failed to upload image', details: error.message });
     }
   },
   chatWithImage

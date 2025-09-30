@@ -38,7 +38,8 @@ function AuthCallbackContent() {
     try {
       setStatus('Fetching user data...');
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
+      const response = await fetch(`${apiUrl}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -82,7 +83,7 @@ function AuthCallbackContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 flex items-center justify-center">
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 w-full max-w-md text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
         <h2 className="text-xl font-semibold text-white mb-2">Authenticating...</h2>
@@ -95,7 +96,7 @@ function AuthCallbackContent() {
 export default function AuthCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 flex items-center justify-center">
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 w-full max-w-md text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-white mb-2">Loading...</h2>

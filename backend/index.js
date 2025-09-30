@@ -19,6 +19,9 @@ const {
 // Import Passport configuration
 require('./config/passport');
 
+// Import email scheduler
+const { startEmailScheduler } = require('./utils/emailScheduler');
+
 const app = express();
 const PORT = process.env.PORT || 4002;
 
@@ -44,10 +47,10 @@ app.use(helmet({
 // Rate limiting with environment-based configuration
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-// Chat rate limiter - more generous for chat interactions
+// Chat rate limiter - generous for chat interactions (users chat a lot!)
 const chatLimiter = rateLimit({
   windowMs: parseInt(process.env.CHAT_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.CHAT_RATE_LIMIT_MAX) || (isDevelopment ? 1000 : 300), // Higher limit for development
+  max: parseInt(process.env.CHAT_RATE_LIMIT_MAX) || (isDevelopment ? 1000 : 500), // Increased from 300 to 500
   message: {
     error: 'Too many chat requests from this IP, please try again later.',
   },
@@ -56,10 +59,10 @@ const chatLimiter = rateLimit({
   trustProxy: true, // Trust proxy for X-Forwarded-For headers
 });
 
-// Auth rate limiter - stricter for security
+// Auth rate limiter - reasonable for normal usage
 const authLimiter = rateLimit({
   windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || (isDevelopment ? 500 : 50), // Stricter in production
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || (isDevelopment ? 500 : 100), // Increased from 50 to 100
   message: {
     error: 'Too many authentication attempts, please try again later.',
   },
@@ -71,7 +74,7 @@ const authLimiter = rateLimit({
 // General rate limiter - for all other API endpoints
 const generalLimiter = rateLimit({
   windowMs: parseInt(process.env.GENERAL_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.GENERAL_RATE_LIMIT_MAX) || (isDevelopment ? 1000 : 200), // Higher limit for development
+  max: parseInt(process.env.GENERAL_RATE_LIMIT_MAX) || (isDevelopment ? 1000 : 300), // Increased from 200 to 300
   message: {
     error: 'Too many requests from this IP, please try again later.',
   },
@@ -114,8 +117,29 @@ function getSessionSecret() {
   return secret;
 }
 
-// Session configuration
-app.use(session({
+// MongoDB connection configuration
+// Force database name for Atlas connections BEFORE setting MONGODB_URI
+const atlasUri = process.env.MONGODB_URI;
+let MONGODB_URI;
+
+if (atlasUri && atlasUri.includes('mongodb+srv://')) {
+  if (!atlasUri.includes('/jules_dating')) {
+    // Fix the URI construction - insert database name before query parameters
+    // Original: mongodb+srv://user:pass@cluster.mongodb.net/?params
+    // Fixed:    mongodb+srv://user:pass@cluster.mongodb.net/jules_dating?params
+    MONGODB_URI = atlasUri.replace('mongodb.net/?', 'mongodb.net/jules_dating?');
+    console.log('🔧 Fixed Atlas URI with database name:', MONGODB_URI);
+  } else {
+    MONGODB_URI = atlasUri;
+    console.log('✅ Atlas URI already has database name:', MONGODB_URI);
+  }
+} else {
+  MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/jules_dating';
+  console.log('🔧 Using local MongoDB URI:', MONGODB_URI);
+}
+
+// Session configuration with MongoDB store (production-ready)
+const sessionConfig = {
   secret: getSessionSecret(),
   resave: false,
   saveUninitialized: false,
@@ -123,8 +147,17 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+  },
+  // Use MongoDB for session storage (production-ready)
+  store: require('connect-mongo').create({
+    mongoUrl: MONGODB_URI,
+    touchAfter: 24 * 3600, // lazy session update (24 hours)
+    ttl: 7 * 24 * 60 * 60 // 7 days session expiry
+  })
+};
+
+logInfo('Using MongoDB session store for production-ready session management');
+app.use(session(sessionConfig));
 
 // Passport middleware
 app.use(passport.initialize());
@@ -143,27 +176,6 @@ app.use(sessionMiddleware);
 app.use(pageViewMiddleware);
 app.use(performanceMiddleware);
 
-// MongoDB connection configuration
-// Force database name for Atlas connections BEFORE setting MONGODB_URI
-const atlasUri = process.env.MONGODB_URI;
-let MONGODB_URI;
-
-if (atlasUri && atlasUri.includes('mongodb+srv://')) {
-  if (!atlasUri.includes('/jules-style')) {
-    // Fix the URI construction - insert database name before query parameters
-    // Original: mongodb+srv://user:pass@cluster.mongodb.net/?params
-    // Fixed:    mongodb+srv://user:pass@cluster.mongodb.net/jules-style?params
-    MONGODB_URI = atlasUri.replace('mongodb.net/?', 'mongodb.net/jules-style?');
-    console.log('🔧 Fixed Atlas URI with database name:', MONGODB_URI);
-  } else {
-    MONGODB_URI = atlasUri;
-    console.log('✅ Atlas URI already has database name:', MONGODB_URI);
-  }
-} else {
-  MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/jules-style';
-  console.log('🔧 Using local MongoDB URI:', MONGODB_URI);
-}
-
 // MongoDB connection options - optimized for performance and reliability
 const mongooseOptions = {
   serverSelectionTimeoutMS: 15000,
@@ -172,9 +184,9 @@ const mongooseOptions = {
   retryWrites: true,
   retryReads: true,
   w: 'majority',
-  // Connection pooling for better performance
-  maxPoolSize: 10,        // Keep up to 10 connections open
-  minPoolSize: 5,         // Always have at least 5 connections ready
+  // Connection pooling for better performance (increased for 50-100 users)
+  maxPoolSize: 20,        // Keep up to 20 connections open (increased from 10)
+  minPoolSize: 10,        // Always have at least 10 connections ready (increased from 5)
   maxIdleTimeMS: 30000    // Keep connections alive for 30 seconds
 };
 
@@ -301,6 +313,9 @@ const server = app.listen(PORT, () => {
     environment: process.env.NODE_ENV || 'development',
     healthCheck: `http://localhost:${PORT}/api/health`
   });
+  
+  // Start email scheduler after server is running
+  startEmailScheduler();
 });
 
 // Connect to MongoDB and initialize optimizations (non-blocking)
