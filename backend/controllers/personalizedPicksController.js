@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
-const WishListItem = require('../models/WishListItem');
 const { buildJulesContext } = require('../utils/contextBuilder');
 const axios = require('axios');
 
@@ -468,31 +467,6 @@ const likeProduct = async (req, res) => {
         user.wishlistItems.push(wishlistItem);
       }
       
-      // Also add to WishListItem collection (for proper wishlist functionality)
-      try {
-        const existingWishlistItem = await WishListItem.findOne({
-          userId: user._id,
-          link: product.link,
-          status: { $ne: 'removed' }
-        });
-        
-        if (!existingWishlistItem) {
-          const newWishlistItem = new WishListItem({
-            userId: user._id,
-            title: product.title,
-            link: product.link,
-            image: product.image,
-            price: product.price,
-            description: `${product.category} - ${product.brand}`,
-            brand: product.brand,
-            source: 'personalized-picks'
-          });
-          
-          await newWishlistItem.save();
-        }
-      } catch (error) {
-        console.error('Error adding to WishListItem collection:', error);
-      }
     }
     
     await user.save();

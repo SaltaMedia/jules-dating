@@ -106,10 +106,6 @@ async function createIndexes() {
     await mongoose.connection.db.collection('fitchecks').createIndex({ createdAt: -1 });
     await mongoose.connection.db.collection('fitchecks').createIndex({ userId: 1, createdAt: -1 });
     
-    // WishListItem collection indexes
-    await mongoose.connection.db.collection('wishlistitems').createIndex({ userId: 1 });
-    await mongoose.connection.db.collection('wishlistitems').createIndex({ category: 1 });
-    await mongoose.connection.db.collection('wishlistitems').createIndex({ userId: 1, category: 1 });
     
     logInfo('Database indexes created successfully');
   } catch (error) {
@@ -251,10 +247,9 @@ function optimizeSchemas() {
   const Conversation = mongoose.model('Conversation');
   const ClosetItem = mongoose.model('ClosetItem');
   const FitCheck = mongoose.model('FitCheck');
-  const WishListItem = mongoose.model('WishListItem');
   
   // Set schema options for better performance
-  [User, Conversation, ClosetItem, FitCheck, WishListItem].forEach(model => {
+  [User, Conversation, ClosetItem, FitCheck].forEach(model => {
     if (model.schema) {
       // Optimize schema options
       model.schema.set('timestamps', true);

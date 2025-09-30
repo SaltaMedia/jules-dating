@@ -73,7 +73,7 @@ const productionChecks = {
     indexes: async () => {
       try {
         // Check if key indexes exist
-        const collections = ['users', 'conversations', 'closetitems', 'fitchecks', 'wishlistitems'];
+        const collections = ['users', 'conversations', 'closetitems', 'fitchecks'];
         const indexChecks = [];
         
         for (const collection of collections) {

@@ -133,7 +133,7 @@ const chatAnalyticsSchema = new mongoose.Schema({
   }],
   
   // Error tracking
-  errors: [{
+  errorLogs: [{
     type: String,
     message: String,
     timestamp: Date,

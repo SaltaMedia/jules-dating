@@ -45,6 +45,7 @@ const analyticsEventSchema = new mongoose.Schema({
       'wardrobe',
       'fit_check',
       'wishlist',
+      'profile_pic_review',
       'errors',
       'engagement',
       'performance'
