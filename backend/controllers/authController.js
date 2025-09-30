@@ -88,10 +88,27 @@ const register = asyncHandler(async (req, res) => {
   const user = new User({
     name,
     email,
-    password: hashedPassword
+    password: hashedPassword,
+    onboarding: {
+      completed: false,
+      name: name,
+      email: email
+    }
   });
 
   await user.save();
+
+  // Send welcome email immediately after registration
+  try {
+    const { sendWelcomeEmail } = require('../utils/emailService');
+    await sendWelcomeEmail(user.email, user.name || user.email);
+    user.welcomeEmailSent = true;
+    await user.save();
+    logInfo('✅ Welcome email sent to new user:', user.email);
+  } catch (emailError) {
+    logError('❌ Failed to send welcome email:', emailError);
+    // Don't fail registration if email fails
+  }
 
   // Track user registration in analytics
   try {
@@ -195,19 +212,6 @@ const login = asyncHandler(async (req, res) => {
       logInfo('✅ User onboarding data updated during login:', user.onboarding);
     }
 
-    // Send welcome email for new users (first time login)
-    if (!user.welcomeEmailSent) {
-      try {
-        const { sendWelcomeEmail } = require('../utils/emailService');
-        await sendWelcomeEmail(user.email, user.name || user.email);
-        user.welcomeEmailSent = true;
-        await user.save();
-        logInfo('✅ Welcome email sent to:', user.email);
-      } catch (emailError) {
-        logError('❌ Failed to send welcome email:', emailError);
-        // Don't fail the login if email fails
-      }
-    }
 
     // Track user login in analytics
     try {
