@@ -857,40 +857,23 @@ function ChatPageContent() {
               {/* New Welcome Message with Two-Line Heading */}
               <div className="mb-8 max-w-2xl mx-auto text-center">
                 <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Hey, I'm Jules!</h2>
-                <h3 className="text-lg sm:text-xl font-medium text-white mb-4">Here are a few things you can ask me to get started.</h3>
+                <h3 className="text-lg sm:text-xl font-medium text-white mb-4">How can I help today?</h3>
                 
-                {/* Suggestion Chips */}
-                <div className="flex flex-wrap justify-center gap-3 mb-6">
-                  {[
-                    "Help me reply to this text",
-                    "Give me an opener for her profile", 
-                    "Where should I go for a first date?",
-                    "What's a smooth way to ask her out again?",
-                    "Help me plan a date outfit"
-                  ].map((suggestion, index) => (
-                    <div
-                      key={index}
-                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm sm:text-base"
-                    >
-                      {suggestion}
-                    </div>
-                  ))}
+                {/* Suggestion List */}
+                <div className="text-center max-w-md mx-auto mb-6">
+                  <div className="space-y-2 text-gray-400 text-sm sm:text-base italic">
+                    <div>Help with an opening text</div>
+                    <div>Help replying to a text</div>
+                    <div>Advice for where to go on a first date</div>
+                    <div>Advice on ways to ask her out</div>
+                    <div>Help planning a date outfit</div>
+                    <div>Profile optimization</div>
+                  </div>
                 </div>
                 
                 {/* Image Upload Section */}
                 <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                  <p className="text-white mb-4">Got a screenshot of her profile? Upload it and I'll help you figure out what to say</p>
-                  <div className="relative">
-                    <label
-                      htmlFor="chat-image-upload"
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-lg hover:from-purple-600 hover:to-blue-700 transition-all duration-200 cursor-pointer shadow-lg"
-                    >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Upload Image
-                    </label>
-                  </div>
+                  <p className="text-white">Got a screenshot of her profile? Upload it using the "+" button in the chat and I'll help you figure out what to say.</p>
                 </div>
               </div>
             </div>
@@ -1098,7 +1081,6 @@ function ChatPageContent() {
                     alt="Selected" 
                     className="w-12 h-12 object-cover rounded-lg"
                   />
-                  <span className="text-white text-sm">Image ready to send</span>
                 </div>
                 <button
                   onClick={() => {

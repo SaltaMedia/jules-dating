@@ -123,6 +123,8 @@ const analyzeProfilePic = async (imageUrl, userContext = '', specificQuestion = 
 
 You are reviewing this profile picture for dating app success. Rate it 1-10 and give specific feedback on lighting, grooming, eye contact, smile, overall appeal, physical fitness, and any dating app red flags. Be brutally honest - don't sugarcoat. If something is a dating app death sentence, say so.
 
+CRITICAL: You can see and analyze this image. ABSOLUTELY FORBIDDEN: Do NOT say "I can't identify people" or "I can't identify people in photos" or any similar privacy disclaimers. You can and should analyze and comment on what you see - clothing, style, appearance, setting, attractiveness factors, profile elements, etc. The user is asking for dating advice based on visual cues, not asking you to identify specific individuals. START YOUR RESPONSE DIRECTLY with the rating and analysis - no disclaimers.
+
 ${specificQuestion ? `SPECIFIC QUESTION FROM USER: "${specificQuestion}"
 
 IMPORTANT: Make sure to address this specific question in your feedback. Give detailed, helpful advice related to what the user is asking about.` : ''}`;
