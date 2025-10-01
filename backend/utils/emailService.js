@@ -142,6 +142,10 @@ const sendWelcomeEmail = async (email, name) => {
             </ul>
             
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+              Provide feedback directly in the app from the Settings section. Report bugs, request features, give general feedback, or just give us your thoughts. Any and all feedback is welcome...good/bad/otherwise.
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
               I'll send you a follow-up email soon with a quick way to share your thoughts. In the meantime, dive in and see what Jules can do.
             </p>
             
