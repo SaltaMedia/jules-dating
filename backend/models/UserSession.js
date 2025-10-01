@@ -29,6 +29,12 @@ const userSessionSchema = new mongoose.Schema({
     index: true
   },
   
+  lastActivity: {
+    type: Date,
+    default: Date.now,
+    index: true
+  },
+  
   duration: {
     type: Number, // in milliseconds
     default: 0

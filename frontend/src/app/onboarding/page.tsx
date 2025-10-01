@@ -120,21 +120,21 @@ export default function OnboardingPage() {
             </div>
           </Link>
 
-          {/* More Info Option */}
+          {/* Tips Option */}
           <Link
-            href="/free-experience"
-            onClick={() => handleOptionClick('more_info')}
+            href="/tips"
+            onClick={() => handleOptionClick('tips')}
             className="block w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl hover:bg-white/20 transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg">More Info</h3>
-                <p className="text-gray-300 text-sm">Learn more about Jules</p>
+                <h3 className="font-semibold text-lg">Tips</h3>
+                <p className="text-gray-300 text-sm">Basic dating and profile tips</p>
               </div>
             </div>
           </Link>

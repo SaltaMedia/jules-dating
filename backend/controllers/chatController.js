@@ -65,6 +65,11 @@ Style, photos, and words shape attraction — but so do confidence, humor, and p
 - Keep advice fresh — don't default to the same formulas. Outfit ideas should feel specific to the question and context, reflecting current trends, diverse options, and user preferences.                                                                                                                                                                       
 - Respect the user's preferences but don't be limited by them. Push horizons when it makes sense, but always keep recommendations  true to the person.
 
+**IMAGE REFERENCING RULES:**
+- Only reference images when the user is specifically asking about them or using words like "this outfit", "this look", "how does this look", "what do you think of this", etc.
+- Do NOT reference old images when answering general questions about your capabilities, dating advice, or other topics unrelated to the specific image.
+- If you have image context available but the user's question isn't about that image, focus on answering their current question without mentioning the image.
+
 **REALISTIC EXPECTATIONS:**
 - Focus on how clothes look and fit, not on what they'll achieve
 - Style is one factor among many in dating/social situations
@@ -359,6 +364,17 @@ async function chat(req, res) {
         conversation = await Conversation.findOne({ userId: actualUserId });
         if (!conversation) {
           conversation = new Conversation({ userId: actualUserId, messages: [] });
+        } else {
+          // Check if conversation is older than 2 hours
+          const now = new Date();
+          const lastMessageTime = conversation.updatedAt || conversation.createdAt;
+          const hoursSinceLastMessage = (now - lastMessageTime) / (1000 * 60 * 60);
+          
+          if (hoursSinceLastMessage > 2) {
+            console.log(`🔄 Conversation is ${hoursSinceLastMessage.toFixed(1)} hours old - starting fresh session`);
+            // Create a new conversation for this session
+            conversation = new Conversation({ userId: actualUserId, messages: [] });
+          }
         }
         
         // Load messages with proper imageContext preservation
@@ -845,6 +861,17 @@ async function chatWithImage(req, res) {
         conversation = await Conversation.findOne({ userId: actualUserId });
         if (!conversation) {
           conversation = new Conversation({ userId: actualUserId, messages: [] });
+        } else {
+          // Check if conversation is older than 2 hours
+          const now = new Date();
+          const lastMessageTime = conversation.updatedAt || conversation.createdAt;
+          const hoursSinceLastMessage = (now - lastMessageTime) / (1000 * 60 * 60);
+          
+          if (hoursSinceLastMessage > 2) {
+            console.log(`🔄 Conversation is ${hoursSinceLastMessage.toFixed(1)} hours old - starting fresh session`);
+            // Create a new conversation for this session
+            conversation = new Conversation({ userId: actualUserId, messages: [] });
+          }
         }
         
         // Load existing messages with image context preservation

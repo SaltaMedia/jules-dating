@@ -14,6 +14,7 @@ const analyticsRoutes = require('./analytics');
 const chatSessionsRoutes = require('./chatSessions');
 const anonymousRoutes = require('./anonymous');
 const monitoringRoutes = require('./monitoring');
+const feedbackRoutes = require('./feedback');
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -103,6 +104,9 @@ router.use('/anonymous', anonymousRoutes);
 
 // Monitoring routes (for production monitoring)
 router.use('/monitoring', monitoringRoutes);
+
+// Feedback routes
+router.use('/feedback', feedbackRoutes);
 
 // Development test endpoint - must be last
 if (process.env.NODE_ENV !== 'production') {

@@ -823,7 +823,14 @@ class AnalyticsController {
             referrer: req.get('Referrer')
           };
           
+          // Create AnalyticsEvent
           await AnalyticsEvent.create(eventData);
+          
+          // Handle UserSession tracking
+          console.log('🔍 DEBUG: About to call handleUserSessionTracking');
+          await this.handleUserSessionTracking(eventData, req);
+          console.log('🔍 DEBUG: handleUserSessionTracking completed');
+          
           logInfo('Analytics event saved to database', { event: result.payload.event_name });
         } catch (dbError) {
           logError('Failed to save analytics event to database', dbError);
@@ -835,6 +842,99 @@ class AnalyticsController {
     } catch (e) {
       return res.status(500).json({ ok: false, error: e.message });
     }
+  }
+
+  // Handle UserSession tracking for analytics events
+  async handleUserSessionTracking(eventData, req) {
+    try {
+      console.log('🔍 DEBUG: handleUserSessionTracking called with:', { userId: eventData.userId, sessionId: eventData.sessionId, eventType: eventData.eventType });
+      const { userId, sessionId, eventType, page } = eventData;
+      
+      // Find or create UserSession
+      let userSession = await UserSession.findOne({ sessionId });
+      
+      if (!userSession) {
+        // Create new UserSession
+        const userInfo = this.parseUserAgent(req.get('User-Agent'));
+        userSession = new UserSession({
+          sessionId,
+          userId,
+          userAgent: req.get('User-Agent'),
+          ipAddress: req.ip || req.connection.remoteAddress,
+          referrer: req.get('Referrer'),
+          device: userInfo.device,
+          browser: userInfo.browser,
+          os: userInfo.os,
+          lastActivity: new Date()
+        });
+      } else {
+        // Update existing session
+        userSession.lastActivity = new Date();
+        userSession.isActive = true;
+      }
+      
+      // Update session metrics based on event type
+      if (eventType === 'page_view') {
+        userSession.pageViews = (userSession.pageViews || 0) + 1;
+        if (userSession.pageViews > 1) {
+          userSession.isBounce = false;
+        }
+      } else if (eventType === 'chat_message') {
+        userSession.chatMessages = (userSession.chatMessages || 0) + 1;
+      } else if (eventType === 'feature_usage') {
+        // Track feature usage
+        const feature = eventData.category;
+        const existingFeature = userSession.featuresUsed.find(f => f.feature === feature);
+        if (existingFeature) {
+          existingFeature.count += 1;
+          existingFeature.lastUsed = new Date();
+        } else {
+          userSession.featuresUsed.push({
+            feature,
+            count: 1,
+            firstUsed: new Date(),
+            lastUsed: new Date()
+          });
+        }
+      }
+      
+      await userSession.save();
+      logInfo('UserSession updated', { userId, sessionId, eventType });
+      
+    } catch (error) {
+      logError('Failed to handle UserSession tracking', error);
+      // Don't fail the main request if UserSession tracking fails
+    }
+  }
+
+  // Parse user agent for device/browser info
+  parseUserAgent(userAgent) {
+    if (!userAgent) {
+      return { device: 'desktop', browser: 'unknown', os: 'unknown' };
+    }
+    
+    let device = 'desktop';
+    let browser = 'unknown';
+    let os = 'unknown';
+    
+    // Simple device detection
+    if (userAgent.includes('Mobile')) device = 'mobile';
+    else if (userAgent.includes('Tablet')) device = 'tablet';
+    
+    // Simple browser detection
+    if (userAgent.includes('Chrome')) browser = 'Chrome';
+    else if (userAgent.includes('Firefox')) browser = 'Firefox';
+    else if (userAgent.includes('Safari')) browser = 'Safari';
+    else if (userAgent.includes('Edge')) browser = 'Edge';
+    
+    // Simple OS detection
+    if (userAgent.includes('Windows')) os = 'Windows';
+    else if (userAgent.includes('Mac OS')) os = 'macOS';
+    else if (userAgent.includes('Linux')) os = 'Linux';
+    else if (userAgent.includes('Android')) os = 'Android';
+    else if (userAgent.includes('iOS')) os = 'iOS';
+    
+    return { device, browser, os };
   }
 
   // Helper method to map event names to event types
@@ -854,8 +954,8 @@ class AnalyticsController {
       'chat_message_sent': 'chat_message',
       'chat_response_received': 'chat_message',
       'products_shown_in_chat': 'chat_message',
-      'product_link_clicked': 'engagement',
-      'wishlist_item_added': 'engagement',
+      'product_link_clicked': 'feature_usage',
+      'wishlist_item_added': 'feature_usage',
       'error_occurred': 'error',
       'session_started': 'session_start',
       'session_ended': 'session_end'
@@ -880,7 +980,7 @@ class AnalyticsController {
       'chat_message_sent': 'chat',
       'chat_response_received': 'chat',
       'products_shown_in_chat': 'chat',
-      'product_link_clicked': 'engagement',
+      'product_link_clicked': 'products',
       'wishlist_item_added': 'wishlist',
       'error_occurred': 'errors',
       'session_started': 'engagement',

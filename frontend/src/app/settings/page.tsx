@@ -84,7 +84,8 @@ const sections = [
   'Style',
   'Open Context',
   'Chat History',
-  'Privacy & Data'
+  'Privacy & Data',
+  'Feedback'
 ];
 
 export default function SettingsPage() {
@@ -112,6 +113,10 @@ export default function SettingsPage() {
     functional: false,
   });
   const [privacyLoading, setPrivacyLoading] = useState(false);
+  
+  // Feedback state
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
   
   const [data, setData] = useState<OnboardingData>({
     // Profile Basics
@@ -413,6 +418,30 @@ export default function SettingsPage() {
     setConsentPreferences(prev => ({ ...prev, [key]: value }));
   };
 
+  // Feedback functions
+  const submitFeedback = async () => {
+    if (!feedbackText.trim()) {
+      showNotificationMessage('Please enter some feedback before submitting.', 'error');
+      return;
+    }
+
+    setFeedbackLoading(true);
+    try {
+      await apiClient.post('/api/feedback', {
+        message: feedbackText.trim(),
+        timestamp: new Date().toISOString()
+      });
+      
+      setFeedbackText('');
+      showNotificationMessage('Thank you for your feedback! We\'ll review it and get back to you if needed.', 'success');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      showNotificationMessage('Error submitting feedback. Please try again.', 'error');
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
 
   const handleInputChange = (field: keyof OnboardingData, value: any) => {
     setData(prev => ({ ...prev, [field]: value }));
@@ -493,8 +522,8 @@ export default function SettingsPage() {
   };
 
   const isSectionComplete = (sectionName: string) => {
-    // Chat History and Privacy & Data are always considered "complete" since they're just views
-    if (sectionName === 'Chat History' || sectionName === 'Privacy & Data') {
+    // Chat History, Privacy & Data, and Feedback are always considered "complete" since they're just views
+    if (sectionName === 'Chat History' || sectionName === 'Privacy & Data' || sectionName === 'Feedback') {
       return true;
     }
     
@@ -902,6 +931,8 @@ export default function SettingsPage() {
                 ? 'Manage your conversation history with Jules'
                 : currentSectionName === 'Privacy & Data'
                 ? 'Manage your privacy settings and data rights'
+                : currentSectionName === 'Feedback'
+                ? ''
                 : `Edit your ${currentSectionName.toLowerCase()} information`
               }
             </p>
@@ -909,6 +940,38 @@ export default function SettingsPage() {
 
           {currentSectionName === 'Chat History' ? (
             renderChatHistory()
+          ) : currentSectionName === 'Feedback' ? (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    placeholder="Share your thoughts, suggestions, or report any issues you've encountered..."
+                    rows={6}
+                    className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white placeholder-gray-300 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-vertical"
+                  />
+                  
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      onClick={submitFeedback}
+                      disabled={feedbackLoading || !feedbackText.trim()}
+                      className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                      {feedbackLoading ? 'Sending...' : 'Send Feedback'}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                  <h4 className="text-blue-300 font-medium mb-2">💬 We value your input</h4>
+                  <p className="text-blue-200 text-sm">
+                    Your feedback helps us improve Jules and make it better for everyone. We read every message and appreciate you taking the time to share your thoughts.
+                  </p>
+                </div>
+              </div>
+            </div>
           ) : currentSectionName === 'Privacy & Data' ? (
             <div className="space-y-6">
               {/* Consent Preferences */}

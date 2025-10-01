@@ -5,7 +5,10 @@ const authenticateToken = require('../middleware/auth');
 const { isAdmin } = require('../middleware/admin');
 
 // Public analytics tracking endpoint (no auth required)
-router.post('/track', analyticsController.trackEvent);
+router.post('/track', (req, res) => {
+  console.log('🔍 DEBUG: Public /track route called');
+  return analyticsController.trackEvent(req, res);
+});
 
 // Apply authentication and admin middleware to all other analytics routes
 router.use(authenticateToken);
@@ -38,8 +41,11 @@ router.get('/realtime', analyticsController.getRealTimeAnalytics);
 // Export analytics data
 router.get('/export', analyticsController.exportAnalyticsData);
 
-// Track analytics events from frontend
-router.post('/track', analyticsController.trackEvent);
+// Track analytics events from frontend (authenticated)
+router.post('/track', (req, res) => {
+  console.log('🔍 DEBUG: Authenticated /track route called');
+  return analyticsController.trackEvent(req, res);
+});
 
 // Enhanced analytics endpoints
 router.get('/onboarding-funnel', analyticsController.getOnboardingFunnel);

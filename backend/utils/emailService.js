@@ -258,8 +258,64 @@ const sendFollowUpEmail = async (email, name) => {
   }
 };
 
+// Send feedback email to steve@juleslabs.com
+const sendFeedbackEmail = async ({ userEmail, userName, message, timestamp, userId }) => {
+  try {
+    const transporter = createTransporter();
+    
+    if (!transporter) {
+      logError('Email transporter not available - credentials not configured');
+      return false;
+    }
+
+    const mailOptions = {
+      from: `"Jules Feedback" <${process.env.GMAIL_USER}>`,
+      to: 'steve@juleslabs.com',
+      subject: `Jules Feedback from ${userName || userEmail}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #333; padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Jules Feedback</h1>
+            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">User Feedback Submission</p>
+          </div>
+          
+          <div style="padding: 30px; background: #f8f9fa;">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #333; margin-top: 0;">Feedback Details</h3>
+              <p style="color: #666; margin: 5px 0;"><strong>User:</strong> ${userName || 'Unknown'}</p>
+              <p style="color: #666; margin: 5px 0;"><strong>Email:</strong> ${userEmail}</p>
+              <p style="color: #666; margin: 5px 0;"><strong>User ID:</strong> ${userId}</p>
+              <p style="color: #666; margin: 5px 0;"><strong>Submitted:</strong> ${new Date(timestamp).toLocaleString()}</p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+              <h3 style="color: #333; margin-top: 0;">Message</h3>
+              <p style="color: #333; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+            </div>
+          </div>
+          
+          <div style="background: #333; padding: 20px; text-align: center;">
+            <p style="color: #999; margin: 0; font-size: 14px;">
+              © 2025 Jules Labs, LLC. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    logInfo(`Feedback email sent successfully to steve@juleslabs.com from ${userEmail}`);
+    return true;
+
+  } catch (error) {
+    logError('Error sending feedback email:', error);
+    return false;
+  }
+};
+
 module.exports = {
   sendPasswordResetEmail,
   sendWelcomeEmail,
-  sendFollowUpEmail
+  sendFollowUpEmail,
+  sendFeedbackEmail
 };

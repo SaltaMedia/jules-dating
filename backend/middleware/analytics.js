@@ -1,26 +1,55 @@
 const analyticsService = require('../utils/analyticsService');
 
-// Session management middleware
+// Enhanced session management middleware with comprehensive KPI tracking
 const sessionMiddleware = async (req, res, next) => {
   try {
-    // Get or create session ID
-    let sessionId = req.cookies?.jules_session_id;
+    // Get or create session ID - prioritize frontend session ID if available
+    let sessionId = req.cookies?.jules_session_id || 
+                   req.headers['x-session-id'] ||
+                   req.body?.session_id ||
+                   req.query?.session_id;
     
-    if (!sessionId) {
+    let session = null;
+    let isNewSession = false;
+    
+    // If we have a session ID, try to find existing session
+    if (sessionId) {
+      session = await analyticsService.findSession(sessionId);
+    }
+    
+    // If no session found, create a new one
+    if (!session) {
       sessionId = await analyticsService.startSession(req.user?.id, req);
+      isNewSession = true;
+      
+      // Set cookie for future requests
       res.cookie('jules_session_id', sessionId, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: 'lax'
       });
+    } else {
+      // Update existing session with current request info
+      await analyticsService.updateSessionActivity(session, req);
     }
     
+    // Set session info on request
     req.sessionId = sessionId;
     req.userId = req.user?.id || 'anonymous';
+    req.isNewSession = isNewSession;
+    
+    // Track session continuation if this is a returning user
+    if (!isNewSession && req.user?.id) {
+      await analyticsService.trackReturnVisitor(req.user.id, sessionId, req);
+    }
     
     next();
   } catch (error) {
-    console.error('Analytics session middleware error:', error);
+    console.error('Enhanced analytics session middleware error:', error);
+    // Fallback to basic session handling
+    req.sessionId = req.cookies?.jules_session_id || 'fallback_' + Date.now();
+    req.userId = req.user?.id || 'anonymous';
     next();
   }
 };
