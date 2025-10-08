@@ -322,6 +322,58 @@ function stripClosers(text) {
   return cleanedText.trim();
 }
 
+// Function to detect context switching and determine if review context should expire
+function detectContextSwitch(message, hasNewImage, reviewContext, conversationMessages) {
+  // If user uploads new image, always clear review context
+  if (hasNewImage) {
+    return { shouldClearReviewContext: true, reason: 'new_image_uploaded' };
+  }
+  
+  // If user explicitly asks about something different
+  const contextSwitchKeywords = [
+    'new image', 'different photo', 'another pic', 'this outfit', 'this look',
+    'different picture', 'new pic', 'another image', 'this photo', 'this image',
+    'what about this', 'how about this', 'check this out', 'look at this'
+  ];
+  
+  const messageLower = message.toLowerCase();
+  if (contextSwitchKeywords.some(keyword => messageLower.includes(keyword))) {
+    return { shouldClearReviewContext: true, reason: 'explicit_context_switch' };
+  }
+  
+  // Clear after 5+ messages or if user seems to have moved on
+  if (conversationMessages && conversationMessages.length > 5) {
+    // Check if last few messages still reference the review
+    const recentMessages = conversationMessages.slice(-3);
+    const stillDiscussingReview = recentMessages.some(msg => {
+      const content = msg.content.toLowerCase();
+      return content.includes('rating') || 
+             content.includes('review') ||
+             content.includes('photo') ||
+             content.includes('picture') ||
+             content.includes('outfit') ||
+             content.includes('fit check');
+    });
+    
+    if (!stillDiscussingReview) {
+      return { shouldClearReviewContext: true, reason: 'topic_drift_detected' };
+    }
+  }
+  
+  // Check for topic switching based on message content
+  const generalTopics = [
+    'dating advice', 'texting', 'conversation', 'profile', 'bio',
+    'opening line', 'first date', 'relationship', 'girl', 'woman',
+    'match', 'tinder', 'bumble', 'hinge', 'dating app'
+  ];
+  
+  if (generalTopics.some(topic => messageLower.includes(topic))) {
+    return { shouldClearReviewContext: true, reason: 'general_dating_topic' };
+  }
+  
+  return { shouldClearReviewContext: false, reason: 'context_continues' };
+}
+
 // Main chat function with JSON mode integration
 async function chat(req, res) {
   console.log('🚨 DEBUG: CHAT FUNCTION CALLED - This should appear for follow-up messages');
@@ -420,18 +472,31 @@ async function chat(req, res) {
     // Check for image context in conversation
     const hasImageContext = conversationMessages.some(msg => msg.imageContext?.hasImage);
     
+    // CONTEXT SWITCHING LOGIC: Check if review context should expire
+    let finalReviewContext = reviewContext;
+    const contextSwitchResult = detectContextSwitch(message, false, reviewContext, conversationMessages);
+    
+    if (contextSwitchResult.shouldClearReviewContext) {
+      console.log(`🔄 Context switch detected: ${contextSwitchResult.reason} - clearing review context`);
+      finalReviewContext = null;
+    } else if (reviewContext) {
+      console.log(`🔄 Review context continues: ${contextSwitchResult.reason}`);
+    }
+
     // Define intents that should include image context (style-related intents)
     const imageRelatedIntents = ['style_feedback', 'style_images'];
-    // CRITICAL FIX: Always include image context if we have reviewContext (user is asking about a specific reviewed image)
+    // CRITICAL FIX: Always include image context if we have finalReviewContext (user is asking about a specific reviewed image)
     // This ensures Jules can see the image when user asks follow-up questions like "what can I do better to make this a 10"
-    const shouldIncludeImageContext = reviewContext || (hasImageContext && imageRelatedIntents.includes(intent));
+    const shouldIncludeImageContext = finalReviewContext || (hasImageContext && imageRelatedIntents.includes(intent));
     
     console.log('🔍 DEBUG: Image context decision:', {
       hasImageContext,
       intent,
-      reviewContext: !!reviewContext,
+      originalReviewContext: !!reviewContext,
+      finalReviewContext: !!finalReviewContext,
       shouldIncludeImageContext,
-      reviewImageUrl: reviewContext?.imageUrl
+      contextSwitchReason: contextSwitchResult.reason,
+      reviewImageUrl: finalReviewContext?.imageUrl
     });
     
     let shouldUseVisionModel = false;
@@ -441,11 +506,11 @@ async function chat(req, res) {
       let imageUrlToUse = null;
       let thumbnailUrlToUse = null;
       
-      // First, try to get image from reviewContext (when user clicks "Ask Jules" from a review)
-      if (reviewContext && reviewContext.imageUrl) {
-        imageUrlToUse = reviewContext.imageUrl;
+      // First, try to get image from finalReviewContext (when user clicks "Ask Jules" from a review)
+      if (finalReviewContext && finalReviewContext.imageUrl) {
+        imageUrlToUse = finalReviewContext.imageUrl;
         // Create a thumbnail URL for consistency
-        thumbnailUrlToUse = reviewContext.imageUrl;
+        thumbnailUrlToUse = finalReviewContext.imageUrl;
       } else {
         // Fall back to finding image context in conversation messages
         const recentImageMessage = conversationMessages
@@ -564,40 +629,40 @@ CONTEXT INTEGRATION INSTRUCTIONS:
 
 ${userContext}` : '';
 
-    // Add review context if available
+    // Add review context if available (and not cleared by context switching)
     let reviewContextInstructions = '';
-    if (reviewContext) {
-      if (reviewContext.type === 'profile_pic_review') {
+    if (finalReviewContext) {
+      if (finalReviewContext.type === 'profile_pic_review') {
         reviewContextInstructions = `
 
 ### PROFILE PIC REVIEW CONTEXT - CRITICAL INSTRUCTIONS:
-- You previously reviewed this user's PROFILE PICTURE for dating app success and rated it ${reviewContext.rating}/10
-- Your previous analysis was: "${reviewContext.feedback}"
+- You previously reviewed this user's PROFILE PICTURE for dating app success and rated it ${finalReviewContext.rating}/10
+- Your previous analysis was: "${finalReviewContext.feedback}"
 - The user is now asking follow-up questions about the SAME profile picture
 - IMPORTANT: This is a PROFILE PICTURE review, NOT a fit check or outfit review
 - For profile pictures, focus on: dating app effectiveness, facial expression, lighting, grooming, overall appeal
 - Do NOT suggest outfit changes, accessories, or wardrobe items for profile pictures
 - Do NOT contradict your previous positive feedback (if you said something was good, don't suggest changing it)
 - Use your previous rating and analysis as the foundation for your response
-- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- Do NOT give a different rating - stick with your original ${finalReviewContext.rating}/10 rating
 - If asked how to improve to a 10, explain what's already working well and what minor tweaks could help
 - Be consistent with your previous analysis - don't contradict yourself
-- The image URL is: ${reviewContext.imageUrl}
+- The image URL is: ${finalReviewContext.imageUrl}
 - Focus on dating app strategy, not fashion advice`;
-      } else if (reviewContext.type === 'fit_check') {
+      } else if (finalReviewContext.type === 'fit_check') {
         reviewContextInstructions = `
 
 ### FIT CHECK CONTEXT - CRITICAL INSTRUCTIONS:
-- You previously reviewed this user's outfit and rated it ${reviewContext.rating}/10
-- Your previous analysis was: "${reviewContext.feedback}"
+- You previously reviewed this user's outfit and rated it ${finalReviewContext.rating}/10
+- Your previous analysis was: "${finalReviewContext.feedback}"
 - The user is now asking follow-up questions about the SAME outfit
 - Use your previous rating and analysis as the foundation for your response
-- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- Do NOT give a different rating - stick with your original ${finalReviewContext.rating}/10 rating
 - Reference your previous feedback and build upon it
 - Be consistent with your previous analysis
-- If the user asks for a new rating, remind them you already rated it ${reviewContext.rating}/10
-- The image URL is: ${reviewContext.imageUrl}
-- Event context: ${reviewContext.eventContext || 'General outfit'}
+- If the user asks for a new rating, remind them you already rated it ${finalReviewContext.rating}/10
+- The image URL is: ${finalReviewContext.imageUrl}
+- Event context: ${finalReviewContext.eventContext || 'General outfit'}
 - You can reference specific details from your previous review`;
       }
     }
@@ -982,40 +1047,52 @@ async function chatWithImage(req, res) {
     // Get system prompt
     const systemPrompt = await getSystemPrompt(actualUserId);
     
-    // Add review context if available
+    // CONTEXT SWITCHING LOGIC: Check if review context should expire
+    // For image uploads, always clear review context since user is uploading a new image
+    let finalReviewContext = reviewContext;
+    const contextSwitchResult = detectContextSwitch(message, true, reviewContext, conversationMessages);
+    
+    if (contextSwitchResult.shouldClearReviewContext) {
+      console.log(`🔄 Context switch detected: ${contextSwitchResult.reason} - clearing review context`);
+      finalReviewContext = null;
+    } else if (reviewContext) {
+      console.log(`🔄 Review context continues: ${contextSwitchResult.reason}`);
+    }
+    
+    // Add review context if available (and not cleared by context switching)
     let reviewContextInstructions = '';
-    if (reviewContext) {
-      if (reviewContext.type === 'profile_pic_review') {
+    if (finalReviewContext) {
+      if (finalReviewContext.type === 'profile_pic_review') {
         reviewContextInstructions = `
 
 ### PROFILE PIC REVIEW CONTEXT - CRITICAL INSTRUCTIONS:
-- You previously reviewed this user's PROFILE PICTURE for dating app success and rated it ${reviewContext.rating}/10
-- Your previous analysis was: "${reviewContext.feedback}"
+- You previously reviewed this user's PROFILE PICTURE for dating app success and rated it ${finalReviewContext.rating}/10
+- Your previous analysis was: "${finalReviewContext.feedback}"
 - The user is now asking follow-up questions about the SAME profile picture
 - IMPORTANT: This is a PROFILE PICTURE review, NOT a fit check or outfit review
 - For profile pictures, focus on: dating app effectiveness, facial expression, lighting, grooming, overall appeal
 - Do NOT suggest outfit changes, accessories, or wardrobe items for profile pictures
 - Do NOT contradict your previous positive feedback (if you said something was good, don't suggest changing it)
 - Use your previous rating and analysis as the foundation for your response
-- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- Do NOT give a different rating - stick with your original ${finalReviewContext.rating}/10 rating
 - If asked how to improve to a 10, explain what's already working well and what minor tweaks could help
 - Be consistent with your previous analysis - don't contradict yourself
-- The image URL is: ${reviewContext.imageUrl}
+- The image URL is: ${finalReviewContext.imageUrl}
 - Focus on dating app strategy, not fashion advice`;
-      } else if (reviewContext.type === 'fit_check') {
+      } else if (finalReviewContext.type === 'fit_check') {
         reviewContextInstructions = `
 
 ### FIT CHECK CONTEXT - CRITICAL INSTRUCTIONS:
-- You previously reviewed this user's outfit and rated it ${reviewContext.rating}/10
-- Your previous analysis was: "${reviewContext.feedback}"
+- You previously reviewed this user's outfit and rated it ${finalReviewContext.rating}/10
+- Your previous analysis was: "${finalReviewContext.feedback}"
 - The user is now asking follow-up questions about the SAME outfit
 - Use your previous rating and analysis as the foundation for your response
-- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- Do NOT give a different rating - stick with your original ${finalReviewContext.rating}/10 rating
 - Reference your previous feedback and build upon it
 - Be consistent with your previous analysis
-- If the user asks for a new rating, remind them you already rated it ${reviewContext.rating}/10
-- The image URL is: ${reviewContext.imageUrl}
-- Event context: ${reviewContext.eventContext || 'General outfit'}
+- If the user asks for a new rating, remind them you already rated it ${finalReviewContext.rating}/10
+- The image URL is: ${finalReviewContext.imageUrl}
+- Event context: ${finalReviewContext.eventContext || 'General outfit'}
 - You can reference specific details from your previous review`;
       }
     }

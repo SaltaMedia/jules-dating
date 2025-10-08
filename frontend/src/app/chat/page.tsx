@@ -60,6 +60,7 @@ function ChatPageContent() {
   const [isJustChatMode, setIsJustChatMode] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [currentReviewContext, setCurrentReviewContext] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,6 +76,57 @@ function ChatPageContent() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Ref to prevent duplicate context processing
+  const contextProcessedRef = useRef(false);
+  // Ref to prevent session reloading after context processing
+  const sessionLoadedRef = useRef(false);
+
+  // SIMPLE: Just append context to messages
+  const appendContextToMessages = () => {
+    const chatContext = localStorage.getItem('chatContext');
+    console.log('🔍 DEBUG: appendContextToMessages called, chatContext found:', !!chatContext, 'contextProcessedRef:', contextProcessedRef.current);
+    if (chatContext && !contextProcessedRef.current) {
+      try {
+        const context = JSON.parse(chatContext);
+        setCurrentReviewContext(context);
+        
+        let contextMessage;
+        if (context.type === 'profile_pic_review') {
+          contextMessage = {
+            role: 'assistant' as const,
+            content: `I just reviewed your profile picture and rated it **${context.rating}/10**.\n\n${context.feedback}\n\n**What questions do you have?** I can help you understand my feedback, suggest improvements, or discuss alternative photos!`,
+            timestamp: new Date(),
+            userImage: context.imageUrl
+          };
+        } else if (context.type === 'fit_check') {
+          contextMessage = {
+            role: 'assistant' as const,
+            content: `I just reviewed your ${context.eventContext || 'outfit'} and rated it **${context.rating}/10**.\n\n${context.feedback}\n\n**Want to dive deeper?** Ask me about color choices, fit adjustments, accessories, or anything else!`,
+            timestamp: new Date(),
+            userImage: context.imageUrl
+          };
+        } else {
+          console.warn('Unknown context type:', context.type);
+          return;
+        }
+        
+        console.log('🔍 DEBUG: About to setMessages with contextMessage:', contextMessage);
+        setMessages(prev => {
+          console.log('🔍 DEBUG: Current messages before append:', prev.length);
+          const newMessages = [...prev, contextMessage];
+          console.log('🔍 DEBUG: New messages after append:', newMessages.length);
+          return newMessages;
+        });
+        contextProcessedRef.current = true;
+        sessionLoadedRef.current = true;
+        localStorage.removeItem('chatContext');
+        console.log('🔍 DEBUG: Context processing completed');
+      } catch (error) {
+        console.error('Error appending context:', error);
+      }
+    }
   };
 
   const scrollToTop = () => {
@@ -111,6 +163,8 @@ function ChatPageContent() {
           }));
           
           setMessages(formattedMessages);
+          sessionLoadedRef.current = true;
+          
           setSessionId(sessionId);
           
           // Save to localStorage for persistence
@@ -128,11 +182,23 @@ function ChatPageContent() {
   };
 
   useEffect(() => {
+    // Reset context processing flag when new context is detected
+    const chatContext = localStorage.getItem('chatContext');
+    console.log('🔍 DEBUG: useEffect started, chatContext found:', !!chatContext, 'sessionLoadedRef:', sessionLoadedRef.current);
+    if (chatContext) {
+      console.log('🔍 DEBUG: Resetting contextProcessedRef to false');
+      contextProcessedRef.current = false;
+    }
+    
+    // If session already loaded and no new context, skip reloading
+    if (sessionLoadedRef.current && !chatContext) {
+      console.log('🔍 DEBUG: Skipping session reload - already loaded and no new context');
+      return;
+    }
+    
     // Check authentication
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
-
     
     if (!token) {
       router.push('/login');
@@ -155,13 +221,15 @@ function ChatPageContent() {
       localStorage.removeItem('prefillMessage'); // Clear the flag
     }
 
+    // Don't process context here - it will be processed after session loading
+
     // Track chat opened
     track('chat_opened', { source: 'home' });
 
     // Check if we're loading a specific session from URL parameters
     const urlSessionId = searchParams.get('session');
     if (urlSessionId) {
-      // Load the session from backend
+      // Load the session from backend and process context after it loads
       loadChatSession(urlSessionId);
       return; // Exit early, don't run the rest of the logic
     }
@@ -177,10 +245,12 @@ function ChatPageContent() {
       if (savedMessages) {
         try {
           const parsedMessages = JSON.parse(savedMessages);
+          
           setMessages(parsedMessages.map((msg: any) => ({
             ...msg,
             timestamp: new Date(msg.timestamp)
           })));
+          sessionLoadedRef.current = true;
         } catch (error) {
           console.error('Error loading saved messages:', error);
         }
@@ -200,21 +270,26 @@ function ChatPageContent() {
         
         // Start with empty messages
         setMessages([]);
+        sessionLoadedRef.current = true;
       } else {
         // Check for existing active session
         const currentSessionId = localStorage.getItem('currentChatSessionId');
+        console.log('🔍 DEBUG: currentSessionId found:', currentSessionId);
         if (currentSessionId) {
           // Use existing session
+          console.log('🔍 DEBUG: Loading existing session:', currentSessionId);
           setSessionId(currentSessionId);
           
           const savedMessages = localStorage.getItem(`chatMessages_${currentSessionId}`);
           if (savedMessages) {
             try {
               const parsedMessages = JSON.parse(savedMessages);
+              
               setMessages(parsedMessages.map((msg: any) => ({
                 ...msg,
                 timestamp: new Date(msg.timestamp)
               })));
+              sessionLoadedRef.current = true;
             } catch (error) {
               console.error('Error loading saved messages:', error);
             }
@@ -234,12 +309,14 @@ function ChatPageContent() {
                 ...msg,
                 timestamp: new Date(msg.timestamp)
               })));
+              sessionLoadedRef.current = true;
             } catch (error) {
               console.error('Error loading saved messages:', error);
             }
           } else {
             // New session - clear any old messages
             setMessages([]);
+            sessionLoadedRef.current = true;
             localStorage.removeItem('chatMessages');
           }
         }
@@ -260,6 +337,12 @@ function ChatPageContent() {
     };
 
     scrollToBottom();
+    
+    // Always check for context after all session loading is complete
+    // Use setTimeout to ensure this runs after all other useEffects
+    setTimeout(() => {
+      appendContextToMessages();
+    }, 0);
   }, [router, searchParams.get('session')]);
 
   useEffect(() => {
@@ -269,36 +352,16 @@ function ChatPageContent() {
     }
   }, [messages.length]); // Only depend on messages length, not the full messages array
 
-  // Save messages to localStorage with session ID (debounced to avoid typing delays)
-  // Only keep the last 20 messages to prevent localStorage quota issues
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (messages.length > 0) {
-        try {
-          // Only save the last 20 messages to prevent localStorage quota issues
-          const recentMessages = messages.slice(-20);
-          localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(recentMessages));
-        } catch (error) {
-          // If localStorage is full, try to clear old sessions first
-          console.warn('localStorage quota exceeded, clearing old chat sessions');
-          try {
-            // Clear all old chat sessions except current
-            const keys = Object.keys(localStorage);
-            const chatKeys = keys.filter(key => key.startsWith('chatMessages_') && key !== `chatMessages_${sessionId}`);
-            chatKeys.forEach(key => localStorage.removeItem(key));
-            
-            // Try again with just the last 10 messages
-            const recentMessages = messages.slice(-10);
-            localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(recentMessages));
-          } catch (secondError) {
-            console.error('Failed to save messages to localStorage:', secondError);
-            // Continue without localStorage - messages will still work in current session
-          }
-        }
-      }
-    }, 1000); // Debounce for 1 second
 
-    return () => clearTimeout(timeoutId);
+  // TEMPORARILY DISABLED: Save messages to localStorage 
+  // TODO: Need proper solution for production that handles image storage without quota issues
+  useEffect(() => {
+    console.log('🔍 DEBUG: Messages useEffect triggered, messages.length:', messages.length, 'sessionId:', sessionId);
+    // DISABLED: localStorage saving causes images to disappear and quota issues
+    // For production, we need to either:
+    // 1. Store messages in backend database instead of localStorage
+    // 2. Use IndexedDB which has much larger quota
+    // 3. Store only Cloudinary URLs (not base64) and reconstruct images on load
   }, [messages, sessionId]);
 
   const sendMessage = async (file?: File) => {
@@ -326,6 +389,10 @@ function ChatPageContent() {
     
     // Clear selected image immediately when user sends message
     if (selectedImageUrl) {
+      // User is uploading new image - clear any existing review context
+      setCurrentReviewContext(null);
+      console.log('🖼️ New image uploaded - clearing review context');
+      
       setSelectedImageUrl(null);
       setSelectedFile(null);
       // Reset file input to allow selecting the same file again
@@ -371,6 +438,29 @@ function ChatPageContent() {
         ...(msg.imageContext && { imageContext: msg.imageContext }) // Preserve image context for AI
       }));
 
+      // Add review context if available
+      const requestData: any = {
+        message: messageText,
+        context: contextWithImages,
+        userId: user?._id
+      };
+
+      // Include review context if we have one
+      if (currentReviewContext) {
+        console.log('🔍 DEBUG: Sending reviewContext with message:', currentReviewContext);
+        requestData.reviewContext = {
+          type: currentReviewContext.type,
+          imageUrl: currentReviewContext.imageUrl,
+          rating: currentReviewContext.rating,
+          feedback: currentReviewContext.feedback,
+          reviewId: currentReviewContext.reviewId,
+          ...(currentReviewContext.eventContext && { eventContext: currentReviewContext.eventContext }),
+          ...(currentReviewContext.specificQuestion && { specificQuestion: currentReviewContext.specificQuestion })
+        };
+      } else {
+        console.log('🔍 DEBUG: No currentReviewContext available for this message');
+      }
+
       console.log('🚨 DEBUG: Sending message to backend:', {
         message: input.trim(),
         context: contextWithImages,
@@ -382,18 +472,19 @@ function ChatPageContent() {
       const startTime = Date.now();
       
       // Use different API method based on whether we have an image
-      
       const response = fileToSend 
         ? await apiClient.chat.sendWithImage(
             messageText,
             fileToSend,
             contextWithImages,
-            user?._id
+            user?._id,
+            requestData.reviewContext
           )
         : await apiClient.chat.send(
             messageText,
             contextWithImages,
-            user?._id
+            user?._id,
+            requestData.reviewContext
           );
       
       console.log('🚨 DEBUG: Response received:', response.data);
@@ -744,6 +835,9 @@ function ChatPageContent() {
       setIsLoading(false);
     }
   };
+
+  // Debug: Log messages array before rendering (commented out to reduce spam)
+  // console.log('🔍 DEBUG: Messages array being rendered:', messages.length, messages);
 
   return (
     <div className="min-h-screen chat-container bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 flex flex-col">
