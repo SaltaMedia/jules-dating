@@ -84,7 +84,7 @@ export default function OnboardingExperiencePage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-blue-300 transition-colors">
-                    Chat with Jules
+                    Ask Jules
                   </h3>
                   <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
                     Get dating advice, texting tips, style advice, and more. Ask me anything about dating and relationships.

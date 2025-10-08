@@ -89,7 +89,7 @@ export default function WelcomePage() {
             <div className="relative w-64 sm:w-80 md:w-96">
               <div className="rounded-[1.5rem] overflow-hidden border border-white/60">
                 <Image
-                  src="/profile-pic-review.png"
+                  src="/Hero_Shot.png"
                   alt="Jules giving feedback on a profile picture"
                   width={400}
                   height={800}
@@ -105,14 +105,36 @@ export default function WelcomePage() {
             <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-white mb-4 sm:mb-6">
               Built for Dating Success
             </h2>
-            <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 text-sm sm:text-base md:text-lg text-gray-300">
-              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">Profile Optimization</span>
-              <span className="text-gray-400">•</span>
-              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">Date Outfits</span>
-              <span className="text-gray-400">•</span>
-              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">Dating Advice</span>
-              <span className="text-gray-400">•</span>
-              <span className="px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">And More!</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 text-center">
+                <div className="w-8 h-8 mx-auto mb-4 text-blue-400">
+                  <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+                  </svg>
+                </div>
+                <p className="text-white text-sm sm:text-base mb-3 italic">"It's working! I ended up changing my outfit Fri and Sat night based on Jules recommendations"</p>
+                <p className="text-gray-400 text-xs">Anonymous, 25, San Francisco</p>
+              </div>
+              
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 text-center">
+                <div className="w-8 h-8 mx-auto mb-4 text-blue-400">
+                  <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+                  </svg>
+                </div>
+                <p className="text-white text-sm sm:text-base mb-3 italic">"This is the kind of feedback I wish my friends would give me."</p>
+                <p className="text-gray-400 text-xs">Jake R, 32, Portland</p>
+              </div>
+              
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 text-center">
+                <div className="w-8 h-8 mx-auto mb-4 text-blue-400">
+                  <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+                  </svg>
+                </div>
+                <p className="text-white text-sm sm:text-base mb-3 italic">"First time I've felt confident in what I'm putting out there. Jules is legit."</p>
+                <p className="text-gray-400 text-xs">John, 32, NYC</p>
+              </div>
             </div>
           </div>
         </div>
@@ -137,8 +159,8 @@ export default function WelcomePage() {
                   <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h4 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 text-blue-300">Chat</h4>
-              <p className="text-gray-300 text-xs sm:text-sm md:text-base">Get dating advice and relationship guidance from Jules, your confident wingwoman.</p>
+              <h4 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 text-blue-300">Ask Jules</h4>
+              <p className="text-gray-300 text-xs sm:text-sm md:text-base">Jules will give you dating advice, profile feedback, outfit advice, picture feedback, and more.</p>
             </div>
             
             <div className="bg-gradient-to-br from-purple-500/20 to-blue-600/20 backdrop-blur-sm rounded-lg p-4 sm:p-6 md:p-8 border border-purple-500/30 text-center">

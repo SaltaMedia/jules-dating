@@ -78,7 +78,7 @@ Provide analysis in this JSON format:
       const openaiClient = getOpenAI();
       if (!openaiClient) {
         console.log('OpenAI not available - returning default fit check rating');
-        return { overallRating: 3, ratingReason: "default", confidence: "low" };
+        return { overallRating: 5, ratingReason: "default", confidence: "low" };
       }
 
       const prompt = `Analyze this fit check feedback and extract the rating in JSON format:
@@ -86,9 +86,9 @@ Provide analysis in this JSON format:
 FEEDBACK:
 ${feedback}
 
-Extract the overall rating (1-5) and provide analysis in this JSON format:
+Extract the overall rating (1-10) and provide analysis in this JSON format:
 {
-  "overallRating": 3,
+  "overallRating": 5,
   "ratingReason": "brief explanation of rating",
   "confidence": "high|medium|low"
 }`;
@@ -108,7 +108,7 @@ Extract the overall rating (1-5) and provide analysis in this JSON format:
       return JSON.parse(cleanContent);
     } catch (error) {
       console.error('Error analyzing fit check rating:', error);
-      return { overallRating: 3, ratingReason: "default", confidence: "low" };
+      return { overallRating: 5, ratingReason: "default", confidence: "low" };
     }
   }
 

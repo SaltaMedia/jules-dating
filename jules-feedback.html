@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jules Feedback</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 40px 40px;
+            background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+
+        .testimonials {
+            padding: 60px 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #6b7280;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .testimonial:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .testimonial::before {
+            content: '"';
+            font-size: 4rem;
+            color: #6b7280;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-family: Georgia, serif;
+            opacity: 0.3;
+        }
+
+        .quote {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-style: italic;
+            color: #444;
+            padding-left: 20px;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #6b7280;
+            padding-left: 20px;
+        }
+
+        .author::before {
+            content: '—';
+            margin-right: 8px;
+            color: #999;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .stats h3 {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .testimonials {
+                grid-template-columns: 1fr;
+                padding: 40px 20px;
+            }
+            
+            .testimonial {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Jules Feedback</h1>
+            <p>Real quotes from real beta users</p>
+        </div>
+
+        <div class="testimonials">
+            <div class="testimonial">
+                <div class="quote">It's working! I ended up changing my outfit Fri and Sat night based on Jules recommendations</div>
+                <div class="author">anonymous user</div>
+            </div>
+
+            <div class="testimonial">
+                <div class="quote">I used the chat feature to get advice on my own dating profile...that was super helpful!</div>
+                <div class="author">Brandon, 40 Portland</div>
+            </div>
+
+            <div class="testimonial">
+                <div class="quote">This is the kind of feedback I wish my friends would give me.</div>
+                <div class="author">Jake R., 32, Portland</div>
+            </div>
+
+
+            <div class="testimonial">
+                <div class="quote">Wasn't sure what to expect. But damn, this gave me actual good advice to update my profile and start fresh.</div>
+                <div class="author">Dylan H., 30</div>
+            </div>
+
+            <div class="testimonial">
+                <div class="quote">Lol... nailing your target audience of struggling dating life in their 30's. Super helpful.</div>
+                <div class="author">John, 32, So. Cal</div>
+            </div>
+
+            <div class="testimonial">
+                <div class="quote">Big fan of all the features so far...I appreciate that it's got the capacity to understand photos for a nicher audience or for humor.</div>
+                <div class="author">Braxden, 25, Portland</div>
+            </div>
+        </div>
+
+
+        <div class="footer">
+            <p>Ready to transform your dating confidence? <strong>Join Jules today!</strong></p>
+        </div>
+    </div>
+</body>
+</html>

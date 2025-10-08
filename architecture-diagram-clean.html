@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jules Dating App - AI Architecture Flow Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+        
+        .header .tagline {
+            color: #3498db;
+            font-size: 1.1em;
+            margin-top: 15px;
+            font-weight: 500;
+            font-style: italic;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+        }
+        
+        .btn.secondary:hover {
+            box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+        }
+        
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .mermaid {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 30px 0;
+        }
+        
+        /* Make Mermaid diagram text readable but not too large */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node ellipse,
+        .mermaid .node polygon {
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            rx: 6px !important;
+            ry: 6px !important;
+        }
+        
+        .mermaid .nodeLabel {
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            color: #2c3e50 !important;
+        }
+        
+        .mermaid .cluster rect {
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            rx: 8px !important;
+            ry: 8px !important;
+            stroke-width: 2px !important;
+        }
+        
+        .mermaid .cluster .cluster-label {
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            color: #2c3e50 !important;
+        }
+        
+        .mermaid .edgeLabel {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Make the diagram container reasonable size */
+        .diagram-container {
+            min-height: 600px;
+            padding: 30px;
+        }
+        
+        .data-flow-diagram {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid #3498db;
+        }
+        
+        .data-flow-diagram h5 {
+            color: #2c3e50;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            flex: 1;
+        }
+        
+        .flow-label {
+            font-size: 0.8em;
+            color: #2c3e50;
+            text-align: center;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .flow-arrow {
+            font-size: 1.5em;
+            color: #3498db;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        
+        .flow-return {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background: #e8f5e8;
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid #27ae60;
+        }
+        
+        .return-arrow {
+            font-size: 2em;
+            color: #27ae60;
+            animation: rotate 2s linear infinite;
+        }
+        
+        .flow-return-text {
+            color: #27ae60;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .flow-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+            .flow-return {
+                flex-direction: column;
+                text-align: center;
+            }
+            .return-arrow {
+                transform: rotate(90deg);
+            }
+        }
+        
+        @media print {
+            body { margin: 0; padding: 10px; background: white; }
+            .container { max-width: none; box-shadow: none; }
+            .controls { display: none; }
+            
+            .mermaid {
+                transform: scale(2.5) !important;
+                transform-origin: center !important;
+                page-break-before: always;
+                page-break-after: always;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .mermaid .nodeLabel {
+                font-size: 28px !important;
+                font-weight: 800 !important;
+                color: #2c3e50 !important;
+            }
+            .mermaid .cluster-label {
+                font-size: 32px !important;
+                font-weight: 900 !important;
+                color: #2c3e50 !important;
+            }
+            .mermaid .edgeLabel {
+                font-size: 24px !important;
+                font-weight: 700 !important;
+                color: #2c3e50 !important;
+            }
+            .mermaid .node rect,
+            .mermaid .node circle,
+            .mermaid .node ellipse,
+            .mermaid .node polygon {
+                stroke-width: 3px !important;
+                rx: 12px !important;
+                ry: 12px !important;
+            }
+            .mermaid .cluster rect {
+                stroke-width: 3px !important;
+                rx: 15px !important;
+                ry: 15px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Jules Dating App</h1>
+            <div class="subtitle">AI-Powered Dating Advice & Profile Optimization</div>
+            <div class="tagline">Built with Advanced AI Integration for Real-World Dating Success</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="exportToPDF()">📄 Export to PDF</button>
+            <button class="btn secondary" onclick="toggleView()">🔄 Toggle View</button>
+        </div>
+        
+        <div class="diagram-container">
+            <div class="mermaid" id="architecture-diagram">
+graph TB
+    %% Sophisticated Architecture
+    subgraph "Frontend Layer"
+        A[Next.js React App<br/>User Interface]
+        B[Authentication<br/>Google OAuth + JWT]
+        C[Image Upload<br/>Cloudinary Integration]
+        D[Analytics Tracking<br/>User Behavior]
+    end
+    
+    subgraph "Backend API Gateway"
+        E[Express.js Server<br/>Port 4002]
+        F[Rate Limiting<br/>Security Middleware]
+        G[CORS & Helmet<br/>Security Headers]
+        H[Session Management<br/>MongoDB Sessions]
+    end
+    
+    subgraph "Core Controllers"
+        I[Profile Pic Controller<br/>Image Analysis]
+        J[Chat Controller<br/>Conversation Flow]
+        K[Fit Check Controller<br/>Outfit Advice]
+        L[Auth Controller<br/>User Management]
+        M[Analytics Controller<br/>Usage Tracking]
+    end
+    
+    subgraph "AI Processing Engine"
+        N[OpenAI GPT-4 Vision<br/>Profile Pic Analysis]
+        O[Conversation Learning<br/>Context Analysis]
+        P[Intent Detection<br/>Smart Routing]
+        Q[Personalized Prompts<br/>User-Specific Responses]
+        R[Response Generation<br/>Jules Personality]
+    end
+    
+    subgraph "Custom Analytics System"
+        S[AnalyticsEvent Model<br/>Event Tracking]
+        T[ChatAnalytics<br/>Conversation Metrics]
+        U[UserSession<br/>Session Management]
+        V[Analytics Service<br/>Data Processing]
+        W[Performance Monitor<br/>Response Times]
+    end
+    
+    subgraph "Data & Storage"
+        X[MongoDB Atlas<br/>User Profiles]
+        Y[User Sessions<br/>Conversation History]
+        Z[Analytics Data<br/>Usage Metrics]
+        AA[Redis Cache<br/>Performance]
+    end
+    
+    subgraph "External Services"
+        BB[Google OAuth<br/>Authentication]
+        CC[Cloudinary<br/>Image Storage]
+        DD[Pinterest API<br/>Style Inspiration]
+        EE[Google Search API<br/>Product Recommendations]
+        FF[Unsplash/Pexels<br/>Image Search]
+    end
+    
+    subgraph "Deployment Infrastructure"
+        GG[Vercel<br/>Frontend Hosting]
+        HH[Render<br/>Backend Hosting]
+        II[MongoDB Atlas<br/>Database]
+        JJ[Cloudinary CDN<br/>Image Delivery]
+    end
+    
+    %% Frontend to Backend
+    A --> E
+    B --> E
+    C --> E
+    D --> E
+    
+    %% API Gateway Processing
+    E --> F
+    E --> G
+    E --> H
+    F --> I
+    F --> J
+    F --> K
+    F --> L
+    F --> M
+    
+    %% AI Integration
+    I --> N
+    J --> O
+    J --> P
+    J --> Q
+    J --> R
+    K --> N
+    K --> P
+    
+    %% Analytics Integration
+    M --> S
+    J --> T
+    E --> U
+    E --> V
+    E --> W
+    
+    %% Data Persistence
+    I --> X
+    I --> Y
+    J --> X
+    J --> Y
+    J --> Z
+    K --> X
+    L --> X
+    M --> Z
+    
+    %% Analytics Data Flow
+    S --> X
+    T --> X
+    U --> X
+    V --> Z
+    W --> Z
+    
+    %% Caching
+    E --> AA
+    N --> AA
+    P --> AA
+    
+    %% External APIs
+    L --> BB
+    C --> CC
+    K --> DD
+    K --> EE
+    K --> FF
+    
+    %% Deployment
+    A --> GG
+    E --> HH
+    X --> II
+    CC --> JJ
+    
+    %% Styling
+    classDef frontend fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    classDef backend fill:#e8f5e8,stroke:#388e3c,stroke-width:3px
+    classDef controllers fill:#fce4ec,stroke:#c2185b,stroke-width:3px
+    classDef ai fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    classDef analytics fill:#e8eaf6,stroke:#3f51b5,stroke-width:3px
+    classDef data fill:#f1f8e9,stroke:#689f38,stroke-width:3px
+    classDef external fill:#e0f2f1,stroke:#00796b,stroke-width:3px
+    classDef deploy fill:#fff8e1,stroke:#f9a825,stroke-width:3px
+    
+    class A,B,C,D frontend
+    class E,F,G,H backend
+    class I,J,K,L,M controllers
+    class N,O,P,Q,R ai
+    class S,T,U,V,W analytics
+    class X,Y,Z,AA data
+    class BB,CC,DD,EE,FF external
+    class GG,HH,II,JJ deploy
+            </div>
+        </div>
+        
+        <div class="data-flow-diagram">
+            <h5>Complete Data Flow Loop</h5>
+            <div class="flow-container">
+                <div class="flow-step">
+                    <div class="flow-label">Frontend<br/>(Next.js)</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-label">Node.js<br/>Express API</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-label">GPT-4<br/>Vision APIs</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-label">External APIs<br/>(Pinterest, Google)</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-label">MongoDB<br/>Analytics</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-label">Redis<br/>Cache</div>
+                </div>
+            </div>
+            <div class="flow-return">
+                <div class="flow-arrow return-arrow">↻</div>
+                <div class="flow-return-text">Cached AI responses and user data flow back to improve system performance</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            },
+            themeVariables: {
+                primaryColor: '#3498db',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#2980b9',
+                lineColor: '#7f8c8d',
+                secondaryColor: '#ecf0f1',
+                tertiaryColor: '#f8f9fa'
+            }
+        });
+        
+        function exportToPDF() {
+            window.print();
+        }
+        
+        function toggleView() {
+            alert('Toggle view feature - you can use browser zoom to adjust diagram size');
+        }
+    </script>
+</body>
+</html>

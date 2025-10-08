@@ -111,22 +111,39 @@ ${specificQuestion ? `
 
 **3. Additional Suggestions:** [Other improvements if relevant]
 ` : `
-**Overall Rating:** [Rate 1-5 ONLY and use that many stars: ⭐⭐⭐⭐⭐] - [Brief one-sentence rating]
+**EXACT FORMAT REQUIRED - FOLLOW THIS EXACTLY:**
 
-**1. Honest Feedback:** [Your direct, honest assessment of the outfit]
+Start with: "Alright Steve, I'd rate this outfit a solid [X]/10. Here's my take:"
 
-**2. Specific Compliments:** [What's working well - be specific about colors, fit, style choices]
+**IMPORTANT:** Use only numerical ratings (1-10). Do NOT use any star symbols (⭐) anywhere in your response.
 
-**3. Specific Improvements:** [What needs to change - be direct about what's not working. If the outfit is already strong and looks good, say "None! Looks great." or "No suggestions for improvements, looks good" - DO NOT force unnecessary changes]
+Then provide a one-line summary of the overall look (like "Vintage but quirky" or "Clean and modern" or "Bold but needs refinement").
 
-**4. Suggestions for Alternatives:** [Concrete suggestions for better options - only if there are actual improvements to be made. If the outfit is solid and works well, say "No suggestions...looks great!" - DO NOT force alternatives when the outfit is already good]
+Then provide detailed feedback in these sections. **CRITICAL FORMATTING:** Each section must be on its own line with actual line breaks:
+
+**Honest Feedback:** [Your direct, honest assessment of the outfit]
+
+**Specific Compliments:** [What's working well - highlight the positive aspects]
+
+**Specific Improvements:** [What needs to change - be direct about what's not working. If the outfit is already strong and looks good, say "None! Looks great." or "No suggestions for improvements, looks good" - DO NOT force unnecessary changes]
+
+**Suggestions for Alternatives:** [Concrete suggestions for better options - only if there are actual improvements to be made. If the outfit is solid and works well, say "No suggestions...looks great!" - DO NOT force alternatives when the outfit is already good]
+
+**Overall Appeal:** [How the outfit works for the occasion and overall impression - your closing thoughts]
+
+**FORMATTING REQUIREMENTS:**
+- Use proper markdown formatting with **bold** headings
+- Include actual line breaks (newlines) between each section
+- Make sure the rating number appears correctly in the opening line
+- DO NOT run sections together - each section must be its own paragraph
+- MUST include actual newline characters between each section
 `}
 
-Be direct, confident, and match the user's preferred tone. Focus on fit, color coordination, appropriateness for the event, and overall style. Use bold formatting for the section headers.
+Be direct, confident, and match the user's preferred tone. Focus on fit, color coordination, appropriateness for the event, and overall style.
 
 **IMPORTANT RATING GUIDELINES:**
-- Give 5 stars when the outfit looks great and works well for the occasion
-- Don't be stingy with 5 stars - if it's a solid outfit, give it the rating it deserves
+- Give 8-10 when the outfit looks great and works well for the occasion
+- Don't be stingy with high ratings - if it's a solid outfit, give it the rating it deserves
 - Only suggest improvements if there are actual issues to fix
 - If the outfit is already good, acknowledge that instead of forcing changes
 
@@ -171,22 +188,34 @@ Event context: ${eventContext}`;
     
     // Parse the analysis to extract structured data
     // Always provide a rating - for specific questions, use a neutral rating
-    let rating = 3; // default rating
+    let rating = 5; // default rating (middle of 1-10 scale)
     
     if (!specificQuestion) {
-      // Try to find rating in the "Overall Rating" section for general feedback
-      const ratingMatch = analysis.match(/Overall Rating[:\s]*(\d)/i);
+      // Try to find rating in the opening line like "I'd give this outfit a solid [X]/10"
+      const ratingMatch = analysis.match(/(?:give this|rate this|give this outfit).*?(\d+)\/10/i);
       if (ratingMatch) {
         const foundRating = parseInt(ratingMatch[1]);
-        if (foundRating >= 1 && foundRating <= 5) {
+        if (foundRating >= 1 && foundRating <= 10) {
           rating = foundRating;
+        }
+      } else {
+        // Fallback: try to find any number followed by /10
+        const fallbackMatch = analysis.match(/(\d+)\/10/i);
+        if (fallbackMatch) {
+          const foundRating = parseInt(fallbackMatch[1]);
+          if (foundRating >= 1 && foundRating <= 10) {
+            rating = foundRating;
+          }
         }
       }
     }
     
+    // Clean up any star symbols from the feedback text (all types: ⭐★☆)
+    const cleanFeedback = analysis.replace(/[⭐★☆]+/g, '').replace(/\s+/g, ' ').trim();
+    
     return {
       overallRating: rating,
-      feedback: analysis,
+      feedback: cleanFeedback,
       tone: userTone,
       suggestions: extractSuggestions(analysis),
       compliments: extractCompliments(analysis),

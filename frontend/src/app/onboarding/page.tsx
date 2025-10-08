@@ -75,7 +75,7 @@ export default function OnboardingPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg">Chat</h3>
+                <h3 className="font-semibold text-lg">Ask Jules</h3>
                 <p className="text-gray-300 text-sm">Get personalized dating advice</p>
               </div>
             </div>

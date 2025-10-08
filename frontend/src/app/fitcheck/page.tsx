@@ -81,6 +81,16 @@ export default function FitCheckPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
+  // Function to format fit check feedback with proper line breaks
+  const formatFitCheckFeedback = (text: string) => {
+    return text
+      .replace('**Honest Feedback:**', '\n\n**Honest Feedback:**')
+      .replace('**Specific Compliments:**', '\n\n**Specific Compliments:**')
+      .replace('**Specific Improvements:**', '\n\n**Specific Improvements:**')
+      .replace('**Suggestions for Alternatives:**', '\n\n**Suggestions for Alternatives:**')
+      .replace('**Overall Appeal:**', '\n\n**Overall Appeal:**');
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -252,6 +262,7 @@ export default function FitCheckPage() {
     return fitCheck.eventContext || 'Fit Check';
   };
 
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -407,7 +418,7 @@ export default function FitCheckPage() {
                           li: ({children}) => <li className="text-white">{children}</li>
                         }}
                       >
-                        {feedback.analysis?.feedback || feedback.advice}
+                        {formatFitCheckFeedback(feedback.analysis?.feedback || feedback.advice)}
                       </ReactMarkdown>
                     </div>
                   </div>
@@ -599,16 +610,16 @@ export default function FitCheckPage() {
                       alt="Fit check"
                       className="w-full h-48 object-cover"
                     />
+                    <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      {fitCheck.rating}/10
+                    </div>
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-white text-lg mb-1">
                       {getFitCheckTitle(fitCheck)}
                     </h3>
                     <p className="text-gray-300 text-sm mb-2">
-                      {fitCheck.analysis?.feedback ? 
-                        fitCheck.analysis.feedback.substring(0, 100) + '...' : 
-                        fitCheck.advice.substring(0, 100) + '...'
-                      }
+                      {(fitCheck.analysis?.feedback || fitCheck.advice).substring(0, 100) + '...'}
                     </p>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-gray-400">
@@ -701,10 +712,13 @@ export default function FitCheckPage() {
                 )}
               </div>
 
-              <div className="mb-6">
+              <div className="flex justify-between items-center mb-6">
                 <span className="text-sm text-gray-400">
                   {new Date(selectedFitCheck.createdAt).toLocaleDateString()}
                 </span>
+                <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {selectedFitCheck.rating}/10
+                </div>
               </div>
 
               <div className="mb-6">
@@ -713,11 +727,21 @@ export default function FitCheckPage() {
 
               <div className="mb-6">
                 <h4 className="text-md font-semibold text-white mb-3">Jules's Analysis:</h4>
-                <div className="text-gray-200 leading-relaxed whitespace-pre-line">
-                  {selectedFitCheck.analysis?.feedback ? 
-                    selectedFitCheck.analysis.feedback.replace(/^\*\*1\.\s*Overall Rating[:\s]*\d.*?\n/, '') : 
-                    selectedFitCheck.advice
-                  }
+                <div className="text-white leading-relaxed">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({children}) => <h1 className="text-xl font-bold text-white mb-3">{children}</h1>,
+                      h2: ({children}) => <h2 className="text-lg font-bold text-white mb-2">{children}</h2>,
+                      h3: ({children}) => <h3 className="text-base font-bold text-white mb-2">{children}</h3>,
+                      p: ({children}) => <p className="text-white mb-3">{children}</p>,
+                      strong: ({children}) => <strong className="font-bold text-white">{children}</strong>,
+                      ul: ({children}) => <ul className="list-disc list-inside text-white mb-3 space-y-1">{children}</ul>,
+                      ol: ({children}) => <ol className="list-decimal list-inside text-white mb-3 space-y-1">{children}</ol>,
+                      li: ({children}) => <li className="text-white">{children}</li>
+                    }}
+                  >
+                    {formatFitCheckFeedback(selectedFitCheck.analysis?.feedback || selectedFitCheck.advice)}
+                  </ReactMarkdown>
                 </div>
               </div>
 

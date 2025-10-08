@@ -61,7 +61,7 @@ const closetItemSchema = new mongoose.Schema({
     eventContext: String, // "Where are you going?"
     originalImageUrl: String,
     advice: String,
-    rating: Number // 1-5 scale
+    rating: Number // 1-10 scale
   },
   
   // Metadata

@@ -15,7 +15,7 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 'chat',
-    title: 'Chat',
+    title: 'Ask Jules',
     image: '/Dating Chat.png',
     alt: 'Jules chat answering dating questions and giving advice',
     caption: 'Direct, honest advice in seconds.'

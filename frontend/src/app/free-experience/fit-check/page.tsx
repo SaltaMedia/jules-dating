@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 import { track } from '@/analytics/client';
 
 interface FitCheckResponse {
@@ -27,6 +28,16 @@ export default function AnonymousFitCheckPage() {
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Function to format fit check feedback with proper line breaks
+  const formatFitCheckFeedback = (text: string) => {
+    return text
+      .replace('**Honest Feedback:**', '\n\n**Honest Feedback:**')
+      .replace('**Specific Compliments:**', '\n\n**Specific Compliments:**')
+      .replace('**Specific Improvements:**', '\n\n**Specific Improvements:**')
+      .replace('**Suggestions for Alternatives:**', '\n\n**Suggestions for Alternatives:**')
+      .replace('**Overall Appeal:**', '\n\n**Overall Appeal:**');
+  };
 
   // Track page view
   useEffect(() => {
@@ -176,14 +187,6 @@ export default function AnonymousFitCheckPage() {
     return new File([u8arr], filename, { type: mime });
   };
 
-  const renderStarRating = (text: string) => {
-    return text.replace(/(\*\*Overall Rating:\*\*)\s*([⭐]+)/g, (match, label, stars) => {
-      const starCount = stars.length;
-      const filledStars = '★'.repeat(starCount);
-      const emptyStars = '☆'.repeat(5 - starCount);
-      return `${label} ${filledStars}${emptyStars}`;
-    });
-  };
 
   if (feedback && feedback.analysis) {
     return (
@@ -197,13 +200,21 @@ export default function AnonymousFitCheckPage() {
 
           {/* Feedback Card */}
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6 border border-white/20">
-            <div className="prose prose-invert max-w-none">
-              <div 
-                className="text-gray-300 whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ 
-                  __html: renderStarRating(feedback.analysis.feedback).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            <div className="text-white leading-relaxed prose prose-invert max-w-none [&_*]:text-gray-300">
+              <ReactMarkdown
+                components={{
+                  h1: ({children}) => <h1 className="text-xl font-bold text-white mb-3">{children}</h1>,
+                  h2: ({children}) => <h2 className="text-lg font-bold text-white mb-2">{children}</h2>,
+                  h3: ({children}) => <h3 className="text-base font-bold text-white mb-2">{children}</h3>,
+                  p: ({children}) => <p className="text-white mb-3">{children}</p>,
+                  strong: ({children}) => <strong className="font-bold text-white">{children}</strong>,
+                  ul: ({children}) => <ul className="list-disc list-inside text-white mb-3 space-y-1">{children}</ul>,
+                  ol: ({children}) => <ol className="list-decimal list-inside text-white mb-3 space-y-1">{children}</ol>,
+                  li: ({children}) => <li className="text-white">{children}</li>
                 }}
-              />
+              >
+                {formatFitCheckFeedback(feedback.analysis.feedback)}
+              </ReactMarkdown>
             </div>
           </div>
 
