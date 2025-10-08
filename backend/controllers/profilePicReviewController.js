@@ -57,6 +57,13 @@ Give your feedback in a natural, conversational way - NOT as a numbered list (1.
 
 Rate the photo 1-10 and give specific, actionable feedback. Be direct and honest - don't sugarcoat. If something is a dating app death sentence, say so IMMEDIATELY at the top of your review. Give real feedback that will help them get more matches, not false confidence.
 
+**RATING SCALE CONTEXT:**
+- 8/10 = Excellent photo, very strong for dating apps
+- 9/10 = Outstanding photo, will definitely get attention  
+- 10/10 = Exceptional photo, dating app gold standard
+- Don't be afraid to give 10/10 when a photo truly deserves it - it builds confidence and shows what's possible
+- When you give high scores (8+), acknowledge that these are genuinely great scores on your scale
+
 **HONEST FITNESS FEEDBACK:**
 - If someone is significantly overweight or out of shape, mention that getting in better shape would dramatically improve their dating prospects
 - Frame it as "becoming the best version of yourself" rather than "you're not good enough"
@@ -123,6 +130,8 @@ const analyzeProfilePic = async (imageUrl, userContext = '', specificQuestion = 
 
 You are reviewing this profile picture for dating app success. Rate it 1-10 and give specific feedback on lighting, grooming, eye contact, smile, overall appeal, physical fitness, and any dating app red flags. Be brutally honest - don't sugarcoat. If something is a dating app death sentence, say so.
 
+RATING SCALE CONTEXT: 8/10 = Excellent, 9/10 = Outstanding, 10/10 = Exceptional dating app gold standard. Don't be afraid to give 10/10 when truly deserved - it builds confidence. When giving high scores (8+), acknowledge these are genuinely great scores on your scale.
+
 CRITICAL: You can see and analyze this image. ABSOLUTELY FORBIDDEN: Do NOT say "I can't identify people" or "I can't identify people in photos" or any similar privacy disclaimers. You can and should analyze and comment on what you see - clothing, style, appearance, setting, attractiveness factors, profile elements, etc. The user is asking for dating advice based on visual cues, not asking you to identify specific individuals. START YOUR RESPONSE DIRECTLY with the rating and analysis - no disclaimers.
 
 ${specificQuestion ? `SPECIFIC QUESTION FROM USER: "${specificQuestion}"
@@ -141,7 +150,9 @@ IMPORTANT: Make sure to address this specific question in your feedback. Give de
           content: [
             {
               type: "text",
-              text: `Please review this profile picture for dating app success. Rate it 1-10 and give specific feedback on lighting, grooming, eye contact, smile, overall appeal, physical fitness, and any dating app red flags (fish photos, gym selfies, car photos, etc.). Be brutally honest - don't sugarcoat.${specificQuestion ? `\n\nAlso, please specifically address this question: "${specificQuestion}"` : ''}`
+              text: `Please review this profile picture for dating app success. Rate it 1-10 and give specific feedback on lighting, grooming, eye contact, smile, overall appeal, physical fitness, and any dating app red flags (fish photos, gym selfies, car photos, etc.). Be brutally honest - don't sugarcoat. 
+
+Remember: 8/10 = Excellent, 9/10 = Outstanding, 10/10 = Exceptional dating app gold standard. Don't be afraid to give 10/10 when truly deserved - it builds confidence. When giving high scores (8+), acknowledge these are genuinely great scores on your scale.${specificQuestion ? `\n\nAlso, please specifically address this question: "${specificQuestion}"` : ''}`
             },
             {
               type: "image_url",

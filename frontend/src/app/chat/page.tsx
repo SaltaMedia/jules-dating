@@ -51,7 +51,6 @@ function ChatPageContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isProductSearch, setIsProductSearch] = useState(false);
   const [queuedMessage, setQueuedMessage] = useState<string>('');
   const [user, setUser] = useState<any>(null);
 
@@ -85,41 +84,6 @@ function ChatPageContent() {
     }
   };
 
-  // Function to detect if a message is likely to trigger a product search
-  const isProductSearchMessage = (message: string): boolean => {
-    const productKeywords = [
-      'shoes', 'sneakers', 'boots', 'shirt', 'jeans', 'pants', 'jacket', 'coat', 'sweater', 'hoodie',
-      't-shirt', 'polo', 'henley', 'shorts', 'chinos', 'joggers', 'sweatpants', 'vest', 'waistcoat',
-      'loafers', 'vans', 'necklace', 'ring', 'earrings', 'bracelet', 'jewelry', 'pendant', 'chain',
-      'button-down', 'button down', 'buttonup', 'button-up', 'blazer', 'suit', 'tie', 'belt', 'watch',
-      'sunglasses', 'hat', 'cap', 'beanie', 'scarf', 'gloves', 'underwear', 'socks', 'shoes',
-      'running shoes', 'dress shoes', 'casual shoes', 'formal shoes', 'athletic shoes'
-    ];
-    
-    const searchPhrases = [
-      'show me', 'find me', 'recommend', 'suggest', 'pull up', 'get me', 'buy', 'purchase', 
-      'shop for', 'looking for', 'need', 'under $', 'under ', 'budget', 'affordable', 
-      'cheap', 'expensive', 'price', 'links', 'where can i buy', 'where to buy'
-    ];
-    
-    const messageLower = message.toLowerCase();
-    
-    // Check if message contains product keywords
-    const hasProductKeyword = productKeywords.some(keyword => 
-      messageLower.includes(keyword)
-    );
-    
-    // Check if message contains search phrases
-    const hasSearchPhrase = searchPhrases.some(phrase => 
-      messageLower.includes(phrase)
-    );
-    
-    // Check for specific patterns that indicate product search
-    const hasProductPattern = /\$[\d,]+|under\s+\$[\d,]+|budget|price|buy|shop|purchase|links/i.test(message);
-    
-    // More specific check: must have both product keyword AND search intent
-    return hasProductKeyword && (hasSearchPhrase || hasProductPattern);
-  };
 
   // Function to load a chat session from the backend
   const loadChatSession = async (sessionId: string) => {
@@ -373,9 +337,6 @@ function ChatPageContent() {
     // Store the file for sending (don't clear yet)
     const fileToSend = selectedFile;
     
-    // Detect if this is likely a product search
-    const isProductSearch = isProductSearchMessage(input.trim());
-    setIsProductSearch(isProductSearch);
 
     // Track chat message sent
     const contentLength = input.trim().length;
@@ -482,7 +443,6 @@ function ChatPageContent() {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-      setIsProductSearch(false);
       
       // If there's a queued message, send it now
       if (queuedMessage) {
@@ -496,9 +456,6 @@ function ChatPageContent() {
         setInput('');
         setIsLoading(true);
         
-        // Detect if this is likely a product search
-        const isProductSearch = isProductSearchMessage(queuedMessage);
-        setIsProductSearch(isProductSearch);
 
         try {
                   const response = await apiClient.chat.send(
@@ -528,7 +485,6 @@ function ChatPageContent() {
           setMessages(prev => [...prev, errorMessage]);
         } finally {
           setIsLoading(false);
-          setIsProductSearch(false);
           setQueuedMessage('');
         }
       }
@@ -978,14 +934,14 @@ function ChatPageContent() {
                         const isWhyILove = content.includes('Why I love these:');
                         const isEmptyOrWhitespace = content.trim() === '';
                         
-                        // Add tighter spacing for better message density
-                        let spacingClass = 'mb-1';
+                        // Add better spacing for readability
+                        let spacingClass = 'mb-4';
                         if (isProductLine) {
-                          spacingClass = 'mb-6'; // Reduced space after product lines
+                          spacingClass = 'mb-6'; // Space after product lines
                         } else if (isWhyILove) {
-                          spacingClass = 'mb-4'; // Reduced space after descriptions
+                          spacingClass = 'mb-4'; // Space after descriptions
                         } else if (isEmptyOrWhitespace) {
-                          spacingClass = 'mb-3'; // Reduced space for empty lines
+                          spacingClass = 'mb-2'; // Minimal space for empty lines
                         }
                         
                         return <p {...props} className={spacingClass} />;
@@ -1038,22 +994,11 @@ function ChatPageContent() {
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-lg p-4">
-                {isProductSearch ? (
-                  <div className="flex items-center space-x-3">
-                    <span className="italic text-white/90">Finding the best options for you. This could take 10 to 15 seconds</span>
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                )}
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
               </div>
             </div>
           )}

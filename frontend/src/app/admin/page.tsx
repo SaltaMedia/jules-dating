@@ -99,11 +99,18 @@ const AdminDashboard = () => {
                 Chat sentiment and performance
               </div>
             </div>
-            <Link href="/admin/analytics">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                View Analytics Dashboard
-              </Button>
-            </Link>
+            <div className="space-y-2">
+              <Link href="/admin/analytics">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  View Analytics Dashboard
+                </Button>
+              </Link>
+              <Link href="/admin/analytics-v2">
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                  View New Analytics Dashboard
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
 

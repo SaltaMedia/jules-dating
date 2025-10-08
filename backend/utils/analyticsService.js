@@ -911,20 +911,22 @@ class AnalyticsService {
     let ratingCount = 0;
     
     profilePicReviews.forEach(review => {
-      if (review.properties && review.properties.rating) {
+      if (review.properties && review.properties.rating && review.properties.rating > 0) {
         totalRating += review.properties.rating;
         ratingCount++;
       }
     });
     
-    const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : 0;
+    // Return "N/A" when no ratings are available instead of 0
+    const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : 'N/A';
     
     return {
       profilePicReviewVisits: profilePicReviews.length,
       profilePicReviewCompletions: profilePicReviews.length,
       profilePicReviewsSaved: profilePicReviewsSaved.length,
       completionRate: profilePicReviews.length > 0 ? '100%' : '0%',
-      averageRating: averageRating
+      averageRating: averageRating,
+      totalRatings: ratingCount
     };
   }
 
@@ -990,15 +992,30 @@ class AnalyticsService {
     const sessionStarts = eventsByType['session_started'] || [];
     const sessionEnds = eventsByType['session_ended'] || [];
     
+    // Filter out extreme outliers (sessions longer than 2 hours)
+    const maxValidDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+    const validSessions = sessionEnds.filter(endEvent => {
+      const duration = endEvent.duration_ms || endEvent.properties?.duration_ms;
+      return duration && duration > 0 && duration <= maxValidDuration;
+    });
+    
     let totalDuration = 0;
-    sessionEnds.forEach(endEvent => {
-      if (endEvent.duration_ms) {
-        totalDuration += endEvent.duration_ms;
+    validSessions.forEach(endEvent => {
+      const duration = endEvent.duration_ms || endEvent.properties?.duration_ms;
+      if (duration) {
+        totalDuration += duration;
       }
     });
     
+    // Return reasonable default if no valid sessions
+    const averageDuration = validSessions.length > 0 
+      ? Math.floor(totalDuration / validSessions.length) 
+      : 218000; // 3m 38s default
+    
     return {
-      averageDuration: sessionEnds.length > 0 ? Math.floor(totalDuration / sessionEnds.length) : 218000 // 3m 38s default
+      averageDuration,
+      totalSessions: validSessions.length,
+      filteredOutliers: sessionEnds.length - validSessions.length
     };
   }
 

@@ -105,7 +105,7 @@ const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
 };
 
 // Send welcome email (for future use)
-const sendWelcomeEmail = async (email, name) => {
+const sendWelcomeEmail = async (email, name, appType = 'jules-dating') => {
   try {
     const transporter = createTransporter();
     
@@ -114,15 +114,22 @@ const sendWelcomeEmail = async (email, name) => {
       return false;
     }
 
+    // Determine app-specific content
+    const isDatingApp = appType === 'jules-dating';
+    const appName = isDatingApp ? 'Jules Dating' : 'Jules Style';
+    const appUrl = isDatingApp ? 'https://dating.juleslabs.com' : 'https://app.juleslabs.com';
+    const appDescription = isDatingApp ? 'dating' : 'style';
+    const appTagline = isDatingApp ? 'Dating Beta' : 'Style Beta';
+
     const mailOptions = {
       from: `"Jules" <${process.env.GMAIL_USER}>`,
       to: email,
-      subject: 'Welcome to Jules Beta!',
+      subject: `Welcome to ${appName} Beta!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #333; padding: 30px; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px;">Jules</h1>
-            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Welcome to Jules Beta!</p>
+            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Welcome to ${appName} Beta!</p>
           </div>
           
           <div style="padding: 30px; background: #f8f9fa;">
@@ -137,7 +144,7 @@ const sendWelcomeEmail = async (email, name) => {
             <h3 style="color: #333; margin-bottom: 15px;">What you'll get:</h3>
             <ul style="color: #666; line-height: 1.6; margin-bottom: 25px; padding-left: 20px;">
               <li>Honest feedback on your pics, fits, and texts</li>
-              <li>A chance to see how Jules can help you stand out in dating</li>
+              <li>A chance to see how Jules can help you stand out in ${appDescription}</li>
               <li>Occasional updates from me as we improve the experience</li>
             </ul>
             
@@ -148,6 +155,19 @@ const sendWelcomeEmail = async (email, name) => {
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
               I'll send you a follow-up email soon with a quick way to share your thoughts. In the meantime, dive in and see what Jules can do.
             </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${appUrl}" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; 
+                        padding: 15px 30px; 
+                        text-decoration: none; 
+                        border-radius: 8px; 
+                        font-weight: bold; 
+                        display: inline-block;">
+                Get Started with Jules
+              </a>
+            </div>
             
             <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
               Appreciate you being here,
@@ -181,7 +201,7 @@ const sendWelcomeEmail = async (email, name) => {
 };
 
 // Send follow-up feedback email (4 days after signup)
-const sendFollowUpEmail = async (email, name) => {
+const sendFollowUpEmail = async (email, name, appType = 'jules-dating') => {
   try {
     const transporter = createTransporter();
     
@@ -189,6 +209,11 @@ const sendFollowUpEmail = async (email, name) => {
       logError('Email transporter not available');
       return false;
     }
+
+    // Determine app-specific content
+    const isDatingApp = appType === 'jules-dating';
+    const appName = isDatingApp ? 'Jules Dating' : 'Jules Style';
+    const appTagline = isDatingApp ? 'Dating Beta' : 'Style Beta';
 
     const mailOptions = {
       from: `"Jules" <${process.env.GMAIL_USER}>`,
@@ -198,7 +223,7 @@ const sendFollowUpEmail = async (email, name) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #333; padding: 30px; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px;">Jules</h1>
-            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Dating Beta</p>
+            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">${appTagline}</p>
           </div>
           
           <div style="padding: 30px; background: #f8f9fa;">
@@ -207,7 +232,7 @@ const sendFollowUpEmail = async (email, name) => {
             </p>
             
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
-              You've had a little time with the Jules Dating beta. Now I'd love your feedback—it'll directly shape what we build next.
+              You've had a little time with the ${appName} beta. Now I'd love your feedback—it'll directly shape what we build next.
             </p>
             
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">

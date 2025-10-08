@@ -507,7 +507,65 @@ export default function SettingsPage() {
     setMessage('');
 
     try {
-      await apiClient.put('/api/onboarding/update', data);
+      // Structure the data correctly for the backend
+      const structuredData = {
+        name: data.name,
+        settings: {
+          aboutMe: data.aboutMe,
+          age: data.age,
+          preferences: {
+            communicationStyle: data.preferences?.communicationStyle || 'direct',
+            adviceFocus: data.preferences?.adviceFocus
+          },
+          darkMode: data.darkMode || false
+        },
+        onboarding: {
+          // Basic Info
+          name: data.name,
+          email: data.email,
+          zipCode: data.zipCode,
+          aboutMe: data.aboutMe,
+          
+          // Body Info
+          height: data.height,
+          weight: data.weight,
+          topSize: data.topSize,
+          bottomSize: data.bottomSize,
+          shoeSize: data.shoeSize,
+          bodyType: data.bodyType,
+          facialHair: data.facialHair,
+          
+          // Lifestyle & Context
+          weeklyEnvironment: data.weeklyEnvironment,
+          socialEventFrequency: data.socialEventFrequency,
+          worksOut: data.worksOut,
+          
+          // Style Depth
+          preferredStyles: data.preferredStyles,
+          colorsLove: data.colorsLove,
+          fitPreference: data.fitPreference,
+          favoriteBrands: data.favoriteBrands,
+          styleNotes: data.styleNotes,
+          noGoItems: data.noGoItems,
+          
+          // Dating & Impression Goals
+          relationshipStatus: data.relationshipStatus,
+          
+          // Grooming & Accessories
+          accessoriesWorn: data.accessoriesWorn,
+          wantMoreAccessories: data.wantMoreAccessories,
+          shoeTypes: data.shoeTypes,
+          
+          // Budget
+          monthlyClothingBudget: data.monthlyClothingBudget,
+          budgetType: data.budgetType,
+          
+          // Personalization
+          profilePhoto: data.profilePhoto
+        }
+      };
+
+      await apiClient.put('/api/auth/profile', structuredData);
       setMessage('Settings saved successfully!');
     } catch (error: any) {
       console.error('Error saving settings:', error);

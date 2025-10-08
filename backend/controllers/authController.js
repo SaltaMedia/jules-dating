@@ -97,7 +97,8 @@ const register = asyncHandler(async (req, res) => {
   // Send welcome email immediately after registration
   try {
     const { sendWelcomeEmail } = require('../utils/emailService');
-    await sendWelcomeEmail(user.email, user.name || user.email);
+    // Pass 'jules-dating' as the app type for this backend
+    await sendWelcomeEmail(user.email, user.name || user.email, 'jules-dating');
     user.welcomeEmailSent = true;
     await user.save();
     logInfo('✅ Welcome email sent to new user:', user.email);
@@ -476,6 +477,18 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 // Logout
 const logout = asyncHandler(async (req, res) => {
+  // End analytics session if user is authenticated
+  if (req.user && req.user.id) {
+    try {
+      const { sessionManager } = require('../middleware/sessionManager');
+      await sessionManager.forceEndAnalyticsSession(req.user.id);
+      logInfo(`Ended analytics session for user ${req.user.id} on logout`);
+    } catch (error) {
+      logError('Failed to end analytics session on logout:', error);
+      // Don't fail logout if analytics fails
+    }
+  }
+  
   // For JWT, we just return success since tokens are stateless
   // The frontend should remove the token
   res.json({ message: 'Logout successful' });

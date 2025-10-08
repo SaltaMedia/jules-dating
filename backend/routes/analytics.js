@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const analyticsController = require('../controllers/analyticsController');
-const authenticateToken = require('../middleware/auth');
+const auth = require('../middleware/auth');
 const { isAdmin } = require('../middleware/admin');
 
 // Public analytics tracking endpoint (no auth required)
@@ -11,7 +11,7 @@ router.post('/track', (req, res) => {
 });
 
 // Apply authentication and admin middleware to all other analytics routes
-router.use(authenticateToken);
+router.use(auth);
 router.use(isAdmin);
 
 // Dashboard overview metrics

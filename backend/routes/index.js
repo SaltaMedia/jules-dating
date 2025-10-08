@@ -11,10 +11,13 @@ const fitCheckRoutes = require('./fitCheck');
 const outfitsRoutes = require('./outfits');
 const profilePicReviewRoutes = require('./profilePicReview');
 const analyticsRoutes = require('./analytics');
+const analyticsV2Routes = require('./analytics-v2');
 const chatSessionsRoutes = require('./chatSessions');
 const anonymousRoutes = require('./anonymous');
 const monitoringRoutes = require('./monitoring');
 const feedbackRoutes = require('./feedback');
+const dataProtectionRoutes = require('./dataProtection');
+const insightsRoutes = require('./insights');
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -99,6 +102,9 @@ router.use('/profile-pic-review', profilePicReviewRoutes);
 // Analytics routes
 router.use('/analytics', analyticsRoutes);
 
+// Analytics V2 routes (new dashboard)
+router.use('/analytics-v2', analyticsV2Routes);
+
 // Anonymous routes (for free user flow)
 router.use('/anonymous', anonymousRoutes);
 
@@ -107,6 +113,12 @@ router.use('/monitoring', monitoringRoutes);
 
 // Feedback routes
 router.use('/feedback', feedbackRoutes);
+
+// Data protection routes
+router.use('/data-protection', dataProtectionRoutes);
+
+// Insights routes (for weekly reports and user insights)
+router.use('/insights', insightsRoutes);
 
 // Development test endpoint - must be last
 if (process.env.NODE_ENV !== 'production') {

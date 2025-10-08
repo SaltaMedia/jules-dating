@@ -11,7 +11,7 @@ async function cleanupTestData() {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jules-style');
     console.log('Connected to MongoDB');
 
-    // Define test email patterns to remove
+    // Define test email patterns to remove - BE VERY CAREFUL WITH THESE PATTERNS
     const testEmailPatterns = [
       /^testuser\d+@example\.com$/,
       /^test@example\.com$/,
@@ -23,7 +23,11 @@ async function cleanupTestData() {
       /^onbaording-test@example\.com$/,
       /^test\d+@example\.com$/,
       /^newuser@example\.com$/,
-      /^admin@example\.com$/
+      // REMOVED: /^admin@example\.com$/ - This was too broad and could match real users
+      /^test.*@juleslabs\.com$/,  // Only test users at juleslabs.com
+      /^mock-test@juleslabs\.com$/,
+      /^welcome-test@juleslabs\.com$/,
+      /^testerstevetester@juleslabs\.com$/
     ];
 
     // Find all users
@@ -56,9 +60,18 @@ async function cleanupTestData() {
 
     // Ask for confirmation
     console.log('\n⚠️  WARNING: This will permanently delete test data!');
-    console.log('Type "YES" to confirm deletion:');
+    console.log('⚠️  CRITICAL: Review the users above carefully before proceeding!');
+    console.log('⚠️  Make sure NO real users are in the "Test users to remove" list!');
+    console.log('\nType "YES" to confirm deletion:');
     
-    // Delete test data
+    // For safety, let's not auto-delete anymore
+    console.log('\n🛑 SAFETY CHECK: This script will NOT auto-delete users.');
+    console.log('🛑 Please manually review the lists above and run deletion manually if needed.');
+    console.log('🛑 To actually delete, uncomment the deletion code below.');
+    
+    return; // Exit early for safety
+    
+    // Delete test data (commented out for safety)
     console.log('\n🗑️  DELETING TEST DATA...');
     
     if (testUsers.length > 0) {

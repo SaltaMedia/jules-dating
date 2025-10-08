@@ -7,6 +7,7 @@ const passport = require('passport');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const routes = require('./routes/index');
+const DataProtectionMonitor = require('./middleware/dataProtection');
 const { logInfo, logError, logWarn, logDebug, logRequest } = require('./utils/logger');
 const { errorHandler, notFoundHandler, addRequestId } = require('./utils/errorHandler');
 const { initializeCache, closeCache } = require('./utils/cache');
@@ -21,6 +22,10 @@ require('./config/passport');
 
 // Import email scheduler
 const { startEmailScheduler } = require('./utils/emailScheduler');
+
+// Initialize Data Protection Monitor
+const dataProtectionMonitor = DataProtectionMonitor.instance;
+logInfo('🛡️ Data Protection Monitor initialized');
 
 const app = express();
 const PORT = process.env.PORT || 4002;
@@ -286,6 +291,10 @@ initializeCache();
 // Add request ID and logging middleware
 app.use(addRequestId);
 app.use(logRequest);
+
+// Session management middleware (after auth, before routes)
+const { sessionManagerMiddleware } = require('./middleware/sessionManager');
+app.use('/api', sessionManagerMiddleware);
 
 // Routes
 app.use('/api', routes);

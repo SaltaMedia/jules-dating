@@ -25,7 +25,7 @@ const processFollowUpEmails = async () => {
       try {
         logInfo(`📤 Sending follow-up email to: ${user.email}`);
         
-        const emailSent = await sendFollowUpEmail(user.email, user.name);
+        const emailSent = await sendFollowUpEmail(user.email, user.name, 'jules-dating');
         
         if (emailSent) {
           // Mark as sent

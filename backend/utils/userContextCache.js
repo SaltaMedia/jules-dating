@@ -83,7 +83,7 @@ class UserContextCache {
 
       // Get both user data and learning insights in parallel
       const [user, userProfile] = await Promise.all([
-        User.findById(userId).select('name onboarding'),
+        User.findById(userId).select('name onboarding settings'),
         UserProfile.findOne({ userId }).select('learningData styleProfile')
       ]);
       
@@ -174,6 +174,15 @@ class UserContextCache {
 
     if (user.settings?.aboutMe) {
       contexts.push(`About them: ${user.settings.aboutMe}`);
+    }
+
+    if (user.settings?.age) {
+      contexts.push(`Age: ${user.settings.age}`);
+    }
+
+    // Add settings preferences if available
+    if (user.settings?.preferences?.communicationStyle) {
+      contexts.push(`Communication style: ${user.settings.preferences.communicationStyle}`);
     }
 
     // Use onboarding data if available

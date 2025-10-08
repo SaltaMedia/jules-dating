@@ -160,6 +160,7 @@ const userSchema = new mongoose.Schema({
   // Settings
   settings: {
     aboutMe: String,
+    age: String,
     preferences: {
       communicationStyle: {
         type: String,
@@ -168,8 +169,7 @@ const userSchema = new mongoose.Schema({
       },
       adviceFocus: {
         type: String,
-        enum: ['style', 'confidence', 'dating', 'career', 'general'],
-        default: 'style'
+        enum: ['style', 'confidence', 'dating', 'career', 'general']
       }
     },
     darkMode: {
