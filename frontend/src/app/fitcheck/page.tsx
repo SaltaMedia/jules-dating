@@ -67,6 +67,7 @@ export default function FitCheckPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [feedback, setFeedback] = useState<any>(null);
   const [userNotes, setUserNotes] = useState('');
+  const [error, setError] = useState<string>('');
   const [showNotesPrompt, setShowNotesPrompt] = useState(false);
   const [savedNotes, setSavedNotes] = useState('');
   const [outfits, setOutfits] = useState<Outfit[]>([]);
@@ -124,20 +125,33 @@ export default function FitCheckPage() {
     if (!file) return;
 
     setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setSelectedImage(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    
+    // Check if it's a HEIC/HEIF file
+    const fileExtension = file.name.toLowerCase().split('.').pop();
+    const isHEIC = ['heic', 'heif'].includes(fileExtension || '');
+    
+    if (isHEIC) {
+      // For HEIC files, we can't show a preview, but we can still upload them
+      // Set a special marker so we can show a placeholder in the UI
+      setSelectedImage('HEIC_FILE_PLACEHOLDER');
+    } else {
+      // For regular files, show normal preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async () => {
     if (!selectedImage) {
-      alert('Please select an image');
+      setError('Please select an image');
       return;
     }
 
     setIsUploading(true);
+    setError(''); // Clear any previous errors
     try {
       const token = localStorage.getItem('token');
       
@@ -145,9 +159,13 @@ export default function FitCheckPage() {
       const formData = new FormData();
       if (selectedFile) {
         formData.append('image', selectedFile);
-      } else {
+      } else if (selectedImage !== 'HEIC_FILE_PLACEHOLDER') {
         const file = dataURLtoFile(selectedImage, 'outfit.jpg');
         formData.append('image', file);
+      } else {
+        // This shouldn't happen since we always have selectedFile for HEIC
+        setError('Please select a valid image file');
+        return;
       }
 
       const uploadResponse = await api.post('/api/images/upload', formData, {
@@ -208,9 +226,21 @@ export default function FitCheckPage() {
         image_quality_bucket: imageQualityBucket,
         event_context: eventContext || 'general'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting fit check:', error);
-      alert('Error submitting fit check. Please try again.');
+      
+      // Extract and display the specific error message
+      let errorMessage = 'Error submitting fit check. Please try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -330,11 +360,21 @@ export default function FitCheckPage() {
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-4 sm:p-8 text-center">
                     {selectedImage ? (
                       <div className="space-y-4">
-                        <img
-                          src={selectedImage}
-                          alt="Selected outfit"
-                          className="w-full max-w-48 sm:max-w-64 h-48 sm:h-64 mx-auto rounded-lg object-cover"
-                        />
+                        {selectedImage === 'HEIC_FILE_PLACEHOLDER' ? (
+                          <div className="w-full max-w-48 sm:max-w-64 h-48 sm:h-64 mx-auto rounded-lg bg-gray-700/50 border-2 border-dashed border-gray-600 flex flex-col items-center justify-center">
+                            <div className="text-gray-400 text-center">
+                              <div className="text-4xl mb-2">📱</div>
+                              <p className="text-sm">HEIC file uploaded.</p>
+                              <p className="text-xs text-gray-400 mt-1">Unable to preview, but upload will work perfectly!</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <img
+                            src={selectedImage}
+                            alt="Selected outfit"
+                            className="w-full max-w-48 sm:max-w-64 h-48 sm:h-64 mx-auto rounded-lg object-cover"
+                          />
+                        )}
                         <button
                           onClick={() => setSelectedImage(null)}
                           className="text-red-400 hover:text-red-300 transition-colors"
@@ -369,6 +409,11 @@ export default function FitCheckPage() {
 
                 {/* Submit Button - Sticky on Mobile */}
                 <div className="sticky bottom-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 pt-4 pb-2 -mx-4 px-4">
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+                      <p className="text-red-300 text-sm">{error}</p>
+                    </div>
+                  )}
                   <button
                     onClick={handleSubmit}
                     disabled={!selectedImage || isUploading}

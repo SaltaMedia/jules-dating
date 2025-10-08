@@ -76,11 +76,23 @@ export default function AnonymousFitCheckPage() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      
+      // Check if it's a HEIC/HEIF file
+      const fileExtension = file.name.toLowerCase().split('.').pop();
+      const isHEIC = ['heic', 'heif'].includes(fileExtension || '');
+      
+      if (isHEIC) {
+        // For HEIC files, we can't show a preview, but we can still upload them
+        // Set a special marker so we can show a placeholder in the UI
+        setSelectedImage('HEIC_FILE_PLACEHOLDER');
+      } else {
+        // For regular files, show normal preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setSelectedImage(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -107,10 +119,14 @@ export default function AnonymousFitCheckPage() {
       const formData = new FormData();
       if (selectedFile) {
         formData.append('image', selectedFile);
-      } else {
+      } else if (selectedImage !== 'HEIC_FILE_PLACEHOLDER') {
         // Fallback to base64 conversion if needed
         const file = dataURLtoFile(selectedImage, 'outfit.jpg');
         formData.append('image', file);
+      } else {
+        // This shouldn't happen since we always have selectedFile for HEIC
+        setError('Please select a valid image file');
+        return;
       }
 
       const uploadResponse = await fetch('/api/images/anonymous', {
@@ -128,7 +144,9 @@ export default function AnonymousFitCheckPage() {
           setError(errorData.message || 'You\'ve used your free fit check! Sign up to get unlimited fit checks.');
           return;
         }
-        throw new Error(errorData.message || 'Failed to upload image');
+        // Show specific upload error to user
+        setError(errorData.message || 'Failed to upload image. Please try again.');
+        return;
       }
 
       const uploadData = await uploadResponse.json();
@@ -153,7 +171,9 @@ export default function AnonymousFitCheckPage() {
           setError(errorData.message || 'You\'ve used your free fit check! Sign up to get unlimited fit checks.');
           return;
         }
-        throw new Error(errorData.message || 'Failed to submit fit check');
+        // Show specific error to user
+        setError(errorData.error || errorData.message || 'Failed to submit fit check. Please try again.');
+        return;
       }
 
       const fitCheckData = await fitCheckResponse.json();
@@ -333,11 +353,21 @@ export default function AnonymousFitCheckPage() {
             <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center">
               {selectedImage ? (
                 <div className="space-y-4">
-                  <img
-                    src={selectedImage}
-                    alt="Selected outfit"
-                    className="max-w-full max-h-64 mx-auto rounded-lg"
-                  />
+                  {selectedImage === 'HEIC_FILE_PLACEHOLDER' ? (
+                    <div className="w-full max-w-64 h-64 mx-auto rounded-lg bg-gray-700/50 border-2 border-dashed border-gray-600 flex flex-col items-center justify-center">
+                      <div className="text-gray-400 text-center">
+                        <div className="text-4xl mb-2">📱</div>
+                        <p className="text-sm">HEIC file uploaded.</p>
+                        <p className="text-xs text-gray-400 mt-1">Unable to preview, but upload will work perfectly!</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={selectedImage}
+                      alt="Selected outfit"
+                      className="max-w-full max-h-64 mx-auto rounded-lg"
+                    />
+                  )}
                   <button
                     onClick={() => {
                       setSelectedImage(null);

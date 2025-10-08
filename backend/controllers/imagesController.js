@@ -39,41 +39,48 @@ const validateFile = (file) => {
   // Check file size (50MB max for modern phone photos)
   const maxSize = 50 * 1024 * 1024; // 50MB
   if (file.size > maxSize) {
-    throw new Error(`File size too large. Maximum allowed: ${maxSize / (1024 * 1024)}MB`);
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    throw new Error(`File size is ${sizeMB}MB. Maximum allowed is 50MB. Please compress your image or choose a smaller file.`);
   }
 
-  // Strict MIME type validation
+  // Strict MIME type validation - including HEIC/HEIF support
   const allowedMimeTypes = [
     'image/jpeg',
     'image/jpg',
     'image/png',
     'image/gif',
-    'image/webp'
+    'image/webp',
+    'image/heic',
+    'image/heif',
+    'application/octet-stream' // Some devices send HEIC as this
   ];
 
   if (!allowedMimeTypes.includes(file.mimetype)) {
-    throw new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed');
+    throw new Error(`File type '${file.mimetype}' is not supported. Please use JPEG, PNG, GIF, WebP, or HEIC images.`);
   }
 
   // Check file extension
-  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
   const fileExtension = path.extname(file.originalname).toLowerCase();
 
   if (!allowedExtensions.includes(fileExtension)) {
-    throw new Error('Invalid file extension');
+    throw new Error(`File extension '${fileExtension}' is not supported. Please use .jpg, .png, .gif, .webp, or .heic files.`);
   }
 
-  // Validate file extension matches MIME type
+  // Validate file extension matches MIME type (relaxed for HEIC which may have different MIME types)
   const mimeToExt = {
     'image/jpeg': ['.jpg', '.jpeg'],
     'image/jpg': ['.jpg', '.jpeg'],
     'image/png': ['.png'],
     'image/gif': ['.gif'],
-    'image/webp': ['.webp']
+    'image/webp': ['.webp'],
+    'image/heic': ['.heic', '.heif'],
+    'image/heif': ['.heic', '.heif'],
+    'application/octet-stream': ['.heic', '.heif', '.jpg', '.jpeg', '.png'] // Allow HEIC sent as octet-stream
   };
 
-  if (!mimeToExt[file.mimetype].includes(fileExtension)) {
-    throw new Error('File extension does not match MIME type');
+  if (mimeToExt[file.mimetype] && !mimeToExt[file.mimetype].includes(fileExtension)) {
+    throw new Error(`File extension '${fileExtension}' does not match the file type. Please make sure your image file is not corrupted.`);
   }
 
   // Check for suspicious file names
@@ -86,7 +93,7 @@ const validateFile = (file) => {
 
   for (const pattern of suspiciousPatterns) {
     if (pattern.test(file.originalname)) {
-      throw new Error('Suspicious filename detected');
+      throw new Error('Invalid filename. Please rename your file and try again.');
     }
   }
 
@@ -121,22 +128,25 @@ const uploadImage = async (req, res) => {
     const uploadPromise = new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: 'jules-style',
-          resource_type: 'image', // Explicitly set to image
+          folder: `jules-style/${req.user.id || 'anonymous'}`,
+          resource_type: 'auto', // Auto-detect resource type (handles HEIC)
+          format: 'jpg', // Convert all images to JPG (including HEIC)
           transformation: [
-            { width: 800, height: 800, crop: 'limit' },
-            { quality: 'auto' }
+            { width: 2000, height: 2000, crop: 'limit' }, // Allow larger images but limit max size
+            { quality: 'auto:good' }, // Auto quality with good baseline
+            { fetch_format: 'auto' } // Automatically serve best format for browser
           ],
           // Security options
           overwrite: false, // Prevent overwriting existing images
           unique_filename: true, // Generate unique filenames
           use_filename: false, // Don't use original filename for security
-          // User-specific folder for better organization
-          folder: `jules-style/${req.user.id || 'anonymous'}`
+          // Additional options for better image handling
+          invalidate: true // Invalidate CDN cache if updating
         },
         (error, result) => {
           if (error) {
-            reject(error);
+            console.error('Cloudinary upload error:', error);
+            reject(new Error(`Image upload failed: ${error.message || 'Unknown error'}`));
           } else {
             resolve(result);
           }
@@ -158,17 +168,24 @@ const uploadImage = async (req, res) => {
     console.error('Error uploading image:', error);
     
     // Better error handling for validation failures
-    if (error.message.includes('File size too large') || 
-        error.message.includes('Invalid file type') ||
-        error.message.includes('Invalid file extension') ||
-        error.message.includes('Suspicious filename')) {
+    if (error.message.includes('File size') || 
+        error.message.includes('file type') ||
+        error.message.includes('file extension') ||
+        error.message.includes('filename') ||
+        error.message.includes('does not match')) {
       return res.status(400).json({ 
-        message: 'File validation failed',
-        error: error.message 
+        message: error.message
       });
     }
     
-    res.status(500).json({ message: 'Error uploading image' });
+    // Cloudinary-specific errors
+    if (error.message.includes('Image upload failed')) {
+      return res.status(500).json({ 
+        message: error.message
+      });
+    }
+    
+    res.status(500).json({ message: 'Error uploading image. Please try again.' });
   }
 };
 
@@ -184,21 +201,25 @@ const uploadAnonymousImage = async (req, res) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'jules-style/anonymous',
-          resource_type: 'image',
+          resource_type: 'auto', // Auto-detect resource type (handles HEIC)
+          format: 'jpg', // Convert all images to JPG (including HEIC)
           transformation: [
-            { width: 800, height: 800, crop: 'limit' },
-            { quality: 'auto' }
+            { width: 2000, height: 2000, crop: 'limit' }, // Allow larger images but limit max size
+            { quality: 'auto:good' }, // Auto quality with good baseline
+            { fetch_format: 'auto' } // Automatically serve best format for browser
           ],
           // Security options
           overwrite: false,
           unique_filename: true,
           use_filename: false,
           // Anonymous-specific folder
-          public_id: `anonymous_${req.anonymousId}_${Date.now()}`
+          public_id: `anonymous_${req.anonymousId}_${Date.now()}`,
+          invalidate: true
         },
         (error, result) => {
           if (error) {
-            reject(error);
+            console.error('Cloudinary upload error:', error);
+            reject(new Error(`Image upload failed: ${error.message || 'Unknown error'}`));
           } else {
             resolve(result);
           }
@@ -220,17 +241,24 @@ const uploadAnonymousImage = async (req, res) => {
     console.error('Error uploading anonymous image:', error);
     
     // Better error handling for validation failures
-    if (error.message.includes('File size too large') || 
-        error.message.includes('Invalid file type') ||
-        error.message.includes('Invalid file extension') ||
-        error.message.includes('Suspicious filename')) {
+    if (error.message.includes('File size') || 
+        error.message.includes('file type') ||
+        error.message.includes('file extension') ||
+        error.message.includes('filename') ||
+        error.message.includes('does not match')) {
       return res.status(400).json({ 
-        message: 'File validation failed',
-        error: error.message 
+        message: error.message
       });
     }
     
-    res.status(500).json({ message: 'Error uploading image' });
+    // Cloudinary-specific errors
+    if (error.message.includes('Image upload failed')) {
+      return res.status(500).json({ 
+        message: error.message
+      });
+    }
+    
+    res.status(500).json({ message: 'Error uploading image. Please try again.' });
   }
 };
 

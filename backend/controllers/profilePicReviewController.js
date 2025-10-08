@@ -34,7 +34,7 @@ You're reviewing a profile picture for dating app success. Be brutally honest ab
 - **Grooming** - Clean, put-together appearance, appropriate styling  
 - **Eye Contact** - Looking at camera, engaging, confident
 - **Genuine Smile** - Authentic, approachable, not forced
-- **Overall Appeal** - Attractive, confident, dating-app ready
+- **Overall** - Attractive, confident, dating-app ready
 - **Physical Fitness** - Body composition, muscle tone, overall health and fitness level
 
 Give your feedback in a natural, conversational way - NOT as a numbered list (1. 2. 3. etc.). Be direct and engaging. Write like you're talking to a friend, not filling out a form.
@@ -54,15 +54,24 @@ Give your feedback in a natural, conversational way - NOT as a numbered list (1.
 - A technically good photo of a fish is still a terrible dating app photo
 - Be dynamic and intelligent in your assessment, but don't hold back on red flags
 - Use your own voice and personality to be brutally honest - don't follow scripted responses
+- NO FAKE COMPLIMENTS - if there's nothing genuinely good to say, don't say it
+- NO "COMPLIMENT SANDWICH" - don't pad harsh criticism with forced positivity
+- If a photo is bad (1-5/10), be direct and explain why it's hurting their chances
+- Don't try to find silver linings in genuinely bad photos - honesty helps more than false encouragement
 
 Rate the photo 1-10 and give specific, actionable feedback. Be direct and honest - don't sugarcoat. If something is a dating app death sentence, say so IMMEDIATELY at the top of your review. Give real feedback that will help them get more matches, not false confidence.
 
 **RATING SCALE CONTEXT:**
+- 1-3/10 = Bad photo, major issues that kill dating app success - be brutally honest
+- 4-5/10 = Below average, significant improvements needed
+- 6-7/10 = Decent photo, but room for improvement
 - 8/10 = Excellent photo, very strong for dating apps
 - 9/10 = Outstanding photo, will definitely get attention  
 - 10/10 = Exceptional photo, dating app gold standard
 - Don't be afraid to give 10/10 when a photo truly deserves it - it builds confidence and shows what's possible
+- Don't be afraid to give LOW ratings (1-5) when a photo is genuinely bad - false confidence doesn't help anyone
 - When you give high scores (8+), acknowledge that these are genuinely great scores on your scale
+- When you give low scores (1-5), be direct about why it's not working - no sugarcoating
 
 **HONEST FITNESS FEEDBACK:**
 - If someone is significantly overweight or out of shape, mention that getting in better shape would dramatically improve their dating prospects
@@ -244,7 +253,25 @@ const submitProfilePicReview = async (req, res) => {
     });
   } catch (error) {
     logError('Error submitting profile pic review:', error);
-    res.status(500).json({ error: 'Failed to submit profile pic review' });
+    
+    // Pass through specific error messages
+    if (error.message) {
+      if (error.message.includes('OpenAI') || error.message.includes('API key')) {
+        return res.status(500).json({ 
+          error: 'Image analysis service is currently unavailable. Please try again later.' 
+        });
+      }
+      
+      if (error.message.includes('analyze') || error.message.includes('vision')) {
+        return res.status(500).json({ 
+          error: 'Unable to analyze image. Please make sure the image is clear and try again.' 
+        });
+      }
+    }
+    
+    res.status(500).json({ 
+      error: 'Failed to submit profile pic review. Please try again.' 
+    });
   }
 };
 
@@ -305,7 +332,25 @@ const submitAnonymousProfilePicReview = async (req, res) => {
     });
   } catch (error) {
     logError('Error submitting anonymous profile pic review:', error);
-    res.status(500).json({ error: 'Failed to submit profile pic review' });
+    
+    // Pass through specific error messages
+    if (error.message) {
+      if (error.message.includes('OpenAI') || error.message.includes('API key')) {
+        return res.status(500).json({ 
+          error: 'Image analysis service is currently unavailable. Please try again later.' 
+        });
+      }
+      
+      if (error.message.includes('analyze') || error.message.includes('vision')) {
+        return res.status(500).json({ 
+          error: 'Unable to analyze image. Please make sure the image is clear and try again.' 
+        });
+      }
+    }
+    
+    res.status(500).json({ 
+      error: 'Failed to submit profile pic review. Please try again.' 
+    });
   }
 };
 
