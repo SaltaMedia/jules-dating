@@ -327,7 +327,16 @@ async function chat(req, res) {
   console.log('🚨 DEBUG: CHAT FUNCTION CALLED - This should appear for follow-up messages');
   try {
     
-    const { message, context } = req.body;
+    const { message, context, reviewContext } = req.body;
+    
+    console.log('🔍 DEBUG: Received reviewContext:', reviewContext ? 'YES' : 'NO');
+    if (reviewContext) {
+      console.log('🔍 DEBUG: reviewContext details:', {
+        type: reviewContext.type,
+        hasImageUrl: !!reviewContext.imageUrl,
+        rating: reviewContext.rating
+      });
+    }
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -408,41 +417,63 @@ async function chat(req, res) {
       UserContextCache.getUserContext(actualUserId)
     ]);
 
-    // Check for image context in conversation, but only use it if intent is image-related
+    // Check for image context in conversation
     const hasImageContext = conversationMessages.some(msg => msg.imageContext?.hasImage);
     
     // Define intents that should include image context (style-related intents)
     const imageRelatedIntents = ['style_feedback', 'style_images'];
-    const shouldIncludeImageContext = hasImageContext && imageRelatedIntents.includes(intent);
+    // CRITICAL FIX: Always include image context if we have reviewContext (user is asking about a specific reviewed image)
+    // This ensures Jules can see the image when user asks follow-up questions like "what can I do better to make this a 10"
+    const shouldIncludeImageContext = reviewContext || (hasImageContext && imageRelatedIntents.includes(intent));
+    
+    console.log('🔍 DEBUG: Image context decision:', {
+      hasImageContext,
+      intent,
+      reviewContext: !!reviewContext,
+      shouldIncludeImageContext,
+      reviewImageUrl: reviewContext?.imageUrl
+    });
     
     let shouldUseVisionModel = false;
     let imageUrlForVision = null;
     
     if (shouldIncludeImageContext) {
-      // Find the most recent message with image context
-      const recentImageMessage = conversationMessages
-        .filter(msg => msg.imageContext?.hasImage)
-        .slice(-1)[0];
+      let imageUrlToUse = null;
+      let thumbnailUrlToUse = null;
       
-      if (recentImageMessage?.imageContext?.thumbnailUrl) {
-        // Convert thumbnail URL to full resolution for profile pic review lookup
-        const fullImageUrl = recentImageMessage.imageContext.thumbnailUrl
-          .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
+      // First, try to get image from reviewContext (when user clicks "Ask Jules" from a review)
+      if (reviewContext && reviewContext.imageUrl) {
+        imageUrlToUse = reviewContext.imageUrl;
+        // Create a thumbnail URL for consistency
+        thumbnailUrlToUse = reviewContext.imageUrl;
+      } else {
+        // Fall back to finding image context in conversation messages
+        const recentImageMessage = conversationMessages
+          .filter(msg => msg.imageContext?.hasImage)
+          .slice(-1)[0];
         
+        if (recentImageMessage?.imageContext?.thumbnailUrl) {
+          // Convert thumbnail URL to full resolution for profile pic review lookup
+          imageUrlToUse = recentImageMessage.imageContext.thumbnailUrl
+            .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
+          thumbnailUrlToUse = recentImageMessage.imageContext.thumbnailUrl;
+        }
+      }
+      
+      if (imageUrlToUse) {
         // Check if we have a profile pic review for this image
-        const profilePicReviewContext = await getProfilePicReviewContext(actualUserId, fullImageUrl);
+        const profilePicReviewContext = await getProfilePicReviewContext(actualUserId, imageUrlToUse);
         
         // Add image context to current user message
         userMessage.imageContext = {
           hasImage: true,
-          thumbnailUrl: recentImageMessage.imageContext.thumbnailUrl,
-          analysis: recentImageMessage.imageContext.analysis,
+          thumbnailUrl: thumbnailUrlToUse,
           ...(profilePicReviewContext && { 
             profilePicReview: profilePicReviewContext 
           })
         };
         
-        imageUrlForVision = fullImageUrl;
+        imageUrlForVision = imageUrlToUse;
         shouldUseVisionModel = true;
         
         if (profilePicReviewContext) {
@@ -533,6 +564,44 @@ CONTEXT INTEGRATION INSTRUCTIONS:
 
 ${userContext}` : '';
 
+    // Add review context if available
+    let reviewContextInstructions = '';
+    if (reviewContext) {
+      if (reviewContext.type === 'profile_pic_review') {
+        reviewContextInstructions = `
+
+### PROFILE PIC REVIEW CONTEXT - CRITICAL INSTRUCTIONS:
+- You previously reviewed this user's PROFILE PICTURE for dating app success and rated it ${reviewContext.rating}/10
+- Your previous analysis was: "${reviewContext.feedback}"
+- The user is now asking follow-up questions about the SAME profile picture
+- IMPORTANT: This is a PROFILE PICTURE review, NOT a fit check or outfit review
+- For profile pictures, focus on: dating app effectiveness, facial expression, lighting, grooming, overall appeal
+- Do NOT suggest outfit changes, accessories, or wardrobe items for profile pictures
+- Do NOT contradict your previous positive feedback (if you said something was good, don't suggest changing it)
+- Use your previous rating and analysis as the foundation for your response
+- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- If asked how to improve to a 10, explain what's already working well and what minor tweaks could help
+- Be consistent with your previous analysis - don't contradict yourself
+- The image URL is: ${reviewContext.imageUrl}
+- Focus on dating app strategy, not fashion advice`;
+      } else if (reviewContext.type === 'fit_check') {
+        reviewContextInstructions = `
+
+### FIT CHECK CONTEXT - CRITICAL INSTRUCTIONS:
+- You previously reviewed this user's outfit and rated it ${reviewContext.rating}/10
+- Your previous analysis was: "${reviewContext.feedback}"
+- The user is now asking follow-up questions about the SAME outfit
+- Use your previous rating and analysis as the foundation for your response
+- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- Reference your previous feedback and build upon it
+- Be consistent with your previous analysis
+- If the user asks for a new rating, remind them you already rated it ${reviewContext.rating}/10
+- The image URL is: ${reviewContext.imageUrl}
+- Event context: ${reviewContext.eventContext || 'General outfit'}
+- You can reference specific details from your previous review`;
+      }
+    }
+
     // Add image context instructions if we have image context
     let imageInstructions = '';
     if (shouldUseVisionModel && imageUrlForVision) {
@@ -568,7 +637,7 @@ ${userContext}` : '';
       }
     }
 
-    const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${imageInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
+    const fullSystemPrompt = `${basePrompt}${toneAdjustment}${satisfactionInstructions}${imageInstructions}${reviewContextInstructions}\n\nCURRENT MODE: ${intent}\nMODE INSTRUCTIONS: ${modeInstructions}${contextInstructions}`;
     
     // Debug: Log user context for troubleshooting
     console.log(`DEBUG: User context for ${actualUserId}:`, fullSystemPrompt.includes('USER CONTEXT:') ? 'User context loaded' : 'No user context found');
@@ -837,7 +906,7 @@ You've used all 5 of your free messages! Sign up to continue chatting with Jules
 async function chatWithImage(req, res) {
   try {
     
-    const { message, imageUrl, context } = req.body;
+    const { message, imageUrl, context, reviewContext } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -912,7 +981,46 @@ async function chatWithImage(req, res) {
 
     // Get system prompt
     const systemPrompt = await getSystemPrompt(actualUserId);
-    const fullSystemPrompt = `${systemPrompt}
+    
+    // Add review context if available
+    let reviewContextInstructions = '';
+    if (reviewContext) {
+      if (reviewContext.type === 'profile_pic_review') {
+        reviewContextInstructions = `
+
+### PROFILE PIC REVIEW CONTEXT - CRITICAL INSTRUCTIONS:
+- You previously reviewed this user's PROFILE PICTURE for dating app success and rated it ${reviewContext.rating}/10
+- Your previous analysis was: "${reviewContext.feedback}"
+- The user is now asking follow-up questions about the SAME profile picture
+- IMPORTANT: This is a PROFILE PICTURE review, NOT a fit check or outfit review
+- For profile pictures, focus on: dating app effectiveness, facial expression, lighting, grooming, overall appeal
+- Do NOT suggest outfit changes, accessories, or wardrobe items for profile pictures
+- Do NOT contradict your previous positive feedback (if you said something was good, don't suggest changing it)
+- Use your previous rating and analysis as the foundation for your response
+- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- If asked how to improve to a 10, explain what's already working well and what minor tweaks could help
+- Be consistent with your previous analysis - don't contradict yourself
+- The image URL is: ${reviewContext.imageUrl}
+- Focus on dating app strategy, not fashion advice`;
+      } else if (reviewContext.type === 'fit_check') {
+        reviewContextInstructions = `
+
+### FIT CHECK CONTEXT - CRITICAL INSTRUCTIONS:
+- You previously reviewed this user's outfit and rated it ${reviewContext.rating}/10
+- Your previous analysis was: "${reviewContext.feedback}"
+- The user is now asking follow-up questions about the SAME outfit
+- Use your previous rating and analysis as the foundation for your response
+- Do NOT give a different rating - stick with your original ${reviewContext.rating}/10 rating
+- Reference your previous feedback and build upon it
+- Be consistent with your previous analysis
+- If the user asks for a new rating, remind them you already rated it ${reviewContext.rating}/10
+- The image URL is: ${reviewContext.imageUrl}
+- Event context: ${reviewContext.eventContext || 'General outfit'}
+- You can reference specific details from your previous review`;
+      }
+    }
+    
+    const fullSystemPrompt = `${systemPrompt}${reviewContextInstructions}
 
 ### IMAGE ANALYSIS MODE
 You CAN see and analyze images. When a user uploads an image, you MUST analyze it visually and provide specific, actionable dating advice based on what you see. Focus on:
