@@ -34,6 +34,7 @@ export default function ProfilePicReviewPage() {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState<'success' | 'error'>('success');
+  const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -452,79 +453,119 @@ export default function ProfilePicReviewPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col gap-3">
+                    {/* Ask Jules About This Button */}
                     <button
                       onClick={() => {
-                        setFeedback(null);
-                        setSelectedImage(null);
-                        setSelectedFile(null);
-                        setSpecificQuestion('');
-                        setUserNotes('');
-                        setSavedNotes('');
-                        setShowNotesPrompt(false);
+                        if (!feedback) return;
+                        
+                        // Prepare context object for chat
+                        const reviewContext = {
+                          type: 'profile_pic_review',
+                          imageUrl: feedback.originalImageUrl,
+                          rating: feedback.rating,
+                          feedback: feedback.analysis?.feedback || feedback.advice,
+                          specificQuestion: specificQuestion,
+                          reviewId: feedback.id,
+                          timestamp: new Date().toISOString()
+                        };
+                        
+                        // Store in localStorage for chat to pick up
+                        localStorage.setItem('chatContext', JSON.stringify(reviewContext));
+                        
+                        // Track analytics
+                        track('ask_jules_clicked', {
+                          source: 'profile_pic_review',
+                          rating: feedback.rating,
+                          has_specific_question: !!specificQuestion
+                        });
+                        
+                        // Navigate to chat
+                        router.push('/chat?context=profile_pic_review');
                       }}
-                      className="flex-1 bg-white/20 text-white py-2 rounded-lg hover:bg-white/30 transition-colors"
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center justify-center gap-2"
                     >
-                      Try Another Photo
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                      </svg>
+                      Ask Jules About This Review
                     </button>
-                    <button
-                      onClick={async () => {
-                        try {
-                          // Save the profile pic review feedback
-                          if (feedback && feedback.id) {
-                            await apiClient.put(`/api/profile-pic-review/${feedback.id}/save`, {
-                              saved: true,
-                              savedAt: new Date().toISOString()
-                            });
-                            
-                            track('profile_pic_review_saved', {
-                              profile_pic_rating: feedback?.rating,
-                              has_specific_question: !!specificQuestion
-                            });
-                            
-                            showNotificationMessage('Profile pic review saved successfully!');
-                            
-                            // Add the current review to the list if it's not already there
-                            const currentReview = {
-                              _id: feedback.id,
-                              originalImageUrl: feedback.originalImageUrl,
-                              advice: feedback.advice,
-                              rating: feedback.rating,
-                              analysis: feedback.analysis,
-                              createdAt: feedback.createdAt,
-                              saved: true,
-                              savedAt: new Date().toISOString()
-                            };
-                            
-                            setProfilePicReviews(prev => {
-                              // Check if review already exists in the list
-                              const exists = prev.some(review => review._id === feedback.id);
-                              if (!exists) {
-                                return [currentReview, ...prev];
-                              }
-                              return prev;
-                            });
-                            
-                            // Close the review modal and reset form
-                            setFeedback(null);
-                            setSelectedImage(null);
-                            setSelectedFile(null);
-                            setSpecificQuestion('');
-                            setUserNotes('');
-                            setSavedNotes('');
-                            setShowNotesPrompt(false);
-                          } else {
-                            showNotificationMessage('Cannot save: missing profile pic review data', 'error');
+
+                    {/* Try Another / Save Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={() => {
+                          setFeedback(null);
+                          setSelectedImage(null);
+                          setSelectedFile(null);
+                          setSpecificQuestion('');
+                          setUserNotes('');
+                          setSavedNotes('');
+                          setShowNotesPrompt(false);
+                        }}
+                        className="flex-1 bg-white/20 text-white py-2 rounded-lg hover:bg-white/30 transition-colors"
+                      >
+                        Try Another Photo
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            // Save the profile pic review feedback
+                            if (feedback && feedback.id) {
+                              await apiClient.put(`/api/profile-pic-review/${feedback.id}/save`, {
+                                saved: true,
+                                savedAt: new Date().toISOString()
+                              });
+                              
+                              track('profile_pic_review_saved', {
+                                profile_pic_rating: feedback?.rating,
+                                has_specific_question: !!specificQuestion
+                              });
+                              
+                              showNotificationMessage('Profile pic review saved successfully!');
+                              
+                              // Add the current review to the list if it's not already there
+                              const currentReview = {
+                                _id: feedback.id,
+                                originalImageUrl: feedback.originalImageUrl,
+                                advice: feedback.advice,
+                                rating: feedback.rating,
+                                analysis: feedback.analysis,
+                                createdAt: feedback.createdAt,
+                                saved: true,
+                                savedAt: new Date().toISOString()
+                              };
+                              
+                              setProfilePicReviews(prev => {
+                                // Check if review already exists in the list
+                                const exists = prev.some(review => review._id === feedback.id);
+                                if (!exists) {
+                                  return [currentReview, ...prev];
+                                }
+                                return prev;
+                              });
+                              
+                              // Close the review modal and reset form
+                              setFeedback(null);
+                              setSelectedImage(null);
+                              setSelectedFile(null);
+                              setSpecificQuestion('');
+                              setUserNotes('');
+                              setSavedNotes('');
+                              setShowNotesPrompt(false);
+                            } else {
+                              showNotificationMessage('Cannot save: missing profile pic review data', 'error');
+                            }
+                          } catch (error) {
+                            console.error('Error saving profile pic review:', error);
+                            showNotificationMessage('Error saving review. Please try again.', 'error');
                           }
-                        } catch (error) {
-                          console.error('Error saving profile pic review:', error);
-                          showNotificationMessage('Error saving review. Please try again.', 'error');
-                        }
-                      }}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200"
-                    >
-                      Save
-                    </button>
+                        }}
+                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200"
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
