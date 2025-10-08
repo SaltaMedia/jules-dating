@@ -67,6 +67,15 @@ interface OnboardingData {
   
   // Picture
   profilePhoto: string;
+  
+  // Settings Preferences
+  preferences?: {
+    communicationStyle?: string;
+    adviceFocus?: string;
+  };
+  
+  // Settings
+  darkMode?: boolean;
 }
 
 interface ChatSession {
@@ -168,7 +177,16 @@ export default function SettingsPage() {
     budgetType: [],
     
     // Picture
-    profilePhoto: ''
+    profilePhoto: '',
+    
+    // Settings Preferences
+    preferences: {
+      communicationStyle: 'direct',
+      adviceFocus: undefined
+    },
+    
+    // Settings
+    darkMode: false
   });
 
   const router = useRouter();
@@ -265,7 +283,16 @@ export default function SettingsPage() {
         budgetType: Array.isArray(userData.onboarding?.budgetType) ? userData.onboarding.budgetType : [],
         
         // Picture
-        profilePhoto: userData.onboarding?.profilePhoto || userData.picture || ''
+        profilePhoto: userData.onboarding?.profilePhoto || userData.picture || '',
+        
+        // Settings Preferences
+        preferences: {
+          communicationStyle: userData.settings?.preferences?.communicationStyle || 'direct',
+          adviceFocus: userData.settings?.preferences?.adviceFocus
+        },
+        
+        // Settings
+        darkMode: userData.settings?.darkMode || false
       };
       
       console.log('Mapped data:', mappedData);
