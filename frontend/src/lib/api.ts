@@ -62,16 +62,17 @@ export const apiClient = {
 
   // Chat endpoints
   chat: {
-    send: (message: string, context: any[] = [], userId?: string) => {
+    send: (message: string, context: any[] = [], userId?: string, reviewContext?: any) => {
       console.log('🚨 DEBUG: Making API call to /api/chat with:', {
         message: message.substring(0, 50) + '...',
         contextLength: context.length,
         userId,
+        reviewContext,
         baseURL: api.defaults.baseURL
       });
-      return api.post('/api/chat', { message, context, userId });
+      return api.post('/api/chat', { message, context, userId, reviewContext });
     },
-    sendWithImage: (message: string, imageFile: File, context: any[] = [], userId?: string) => {
+    sendWithImage: (message: string, imageFile: File, context: any[] = [], userId?: string, reviewContext?: any) => {
       console.log('🚨 DEBUG: sendWithImage called with:', {
         message,
         imageFile: {
@@ -80,7 +81,8 @@ export const apiClient = {
           type: imageFile.type
         },
         contextLength: context.length,
-        userId
+        userId,
+        reviewContext
       });
       
       const formData = new FormData();
@@ -88,6 +90,7 @@ export const apiClient = {
       formData.append('image', imageFile);
       formData.append('context', JSON.stringify(context));
       if (userId) formData.append('userId', userId);
+      if (reviewContext) formData.append('reviewContext', JSON.stringify(reviewContext));
       
       console.log('🚨 DEBUG: FormData created with image and message');
       
