@@ -670,21 +670,61 @@ export default function ProfilePicReviewPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-600">
-                <button
-                  onClick={() => setSelectedProfilePicReview(null)}
-                  className="w-full sm:flex-1 bg-blue-600 text-white py-3 sm:py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mobile-button"
-                >
-                  Close
-                </button>
+              <div className="flex flex-col space-y-3 pt-4 border-t border-gray-600">
+                {/* Ask Jules Button */}
                 <button
                   onClick={() => {
-                    setShowDeleteConfirm(true);
+                    if (!selectedProfilePicReview) return;
+                    
+                    // Prepare context object for chat
+                    const reviewContext = {
+                      type: 'profile_pic_review',
+                      imageUrl: selectedProfilePicReview.originalImageUrl,
+                      rating: selectedProfilePicReview.rating,
+                      feedback: selectedProfilePicReview.analysis?.feedback || selectedProfilePicReview.advice,
+                      reviewId: selectedProfilePicReview._id,
+                      timestamp: new Date().toISOString()
+                    };
+                    
+                    // Store in localStorage for chat to pick up
+                    localStorage.setItem('chatContext', JSON.stringify(reviewContext));
+                    
+                    // Track analytics
+                    track('ask_jules_clicked', {
+                      source: 'profile_pic_review_saved',
+                      rating: selectedProfilePicReview.rating,
+                      reviewId: selectedProfilePicReview._id
+                    });
+                    
+                    // Close modal and navigate to chat
+                    setSelectedProfilePicReview(null);
+                    router.push('/chat?context=profile_pic_review');
                   }}
-                  className="w-full sm:flex-1 bg-red-600 text-white py-3 sm:py-2 px-4 rounded-lg hover:bg-red-700 transition-colors mobile-button"
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center justify-center gap-2 mobile-button"
                 >
-                  Delete Review
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  Ask Jules About This Review
                 </button>
+                
+                {/* Close and Delete Buttons */}
+                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                  <button
+                    onClick={() => setSelectedProfilePicReview(null)}
+                    className="w-full sm:flex-1 bg-blue-600 text-white py-3 sm:py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mobile-button"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(true);
+                    }}
+                    className="w-full sm:flex-1 bg-red-600 text-white py-3 sm:py-2 px-4 rounded-lg hover:bg-red-700 transition-colors mobile-button"
+                  >
+                    Delete Review
+                  </button>
+                </div>
               </div>
             </div>
           </div>

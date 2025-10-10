@@ -67,6 +67,10 @@ function ChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Focus input on mount and after messages are sent
   useEffect(() => {
     if (inputRef.current && !isLoading) {
@@ -74,9 +78,35 @@ function ChatPageContent() {
     }
   }, [isLoading]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Handle page focus to restore chat sessions when navigating back
+  useEffect(() => {
+    const handleFocus = () => {
+      if (sessionId && messages.length === 0) {
+        // Page became focused and we have a session but no messages - try to restore
+        console.log('🔍 DEBUG: Page focused, checking for session restoration');
+        const savedMessages = localStorage.getItem(`chatMessages_${sessionId}`);
+        if (savedMessages) {
+          try {
+            const parsedMessages = JSON.parse(savedMessages);
+            setMessages(parsedMessages.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            })));
+            setTimeout(() => {
+              scrollToBottom();
+            }, 100);
+          } catch (error) {
+            console.error('Error restoring messages on focus:', error);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [sessionId, messages.length]);
 
   // Ref to prevent duplicate context processing
   const contextProcessedRef = useRef(false);
@@ -190,10 +220,11 @@ function ChatPageContent() {
       contextProcessedRef.current = false;
     }
     
-    // If session already loaded and no new context, skip reloading
-    if (sessionLoadedRef.current && !chatContext) {
-      console.log('🔍 DEBUG: Skipping session reload - already loaded and no new context');
-      return;
+    // Allow session reloading when navigating back to chat if no messages are loaded
+    // This ensures chat sessions are properly restored when users navigate between modules
+    if (sessionLoadedRef.current && !chatContext && messages.length === 0) {
+      console.log('🔍 DEBUG: No messages loaded, allowing session reload for navigation');
+      sessionLoadedRef.current = false; // Allow reloading
     }
     
     // Check authentication
@@ -271,30 +302,39 @@ function ChatPageContent() {
         // Start with empty messages
         setMessages([]);
         sessionLoadedRef.current = true;
-      } else {
-        // Check for existing active session
-        const currentSessionId = localStorage.getItem('currentChatSessionId');
-        console.log('🔍 DEBUG: currentSessionId found:', currentSessionId);
-        if (currentSessionId) {
-          // Use existing session
-          console.log('🔍 DEBUG: Loading existing session:', currentSessionId);
-          setSessionId(currentSessionId);
-          
-          const savedMessages = localStorage.getItem(`chatMessages_${currentSessionId}`);
-          if (savedMessages) {
-            try {
-              const parsedMessages = JSON.parse(savedMessages);
-              
-              setMessages(parsedMessages.map((msg: any) => ({
-                ...msg,
-                timestamp: new Date(msg.timestamp)
-              })));
-              sessionLoadedRef.current = true;
-            } catch (error) {
-              console.error('Error loading saved messages:', error);
-            }
-          }
         } else {
+          // Check for existing active session
+          const currentSessionId = localStorage.getItem('currentChatSessionId');
+          console.log('🔍 DEBUG: currentSessionId found:', currentSessionId);
+          if (currentSessionId) {
+            // Use existing session
+            console.log('🔍 DEBUG: Loading existing session:', currentSessionId);
+            setSessionId(currentSessionId);
+            
+            const savedMessages = localStorage.getItem(`chatMessages_${currentSessionId}`);
+            if (savedMessages) {
+              try {
+                const parsedMessages = JSON.parse(savedMessages);
+                
+                setMessages(parsedMessages.map((msg: any) => ({
+                  ...msg,
+                  timestamp: new Date(msg.timestamp)
+                })));
+                sessionLoadedRef.current = true;
+                
+                // Ensure we scroll to bottom after loading messages
+                setTimeout(() => {
+                  scrollToBottom();
+                }, 100);
+              } catch (error) {
+                console.error('Error loading saved messages:', error);
+                // Don't reset sessionLoadedRef to avoid infinite retries
+              }
+            } else {
+              console.log('🔍 DEBUG: No saved messages found, but session exists');
+              sessionLoadedRef.current = true;
+            }
+          } else {
           // Generate new session ID for this chat session
           const newSessionId = `session_${Date.now()}`;
           setSessionId(newSessionId);
