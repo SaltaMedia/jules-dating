@@ -9,18 +9,25 @@ import MeetJulesCarousel from '@/components/MeetJulesCarousel';
 export default function WelcomePage() {
   // Free experience landing page
   useEffect(() => {
+    // Store landing source in localStorage for tracking through the funnel
+    localStorage.setItem('landing_source', '/');
+    localStorage.setItem('landing_variant', 'default');
+    localStorage.setItem('landing_timestamp', new Date().toISOString());
+    
     // Track page view
     track('page_visited', {
       page: '/',
       category: 'free_experience',
-      action: 'landing_page_visited'
+      action: 'landing_page_visited',
+      landing_source: '/'
     });
     
     // Track landing page session
     track('landing_page_session', {
       page: '/',
       category: 'free_experience',
-      action: 'landing_page_session_started'
+      action: 'landing_page_session_started',
+      landing_source: '/'
     });
   }, []);
 
@@ -38,7 +45,8 @@ export default function WelcomePage() {
       source: source,
       category: 'free_experience',
       action: 'cta_button_clicked',
-      button_text: buttonTextMap[ctaType] || 'Unknown Button'
+      button_text: buttonTextMap[ctaType] || 'Unknown Button',
+      landing_source: '/'
     });
   };
 

@@ -798,6 +798,173 @@ class AnalyticsController {
     }
   }
 
+  // Get landing page funnel analytics
+  async getLandingPageFunnel(req, res) {
+    try {
+      const { timeRange = '30d' } = req.query;
+      const startDate = analyticsService.getStartDate(timeRange);
+
+      // Get all landing page visits by landing source
+      const landingPageVisits = await AnalyticsEvent.aggregate([
+        { 
+          $match: { 
+            timestamp: { $gte: startDate },
+            action: 'landing_page_visited',
+            'properties.landing_source': { $exists: true }
+          }
+        },
+        { 
+          $group: { 
+            _id: '$properties.landing_source', 
+            visits: { $sum: 1 },
+            sessions: { $addToSet: '$sessionId' }
+          }
+        }
+      ]);
+
+      // Get profile pic review page visits by landing source
+      const profilePicReviewVisits = await AnalyticsEvent.aggregate([
+        { 
+          $match: { 
+            timestamp: { $gte: startDate },
+            page: '/free-experience/profile-pic-review',
+            'properties.landing_source': { $exists: true }
+          }
+        },
+        { 
+          $group: { 
+            _id: '$properties.landing_source', 
+            visits: { $sum: 1 },
+            sessions: { $addToSet: '$sessionId' }
+          }
+        }
+      ]);
+
+      // Get profile pic review uploads by landing source
+      const profilePicReviewUploads = await AnalyticsEvent.aggregate([
+        { 
+          $match: { 
+            timestamp: { $gte: startDate },
+            action: { $in: ['profile_pic_review_uploaded', 'anonymous_profile_pic_review_uploaded'] },
+            'properties.landing_source': { $exists: true }
+          }
+        },
+        { 
+          $group: { 
+            _id: '$properties.landing_source', 
+            uploads: { $sum: 1 },
+            sessions: { $addToSet: '$sessionId' }
+          }
+        }
+      ]);
+
+      // Get conversion prompt clicks by landing source
+      const conversionPromptClicks = await AnalyticsEvent.aggregate([
+        { 
+          $match: { 
+            timestamp: { $gte: startDate },
+            action: 'signup_from_conversion_prompt',
+            'properties.landing_source': { $exists: true }
+          }
+        },
+        { 
+          $group: { 
+            _id: '$properties.landing_source', 
+            clicks: { $sum: 1 },
+            sessions: { $addToSet: '$sessionId' }
+          }
+        }
+      ]);
+
+      // Get account creations by landing source
+      const accountCreations = await AnalyticsEvent.aggregate([
+        { 
+          $match: { 
+            timestamp: { $gte: startDate },
+            action: 'account_created',
+            'properties.landing_source': { $exists: true }
+          }
+        },
+        { 
+          $group: { 
+            _id: '$properties.landing_source', 
+            signups: { $sum: 1 },
+            users: { $addToSet: '$userId' }
+          }
+        }
+      ]);
+
+      // Get user logins by landing source
+      const userLogins = await AnalyticsEvent.aggregate([
+        { 
+          $match: { 
+            timestamp: { $gte: startDate },
+            action: 'user_logged_in',
+            'properties.landing_source': { $exists: true }
+          }
+        },
+        { 
+          $group: { 
+            _id: '$properties.landing_source', 
+            logins: { $sum: 1 },
+            users: { $addToSet: '$userId' }
+          }
+        }
+      ]);
+
+      // Aggregate data by landing source
+      const landingSources = ['/', '/1', '/2'];
+      const funnelData = landingSources.map(source => {
+        const visits = landingPageVisits.find(v => v._id === source);
+        const picReviewVisits = profilePicReviewVisits.find(v => v._id === source);
+        const picReviewUploads = profilePicReviewUploads.find(v => v._id === source);
+        const conversionClicks = conversionPromptClicks.find(v => v._id === source);
+        const signups = accountCreations.find(v => v._id === source);
+        const logins = userLogins.find(v => v._id === source);
+
+        const totalVisits = visits?.visits || 0;
+        const totalPicReviewVisits = picReviewVisits?.visits || 0;
+        const totalPicReviewUploads = picReviewUploads?.uploads || 0;
+        const totalConversionClicks = conversionClicks?.clicks || 0;
+        const totalSignups = signups?.signups || 0;
+        const totalLogins = logins?.logins || 0;
+
+        return {
+          landing_source: source,
+          landing_page_visits: totalVisits,
+          profile_pic_review_visits: totalPicReviewVisits,
+          profile_pic_review_uploads: totalPicReviewUploads,
+          conversion_prompt_clicks: totalConversionClicks,
+          signups: totalSignups,
+          logins: totalLogins,
+          conversion_rates: {
+            visit_to_pic_review: totalVisits > 0 ? ((totalPicReviewVisits / totalVisits) * 100).toFixed(2) : 0,
+            pic_review_visit_to_upload: totalPicReviewVisits > 0 ? ((totalPicReviewUploads / totalPicReviewVisits) * 100).toFixed(2) : 0,
+            upload_to_conversion_click: totalPicReviewUploads > 0 ? ((totalConversionClicks / totalPicReviewUploads) * 100).toFixed(2) : 0,
+            conversion_click_to_signup: totalConversionClicks > 0 ? ((totalSignups / totalConversionClicks) * 100).toFixed(2) : 0,
+            signup_to_login: totalSignups > 0 ? ((totalLogins / totalSignups) * 100).toFixed(2) : 0,
+            overall_visit_to_signup: totalVisits > 0 ? ((totalSignups / totalVisits) * 100).toFixed(2) : 0
+          }
+        };
+      });
+
+      logInfo('Landing page funnel analytics retrieved', { timeRange, userId: req.user?.id });
+
+      res.json({
+        success: true,
+        data: funnelData,
+        timeRange,
+        timestamp: new Date()
+      });
+    } catch (error) {
+      logError('Failed to get landing page funnel', error, { userId: req.user?.id });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to retrieve landing page funnel analytics'
+      });
+    }
+  }
+
   // Track analytics events from frontend
   async trackEvent(req, res) {
     try {

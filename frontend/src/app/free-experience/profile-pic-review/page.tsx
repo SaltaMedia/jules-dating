@@ -44,11 +44,17 @@ export default function FreeExperienceProfilePicReviewPage() {
   };
 
   useEffect(() => {
+    // Get landing source from localStorage
+    const landingSource = localStorage.getItem('landing_source') || 'direct';
+    const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
+    
     // Track that user came from free experience
     track('page_visited', {
       page: '/free-experience/profile-pic-review',
       category: 'free_experience',
-      action: 'profile_pic_review_accessed_from_free_experience'
+      action: 'profile_pic_review_accessed_from_free_experience',
+      landing_source: landingSource,
+      landing_variant: landingVariant
     });
 
     // Initialize anonymous session
@@ -173,10 +179,16 @@ export default function FreeExperienceProfilePicReviewPage() {
       setFeedback(responseData.profilePicReview);
       setShowConversionPrompt(true);
 
+      // Get landing source from localStorage
+      const landingSource = localStorage.getItem('landing_source') || 'direct';
+      const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
+
       // Track profile pic review upload success
       track('anonymous_profile_pic_review_uploaded', { 
         has_specific_question: !!specificQuestion,
-        rating: responseData.profilePicReview.rating
+        rating: responseData.profilePicReview.rating,
+        landing_source: landingSource,
+        landing_variant: landingVariant
       });
     } catch (error: any) {
       console.error('Error submitting profile pic review:', error);
@@ -369,10 +381,16 @@ export default function FreeExperienceProfilePicReviewPage() {
                       <div className="flex justify-center">
                         <Link
                           href="/register"
-                          onClick={() => track('conversion_prompt_clicked', {
-                            source: 'profile_pic_review',
-                            action: 'signup_from_conversion_prompt'
-                          })}
+                          onClick={() => {
+                            const landingSource = localStorage.getItem('landing_source') || 'direct';
+                            const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
+                            track('conversion_prompt_clicked', {
+                              source: 'profile_pic_review',
+                              action: 'signup_from_conversion_prompt',
+                              landing_source: landingSource,
+                              landing_variant: landingVariant
+                            });
+                          }}
                           className="w-full max-w-xs bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-center"
                         >
                           Sign Up FREE

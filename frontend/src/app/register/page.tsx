@@ -82,10 +82,12 @@ export default function RegisterPage() {
       
       const { token, user } = response.data;
       
-      // Get registration source from URL params
+      // Get registration source from URL params or localStorage
       const urlParams = new URLSearchParams(window.location.search);
       const source = urlParams.get('source') || 'register_page';
       const feature = urlParams.get('feature') || 'general';
+      const landingSource = localStorage.getItem('landing_source') || 'direct';
+      const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
       
       // Track account creation
       track('account_created', { 
@@ -94,7 +96,9 @@ export default function RegisterPage() {
         has_name: !!formData.name,
         has_email: !!formData.email,
         category: 'conversion',
-        action: 'account_created'
+        action: 'account_created',
+        landing_source: landingSource,
+        landing_variant: landingVariant
       });
       
       // Store token in localStorage

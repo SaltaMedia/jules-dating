@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '../../lib/api';
+import { track } from '@/analytics/client';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -37,6 +38,19 @@ export default function LoginPage() {
       // Store token in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      
+      // Get landing source from localStorage (if any)
+      const landingSource = localStorage.getItem('landing_source') || 'direct';
+      const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
+      
+      // Track successful login
+      track('user_logged_in', {
+        category: 'conversion',
+        action: 'user_logged_in',
+        landing_source: landingSource,
+        landing_variant: landingVariant,
+        has_onboarding: !!user.settings?.aboutMe
+      });
       
       // Redirect to onboarding or chat
       if (user.settings?.aboutMe) {

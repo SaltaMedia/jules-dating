@@ -60,5 +60,6 @@ router.get('/conversion-funnel', analyticsController.getConversionFunnel);
 router.get('/user-list', analyticsController.getUserList);
 router.get('/chat-logs', analyticsController.getChatLogs);
 router.get('/active-users', analyticsController.getActiveUsers);
+router.get('/landing-page-funnel', analyticsController.getLandingPageFunnel);
 
 module.exports = router; 

@@ -9,12 +9,18 @@ import MeetJulesCarousel from '@/components/MeetJulesCarousel';
 export default function WelcomePage() {
   // Free experience landing page - Variant 1: Emotional Hook
   useEffect(() => {
+    // Store landing source in localStorage for tracking through the funnel
+    localStorage.setItem('landing_source', '/1');
+    localStorage.setItem('landing_variant', 'emotional_hook');
+    localStorage.setItem('landing_timestamp', new Date().toISOString());
+    
     // Track page view
     track('page_visited', {
       page: '/1',
       category: 'free_experience',
       action: 'landing_page_visited',
-      variant: 'emotional_hook'
+      variant: 'emotional_hook',
+      landing_source: '/1'
     });
     
     // Track landing page session
@@ -22,7 +28,8 @@ export default function WelcomePage() {
       page: '/1',
       category: 'free_experience',
       action: 'landing_page_session_started',
-      variant: 'emotional_hook'
+      variant: 'emotional_hook',
+      landing_source: '/1'
     });
   }, []);
 
@@ -41,7 +48,8 @@ export default function WelcomePage() {
       category: 'free_experience',
       action: 'cta_button_clicked',
       button_text: buttonTextMap[ctaType] || 'Unknown Button',
-      variant: 'emotional_hook'
+      variant: 'emotional_hook',
+      landing_source: '/1'
     });
   };
 
