@@ -20,7 +20,12 @@ interface Message {
   hasMore?: boolean;
   totalFound?: number;
   userImage?: string; // Base64 encoded image from user upload
-  imageContext?: string; // Context information about uploaded images
+  imageContext?: {
+    hasImage?: boolean;
+    imageUrl?: string; // Cloudinary URL of the uploaded image
+    thumbnailUrl?: string;
+    analysis?: string;
+  };
 }
 
 interface Product {
@@ -151,8 +156,9 @@ function ChatPageContent() {
         });
         contextProcessedRef.current = true;
         sessionLoadedRef.current = true;
-        localStorage.removeItem('chatContext');
-        console.log('🔍 DEBUG: Context processing completed');
+        // DON'T remove chatContext - keep it for follow-up messages
+        // It will be cleared when user uploads new image or starts new chat
+        console.log('🔍 DEBUG: Context processing completed - keeping review context for follow-ups');
       } catch (error) {
         console.error('Error appending context:', error);
       }
@@ -431,7 +437,8 @@ function ChatPageContent() {
     if (selectedImageUrl) {
       // User is uploading new image - clear any existing review context
       setCurrentReviewContext(null);
-      console.log('🖼️ New image uploaded - clearing review context');
+      localStorage.removeItem('chatContext');
+      console.log('🖼️ New image uploaded - clearing old review context from localStorage');
       
       setSelectedImageUrl(null);
       setSelectedFile(null);
@@ -538,7 +545,16 @@ function ChatPageContent() {
         allProducts: response.data.allProducts,
         images: response.data.images,
         hasMoreProducts: response.data.hasMoreProducts,
-        totalFound: response.data.totalFound
+        totalFound: response.data.totalFound,
+        // Preserve image context if we're responding to an image question
+        ...(currentReviewContext && {
+          imageContext: {
+            hasImage: true,
+            imageUrl: currentReviewContext.imageUrl,
+            thumbnailUrl: currentReviewContext.imageUrl,
+            analysis: response.data.response
+          }
+        })
       };
 
       // Track response time
@@ -643,6 +659,11 @@ function ChatPageContent() {
     
     // Clear messages
     setMessages([]);
+    
+    // Clear review context from previous conversation
+    setCurrentReviewContext(null);
+    localStorage.removeItem('chatContext');
+    console.log('🆕 New chat started - cleared review context');
     
     // Clear any saved messages for the old session
     const oldSessionId = localStorage.getItem('currentChatSessionId');

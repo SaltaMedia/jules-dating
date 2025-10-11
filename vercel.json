@@ -17,7 +17,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating.onrender.com/api/$1",
+      "destination": "https://jules-dating-backend.onrender.com/api/$1",
       "has": [
         {
           "type": "method",
@@ -27,7 +27,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating.onrender.com/api/$1",
+      "destination": "https://jules-dating-backend.onrender.com/api/$1",
       "has": [
         {
           "type": "method",
@@ -37,7 +37,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating.onrender.com/api/$1",
+      "destination": "https://jules-dating-backend.onrender.com/api/$1",
       "has": [
         {
           "type": "method",
@@ -47,7 +47,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating.onrender.com/api/$1",
+      "destination": "https://jules-dating-backend.onrender.com/api/$1",
       "has": [
         {
           "type": "method",

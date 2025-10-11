@@ -483,11 +483,10 @@ async function chat(req, res) {
       console.log(`🔄 Review context continues: ${contextSwitchResult.reason}`);
     }
 
-    // Define intents that should include image context (style-related intents)
-    const imageRelatedIntents = ['style_feedback', 'style_images'];
-    // CRITICAL FIX: Always include image context if we have finalReviewContext (user is asking about a specific reviewed image)
-    // This ensures Jules can see the image when user asks follow-up questions like "what can I do better to make this a 10"
-    const shouldIncludeImageContext = finalReviewContext || (hasImageContext && imageRelatedIntents.includes(intent));
+    // CRITICAL FIX: Always include image context when available, let the AI decide relevance
+    // The AI is smart enough to know when to reference the image vs when to ignore it
+    // This follows the system prompt rule: "Only reference images when the user is specifically asking about them"
+    const shouldIncludeImageContext = finalReviewContext || hasImageContext;
     
     console.log('🔍 DEBUG: Image context decision:', {
       hasImageContext,
@@ -517,11 +516,20 @@ async function chat(req, res) {
           .filter(msg => msg.imageContext?.hasImage)
           .slice(-1)[0];
         
-        if (recentImageMessage?.imageContext?.thumbnailUrl) {
-          // Convert thumbnail URL to full resolution for profile pic review lookup
-          imageUrlToUse = recentImageMessage.imageContext.thumbnailUrl
-            .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
-          thumbnailUrlToUse = recentImageMessage.imageContext.thumbnailUrl;
+        if (recentImageMessage?.imageContext) {
+          // Try to get imageUrl first (full resolution), then fall back to thumbnailUrl
+          const imgContext = recentImageMessage.imageContext;
+          if (imgContext.imageUrl) {
+            imageUrlToUse = imgContext.imageUrl;
+            thumbnailUrlToUse = imgContext.thumbnailUrl || imgContext.imageUrl;
+            console.log('🖼️ Found imageUrl in conversation history:', imageUrlToUse);
+          } else if (imgContext.thumbnailUrl) {
+            // Convert thumbnail URL to full resolution for profile pic review lookup
+            imageUrlToUse = imgContext.thumbnailUrl
+              .replace('/upload/w_150,h_150,c_fill,q_auto,f_auto/', '/upload/');
+            thumbnailUrlToUse = imgContext.thumbnailUrl;
+            console.log('🖼️ Found thumbnailUrl in conversation history, converted to full:', imageUrlToUse);
+          }
         }
       }
       
@@ -1177,6 +1185,7 @@ START YOUR RESPONSE DIRECTLY with the dating advice or analysis. Do not include 
       content: message,
       imageContext: {
         hasImage: true,
+        imageUrl: imageUrl, // Full resolution image URL for future reference
         thumbnailUrl: req.body.thumbnailUrl,
         analysis: null // Will be set after assistant responds
       }
@@ -1190,6 +1199,7 @@ START YOUR RESPONSE DIRECTLY with the dating advice or analysis. Do not include 
       content: cleanedResponse,
       imageContext: {
         hasImage: true,
+        imageUrl: imageUrl, // Full resolution image URL for future reference
         thumbnailUrl: req.body.thumbnailUrl,
         analysis: cleanedResponse
       }
@@ -1214,7 +1224,7 @@ START YOUR RESPONSE DIRECTLY with the dating advice or analysis. Do not include 
           { userId: actualUserId },
           { 
             messages: messagesToSave,
-            lastMessageAt: new Date()
+            updatedAt: new Date()
           },
           { upsert: true, new: true }
         );
@@ -1228,6 +1238,7 @@ START YOUR RESPONSE DIRECTLY with the dating advice or analysis. Do not include 
           if (msg.imageContext?.hasImage) {
             console.log(`💾 Saving Message ${i} image context:`, {
               hasImage: msg.imageContext.hasImage,
+              imageUrl: msg.imageContext.imageUrl,
               thumbnailUrl: msg.imageContext.thumbnailUrl,
               analysis: msg.imageContext.analysis?.substring(0, 50) + '...'
             });

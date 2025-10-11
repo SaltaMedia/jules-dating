@@ -14,9 +14,10 @@ const messageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  // Lightweight image context - stores thumbnail + analysis
+  // Lightweight image context - stores image URL + thumbnail + analysis
   imageContext: {
     hasImage: { type: Boolean, default: false },
+    imageUrl: { type: String, default: null }, // Full resolution image URL for vision model
     thumbnailUrl: { type: String, default: null }, // Small thumbnail (~15KB)
     analysis: { type: String, default: null } // Jules's visual analysis summary
   }
