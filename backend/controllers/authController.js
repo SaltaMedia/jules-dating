@@ -278,41 +278,49 @@ const login = asyncHandler(async (req, res) => {
 });
 
 // Forgot password
-const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    // Don't reveal if user exists or not for security
-    return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+    // Save reset token to user
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpiry;
+    await user.save();
+
+    logInfo(`Password reset token generated for user: ${email}`);
+
+    // Create reset URL - use proper environment variable for production
+    const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://dating.juleslabs.com' : 'http://localhost:3002');
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+    // Send password reset email
+    const emailSent = await sendPasswordResetEmail(email, resetToken, resetUrl);
+    
+    if (emailSent) {
+      res.json({ message: 'Password reset link has been sent to your email address.' });
+    } else {
+      // Fallback: return the reset URL directly if email fails
+      logWarning(`Email failed to send, returning reset URL in response`);
+      res.json({
+        message: 'Password reset link generated. Please check your email or use the link below:',
+        resetUrl: resetUrl
+      });
+    }
+  } catch (error) {
+    logError('Forgot password error:', error);
+    res.status(500).json({ error: 'An error occurred while processing your request' });
   }
-
-  // Generate reset token
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  const resetTokenExpiry = Date.now() + 3600000; // 1 hour
-
-  // Save reset token to user
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = resetTokenExpiry;
-  await user.save();
-
-  // Create reset URL - use proper environment variable for production
-  const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://dating.juleslabs.com' : 'http://localhost:3002');
-  const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
-
-  // Send password reset email
-  const emailSent = await sendPasswordResetEmail(email, resetToken, resetUrl);
-  
-  if (emailSent) {
-    res.json({ message: 'Password reset link has been sent to your email address.' });
-  } else {
-    // Fallback: return the reset URL directly if email fails
-    res.json({
-      message: 'Password reset link generated. Please check your email or use the link below:',
-      resetUrl: resetUrl
-    });
-  }
-});
+};
 
 // Reset password
 const resetPassword = asyncHandler(async (req, res) => {
@@ -339,12 +347,9 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new AuthenticationError('Password reset token is invalid or has expired');
   }
 
-  // Hash new password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
   // Update user password and clear reset token
-  user.password = hashedPassword;
+  // Note: The User model pre-save hook will automatically hash the password
+  user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
   await user.save();

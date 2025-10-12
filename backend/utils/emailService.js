@@ -30,21 +30,22 @@ const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
     }
 
     const mailOptions = {
-      from: `"Jules" <${process.env.GMAIL_USER}>`,
+      from: `"Jules Dating" <noreply@juleslabs.com>`,
+      replyTo: process.env.GMAIL_USER, // Replies go to steve@juleslabs.com
       to: email,
-      subject: 'Reset Your Jules Password',
+      subject: 'Reset Your Jules Dating Password',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Jules</h1>
-            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Your Personal Stylist</p>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Jules Dating</h1>
+            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Your AI Dating Coach</p>
           </div>
           
           <div style="padding: 30px; background: #f8f9fa;">
             <h2 style="color: #333; margin-bottom: 20px;">Reset Your Password</h2>
             
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
-              You requested to reset your password for your Jules account. 
+              You requested to reset your password for your Jules Dating account. 
               Click the button below to create a new password:
             </p>
             
@@ -122,7 +123,8 @@ const sendWelcomeEmail = async (email, name, appType = 'jules-dating') => {
     const appTagline = isDatingApp ? 'Dating Beta' : 'Style Beta';
 
     const mailOptions = {
-      from: `"Jules" <${process.env.GMAIL_USER}>`,
+      from: `"Jules" <noreply@juleslabs.com>`,
+      replyTo: process.env.GMAIL_USER, // Replies go to steve@juleslabs.com
       to: email,
       subject: `Welcome to ${appName} Beta!`,
       html: `
@@ -216,7 +218,8 @@ const sendFollowUpEmail = async (email, name, appType = 'jules-dating') => {
     const appTagline = isDatingApp ? 'Dating Beta' : 'Style Beta';
 
     const mailOptions = {
-      from: `"Jules" <${process.env.GMAIL_USER}>`,
+      from: `"Jules" <noreply@juleslabs.com>`,
+      replyTo: process.env.GMAIL_USER, // Replies go to steve@juleslabs.com
       to: email,
       subject: 'Help me make Jules better (takes 2 mins)',
       html: `
@@ -298,7 +301,8 @@ const sendFeedbackEmail = async ({ userEmail, userName, message, timestamp, user
     }
 
     const mailOptions = {
-      from: `"Jules Feedback" <${process.env.GMAIL_USER}>`,
+      from: `"Jules Feedback" <noreply@juleslabs.com>`,
+      replyTo: userEmail, // Replies go to the user who sent feedback
       to: 'steve@juleslabs.com',
       subject: `Jules Feedback from ${userName || userEmail}`,
       html: `
