@@ -37,7 +37,8 @@ export default function WelcomePage() {
       'try_free_profile_pic_review': 'Get FREE Profile Pic Review',
       'get_profile_pic_review': 'Get FREE Profile Pic Review',
       'get_started_free': 'Get Started for Free',
-      'join_jules_beta': 'Get Started for Free'
+      'join_jules_beta': 'Get Started for Free',
+      'sign_up_free': 'Sign Up for FREE!'
     };
     
     track('landing_page_cta_clicked', {
@@ -81,8 +82,8 @@ export default function WelcomePage() {
             </p>
           </div>
 
-          {/* CTA Button */}
-          <div className="mb-8 sm:mb-12">
+          {/* CTA Buttons */}
+          <div className="mb-8 sm:mb-12 space-y-4">
             <Link
               href="/free-experience/profile-pic-review"
               onClick={() => handleCTAClick('try_free_profile_pic_review', 'hero_section')}
@@ -90,6 +91,15 @@ export default function WelcomePage() {
             >
               Get FREE Profile Pic Review
             </Link>
+            <div>
+              <Link
+                href="/register"
+                onClick={() => handleCTAClick('sign_up_free', 'hero_section')}
+                className="inline-block bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg md:text-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              >
+                Sign Up for FREE!
+              </Link>
+            </div>
           </div>
 
           {/* Visual - Phone Mockup */}
