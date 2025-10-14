@@ -31,13 +31,6 @@ export default function RootLayout({
           <img height="1" width="1" style={{display:'none'}}
             src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`} />
         </noscript>
-      </head>
-      <body>
-        <ToastProvider>
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
-        </ToastProvider>
         
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
@@ -57,9 +50,18 @@ export default function RootLayout({
             }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
             
             fbq('init','${pixelId}');
+            console.log('Meta Pixel initialized with ID:', '${pixelId}');
             fbq('track','PageView');
+            console.log('Meta Pixel PageView event fired');
           `}
         </Script>
+      </head>
+      <body>
+        <ToastProvider>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+        </ToastProvider>
       </body>
     </html>
   );
