@@ -59,10 +59,9 @@ export default function WelcomePage() {
         parameters: {
           content_name: 'free_pic_review_button',
           content_category: 'free_experience',
-          source: 'free_pic_review_button',
+          source: source,
           button_text: buttonTextMap[ctaType],
-          cta_type: ctaType,
-          source: source
+          cta_type: ctaType
         }
       });
     } else if (ctaType === 'sign_up_free' || ctaType === 'join_jules_beta' || ctaType === 'get_started_free') {
@@ -72,10 +71,9 @@ export default function WelcomePage() {
         parameters: {
           content_name: 'signup_click',
           content_category: 'conversion_intent',
-          source: 'direct_signup_button',
+          source: source,
           button_text: buttonTextMap[ctaType],
-          cta_type: ctaType,
-          source: source
+          cta_type: ctaType
         }
       });
     }
