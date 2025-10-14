@@ -139,7 +139,7 @@ export function trackProfilePicReview(reviewData: {
  */
 export function trackSignupClick(source: string, context?: Record<string, any>) {
   trackMetaPixelEvent({
-    eventName: 'AddToCart', // Use AddToCart for signup button clicks
+    eventName: META_EVENTS.LEAD, // Use Lead for signup button clicks
     parameters: {
       content_name: 'signup_click',
       content_category: 'conversion_intent',
