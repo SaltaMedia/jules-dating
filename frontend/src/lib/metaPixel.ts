@@ -32,8 +32,22 @@ interface MetaPixelEvent {
  * Track Meta Pixel events with proper deduplication
  */
 export function trackMetaPixelEvent(event: MetaPixelEvent) {
-  if (typeof window === 'undefined' || !window.fbq) {
-    console.warn('Meta Pixel (fbq) not available');
+  if (typeof window === 'undefined') {
+    console.warn('Meta Pixel: window not available');
+    return;
+  }
+  
+  if (!window.fbq) {
+    console.warn('Meta Pixel (fbq) not available, waiting for initialization...');
+    // Wait for fbq to be available
+    setTimeout(() => {
+      if (window.fbq) {
+        console.log('Meta Pixel (fbq) now available, retrying event:', event.eventName);
+        trackMetaPixelEvent(event);
+      } else {
+        console.error('Meta Pixel (fbq) still not available after timeout');
+      }
+    }, 1000);
     return;
   }
 
@@ -50,10 +64,8 @@ export function trackMetaPixelEvent(event: MetaPixelEvent) {
       content_name: event.eventName.toLowerCase().replace(/([A-Z])/g, '_$1').toLowerCase(),
     });
 
-    // Log for debugging
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📊 Meta Pixel Event: ${event.eventName}`, event.parameters);
-    }
+    // Log for debugging (always log to help with production debugging)
+    console.log(`📊 Meta Pixel Event: ${event.eventName}`, event.parameters);
   } catch (error) {
     console.error('Error tracking Meta Pixel event:', error);
   }
@@ -91,7 +103,7 @@ export function trackFreePicReview(reviewData: {
   source?: string;
 }) {
   trackMetaPixelEvent({
-    eventName: META_EVENTS.LEAD, // Use Lead event for free reviews
+    eventName: 'Click', // Use Click event for free pic review
     parameters: {
       content_name: 'free_pic_review',
       content_category: 'profile_review',
