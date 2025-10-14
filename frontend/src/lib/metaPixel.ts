@@ -38,16 +38,7 @@ export function trackMetaPixelEvent(event: MetaPixelEvent) {
   }
   
   if (!window.fbq) {
-    console.warn('Meta Pixel (fbq) not available, waiting for initialization...');
-    // Wait for fbq to be available
-    setTimeout(() => {
-      if (window.fbq) {
-        console.log('Meta Pixel (fbq) now available, retrying event:', event.eventName);
-        trackMetaPixelEvent(event);
-      } else {
-        console.error('Meta Pixel (fbq) still not available after timeout');
-      }
-    }, 1000);
+    console.warn('Meta Pixel (fbq) not available');
     return;
   }
 
