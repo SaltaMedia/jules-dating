@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { track } from '@/analytics/client';
 import MeetJulesCarousel from '@/components/MeetJulesCarousel';
+import { trackSignupClick } from '@/lib/metaPixel';
 
 export default function WelcomePage() {
   // Free experience landing page
@@ -49,6 +50,21 @@ export default function WelcomePage() {
       button_text: buttonTextMap[ctaType] || 'Unknown Button',
       landing_source: '/'
     });
+
+    // Track Meta Pixel Lead events for key conversion actions
+    if (ctaType === 'try_free_profile_pic_review' || ctaType === 'get_profile_pic_review') {
+      trackSignupClick('free_pic_review_button', {
+        button_text: buttonTextMap[ctaType],
+        cta_type: ctaType,
+        source: source
+      });
+    } else if (ctaType === 'sign_up_free' || ctaType === 'join_jules_beta' || ctaType === 'get_started_free') {
+      trackSignupClick('direct_signup_button', {
+        button_text: buttonTextMap[ctaType],
+        cta_type: ctaType,
+        source: source
+      });
+    }
   };
 
   return (
@@ -367,6 +383,7 @@ export default function WelcomePage() {
           </div>
         </div>
       </footer>
+
 
     </div>
   );

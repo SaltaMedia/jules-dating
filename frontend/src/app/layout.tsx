@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "../components/ui/toast";
 import LayoutWrapper from "../components/LayoutWrapper";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Jules",
@@ -21,14 +22,47 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1106342377922798';
+  
   return (
     <html lang="en">
+      <head>
+        <noscript>
+          <img height="1" width="1" style={{display:'none'}}
+            src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`} />
+        </noscript>
+      </head>
       <body>
         <ToastProvider>
           <LayoutWrapper>
             {children}
           </LayoutWrapper>
         </ToastProvider>
+        
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`
+            !function(f,b,e,v,n,t,s){
+              if(f.fbq)return;
+              n=f.fbq=function(){
+                n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments)
+              };
+              if(!f._fbq)f._fbq=n;
+              n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];
+              t=b.createElement(e);
+              t.async=!0;
+              t.src=v;
+              s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)
+            }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+            
+            fbq('init','${pixelId}');
+            
+            if (new URLSearchParams(location.search).get('fbclid')) {
+              fbq('track','PageView');
+            }
+          `}
+        </Script>
       </body>
     </html>
   );

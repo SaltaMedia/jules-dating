@@ -922,6 +922,41 @@ You've used all 5 of your free messages! Sign up to continue chatting with Jules
       
       await conversation.save();
 
+      // Track chat analytics
+      try {
+        const analyticsService = require('../utils/analyticsService');
+        const sessionId = req.sessionId || 'default-session';
+        
+        // Track user message
+        await analyticsService.trackChatMessage(
+          actualUserId,
+          sessionId,
+          {
+            role: 'user',
+            content: message,
+            intent: intent
+          },
+          req
+        );
+        
+        // Track assistant response
+        await analyticsService.trackChatMessage(
+          actualUserId,
+          sessionId,
+          {
+            role: 'assistant',
+            content: cleanedFinalResponse,
+            intent: intent
+          },
+          req
+        );
+        
+        console.log(`✅ Chat analytics tracked for user ${actualUserId}`);
+      } catch (analyticsError) {
+        console.error('❌ Analytics tracking error:', analyticsError);
+        // Don't fail the chat if analytics fails
+      }
+
       // Also create/update ChatSession for Chat History feature
       try {
         // Generate a title from the first user message

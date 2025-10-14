@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Forward the request to the backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
+    const backendUrl = 'https://jules-dating.onrender.com'; // Use production for testing
     const fullUrl = `${backendUrl}/api/auth/register`;
     
     console.log('Registration route - Backend URL:', backendUrl);

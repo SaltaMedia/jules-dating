@@ -3,11 +3,13 @@
   "outputDirectory": "frontend/.next",
   "installCommand": "cd frontend && npm install",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com"
+    "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com",
+    "NEXT_PUBLIC_META_PIXEL_ID": "1106342377922798"
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com"
+      "NEXT_PUBLIC_API_URL": "https://jules-dating.onrender.com",
+      "NEXT_PUBLIC_META_PIXEL_ID": "1106342377922798"
     }
   },
   "rewrites": [
@@ -17,7 +19,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating-backend.onrender.com/api/$1",
+      "destination": "https://jules-dating.onrender.com/api/$1",
       "has": [
         {
           "type": "method",
@@ -27,7 +29,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating-backend.onrender.com/api/$1",
+      "destination": "https://jules-dating.onrender.com/api/$1",
       "has": [
         {
           "type": "method",
@@ -37,7 +39,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating-backend.onrender.com/api/$1",
+      "destination": "https://jules-dating.onrender.com/api/$1",
       "has": [
         {
           "type": "method",
@@ -47,7 +49,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://jules-dating-backend.onrender.com/api/$1",
+      "destination": "https://jules-dating.onrender.com/api/$1",
       "has": [
         {
           "type": "method",

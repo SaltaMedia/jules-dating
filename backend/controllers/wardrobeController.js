@@ -575,6 +575,30 @@ const analyzeImage = async (req, res) => {
     await wardrobeItem.save();
     console.log('Wardrobe item saved successfully');
     
+    // Track analytics
+    try {
+      const analyticsService = require('../utils/analyticsService');
+      await analyticsService.trackFeatureUsage(
+        userId,
+        req.sessionId || 'default-session',
+        'wardrobe',
+        'item_analyzed',
+        req,
+        {
+          category: wardrobeItem.tags.category,
+          subcategory: wardrobeItem.tags.subcategory,
+          colors: wardrobeItem.tags.colors,
+          material: wardrobeItem.tags.material,
+          formality: wardrobeItem.tags.formality,
+          brandGuess: wardrobeItem.tags.brandGuess
+        }
+      );
+      console.log(`✅ Wardrobe item analytics tracked for user ${userId}`);
+    } catch (analyticsError) {
+      console.error('❌ Analytics tracking error:', analyticsError);
+      // Don't fail the request if analytics fails
+    }
+    
     res.json({
       success: true,
       item: wardrobeItem,

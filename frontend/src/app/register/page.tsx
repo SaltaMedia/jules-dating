@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '../../lib/api';
 import { track } from '@/analytics/client';
+import { trackRegistration } from '@/lib/metaPixel';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -100,6 +101,14 @@ export default function RegisterPage() {
         landing_source: landingSource,
         landing_variant: landingVariant
       });
+
+      // Track Meta Pixel CompleteRegistration event
+      trackRegistration({
+        email: formData.email,
+        name: formData.name,
+        source: source,
+        landingSource: landingSource
+      });
       
       // Store token in localStorage
       localStorage.setItem('token', token);
@@ -153,7 +162,7 @@ export default function RegisterPage() {
   };
 
   const handleGoogleLogin = () => {
-    // Use environment-specific API URL - ensure production URL is used in production
+    // Use environment-specific API URL
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:4002' : 'https://jules-dating.onrender.com');
     console.log('🔧 OAuth Redirect:', `${apiUrl}/api/auth/google`);
     window.location.href = `${apiUrl}/api/auth/google`;

@@ -389,6 +389,22 @@ const submitFitCheck = async (req, res) => {
         userAgent: req.get('User-Agent'),
         ipAddress: req.ip
       });
+
+      // Also track wardrobe item creation if closet item was saved
+      if (closetItem && userId !== 'anonymous') {
+        await analyticsService.trackFeatureUsage(
+          userId,
+          sessionId,
+          'wardrobe',
+          'item_from_fit_check',
+          req,
+          {
+            itemType: 'outfit',
+            eventContext: eventContext,
+            rating: analysis.overallRating
+          }
+        );
+      }
     } catch (analyticsError) {
       logError('Failed to track fit check analytics:', analyticsError);
       // Don't fail the request if analytics fails

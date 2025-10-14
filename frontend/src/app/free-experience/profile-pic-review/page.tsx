@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { apiClient, default as api } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
 import { track } from '@/analytics/client';
+import { trackFreePicReview } from '@/lib/metaPixel';
 
 interface ProfilePicReview {
   id: string;
@@ -177,6 +178,14 @@ export default function FreeExperienceProfilePicReviewPage() {
 
       const responseData = await response.json();
       setFeedback(responseData.profilePicReview);
+
+      // Track Meta Pixel event for free pic review completion
+      trackFreePicReview({
+        sessionId: sessionId,
+        hasSpecificQuestion: !!specificQuestion.trim(),
+        rating: responseData.profilePicReview?.overallRating,
+        source: 'free_experience'
+      });
       setShowConversionPrompt(true);
 
       // Get landing source from localStorage
