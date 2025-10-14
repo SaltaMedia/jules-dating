@@ -97,6 +97,7 @@ function ChatPageContent() {
               ...msg,
               timestamp: new Date(msg.timestamp)
             })));
+            sessionLoadedRef.current = true; // Mark as loaded to prevent context reprocessing
             setTimeout(() => {
               scrollToBottom();
             }, 100);
@@ -107,9 +108,18 @@ function ChatPageContent() {
       }
     };
 
+    // Also handle visibility change (when tab becomes active)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && sessionId && messages.length === 0) {
+        handleFocus();
+      }
+    };
+
     window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [sessionId, messages.length]);
 
@@ -218,20 +228,8 @@ function ChatPageContent() {
   };
 
   useEffect(() => {
-    // Reset context processing flag when new context is detected
-    const chatContext = localStorage.getItem('chatContext');
-    console.log('🔍 DEBUG: useEffect started, chatContext found:', !!chatContext, 'sessionLoadedRef:', sessionLoadedRef.current);
-    if (chatContext) {
-      console.log('🔍 DEBUG: Resetting contextProcessedRef to false');
-      contextProcessedRef.current = false;
-    }
-    
-    // Allow session reloading when navigating back to chat if no messages are loaded
-    // This ensures chat sessions are properly restored when users navigate between modules
-    if (sessionLoadedRef.current && !chatContext && messages.length === 0) {
-      console.log('🔍 DEBUG: No messages loaded, allowing session reload for navigation');
-      sessionLoadedRef.current = false; // Allow reloading
-    }
+    // Only run this effect once on mount, not on every navigation
+    // This prevents chat from being reset when navigating away and back
     
     // Check authentication
     const token = localStorage.getItem('token');
@@ -257,8 +255,6 @@ function ChatPageContent() {
       setInput(prefillMessage);
       localStorage.removeItem('prefillMessage'); // Clear the flag
     }
-
-    // Don't process context here - it will be processed after session loading
 
     // Track chat opened
     track('chat_opened', { source: 'home' });
@@ -389,7 +385,39 @@ function ChatPageContent() {
     setTimeout(() => {
       appendContextToMessages();
     }, 0);
-  }, [router, searchParams.get('session')]);
+  }, [router]); // Removed searchParams.get('session') from dependencies
+
+  // Separate useEffect to handle URL session parameter changes
+  useEffect(() => {
+    const urlSessionId = searchParams.get('session');
+    if (urlSessionId && urlSessionId !== sessionId) {
+      // Only load if this is a different session than current
+      loadChatSession(urlSessionId);
+    }
+  }, [searchParams.get('session'), sessionId]);
+
+  // Separate useEffect to handle context processing
+  useEffect(() => {
+    // Reset context processing flag when new context is detected
+    const chatContext = localStorage.getItem('chatContext');
+    console.log('🔍 DEBUG: Context useEffect started, chatContext found:', !!chatContext, 'contextProcessedRef:', contextProcessedRef.current);
+    if (chatContext) {
+      console.log('🔍 DEBUG: Resetting contextProcessedRef to false');
+      contextProcessedRef.current = false;
+    }
+    
+    // Allow session reloading when navigating back to chat if no messages are loaded
+    // This ensures chat sessions are properly restored when users navigate between modules
+    if (sessionLoadedRef.current && !chatContext && messages.length === 0) {
+      console.log('🔍 DEBUG: No messages loaded, allowing session reload for navigation');
+      sessionLoadedRef.current = false; // Allow reloading
+    }
+    
+    // Process context after session loading is complete
+    setTimeout(() => {
+      appendContextToMessages();
+    }, 0);
+  }, [messages.length]); // Only depend on messages length to avoid resetting on every navigation
 
   useEffect(() => {
     // Only scroll when new messages are added, not on every render
@@ -399,15 +427,66 @@ function ChatPageContent() {
   }, [messages.length]); // Only depend on messages length, not the full messages array
 
 
-  // TEMPORARILY DISABLED: Save messages to localStorage 
-  // TODO: Need proper solution for production that handles image storage without quota issues
+  // Save messages to localStorage with proper image handling
   useEffect(() => {
     console.log('🔍 DEBUG: Messages useEffect triggered, messages.length:', messages.length, 'sessionId:', sessionId);
-    // DISABLED: localStorage saving causes images to disappear and quota issues
-    // For production, we need to either:
-    // 1. Store messages in backend database instead of localStorage
-    // 2. Use IndexedDB which has much larger quota
-    // 3. Store only Cloudinary URLs (not base64) and reconstruct images on load
+    
+    if (messages.length > 0 && sessionId) {
+      try {
+        // Create a sanitized version of messages for localStorage
+        // Convert base64 images to smaller representations or remove them to prevent quota issues
+        const messagesToSave = messages.map(msg => {
+          const sanitizedMsg = { ...msg };
+          
+          // For user images (base64), keep them but truncate if too large
+          if (sanitizedMsg.userImage && sanitizedMsg.userImage.startsWith('data:image')) {
+            // Keep user images as they're typically small profile photos
+            // But add a size check to prevent quota issues
+            if (sanitizedMsg.userImage.length > 1000000) { // 1MB limit
+              console.warn('User image too large for localStorage, skipping save');
+              sanitizedMsg.userImage = undefined;
+            }
+          }
+          
+          // Remove large image arrays from assistant messages to prevent quota issues
+          if (sanitizedMsg.images && Array.isArray(sanitizedMsg.images)) {
+            // Keep only essential image data, not full base64
+            sanitizedMsg.images = sanitizedMsg.images.map(img => ({
+              id: img.id,
+              url: img.url,
+              image: img.image,
+              thumb: img.thumb,
+              thumbnail: img.thumbnail,
+              alt: img.alt,
+              title: img.title,
+              photographer: img.photographer,
+              photographerUrl: img.photographerUrl,
+              downloadUrl: img.downloadUrl,
+              width: img.width,
+              height: img.height
+            }));
+          }
+          
+          return sanitizedMsg;
+        });
+        
+        localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(messagesToSave));
+        console.log('🔍 DEBUG: Messages saved to localStorage for session:', sessionId);
+      } catch (error) {
+        console.error('Error saving messages to localStorage:', error);
+        // If localStorage quota is exceeded, try to save without images
+        try {
+          const messagesWithoutImages = messages.map(msg => {
+            const { userImage, images, ...msgWithoutImages } = msg;
+            return msgWithoutImages;
+          });
+          localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(messagesWithoutImages));
+          console.log('🔍 DEBUG: Messages saved without images due to quota limit');
+        } catch (fallbackError) {
+          console.error('Error saving messages even without images:', fallbackError);
+        }
+      }
+    }
   }, [messages, sessionId]);
 
   const sendMessage = async (file?: File) => {
