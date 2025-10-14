@@ -94,7 +94,7 @@ export function trackFreePicReview(reviewData: {
   source?: string;
 }) {
   trackMetaPixelEvent({
-    eventName: 'Click', // Use Click event for free pic review
+    eventName: META_EVENTS.LEAD, // Use Lead event for free pic review completion
     parameters: {
       content_name: 'free_pic_review',
       content_category: 'profile_review',
@@ -139,7 +139,7 @@ export function trackProfilePicReview(reviewData: {
  */
 export function trackSignupClick(source: string, context?: Record<string, any>) {
   trackMetaPixelEvent({
-    eventName: META_EVENTS.LEAD,
+    eventName: 'AddToCart', // Use AddToCart for signup button clicks
     parameters: {
       content_name: 'signup_click',
       content_category: 'conversion_intent',
