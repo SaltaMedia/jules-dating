@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { trackRegistration } from '@/lib/metaPixel';
 
 function AuthCallbackContent() {
   const [status, setStatus] = useState('Processing...');
@@ -59,6 +60,14 @@ function AuthCallbackContent() {
         };
         
         localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Track Meta Pixel CompleteRegistration event for OAuth login
+        trackRegistration({
+          email: userData.email,
+          name: userData.name,
+          source: 'google_oauth',
+          landingSource: localStorage.getItem('landing_source') || 'direct'
+        });
         
         setStatus('Authentication successful!');
         

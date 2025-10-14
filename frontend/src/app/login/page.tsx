@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '../../lib/api';
 import { track } from '@/analytics/client';
+import { trackRegistration } from '@/lib/metaPixel';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -50,6 +51,14 @@ export default function LoginPage() {
         landing_source: landingSource,
         landing_variant: landingVariant,
         has_onboarding: !!user.settings?.aboutMe
+      });
+      
+      // Track Meta Pixel CompleteRegistration event for email login
+      trackRegistration({
+        email: user.email,
+        name: user.name,
+        source: 'email_login',
+        landingSource: landingSource
       });
       
       // Redirect to onboarding or chat

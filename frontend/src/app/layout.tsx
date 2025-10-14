@@ -57,10 +57,7 @@ export default function RootLayout({
             }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
             
             fbq('init','${pixelId}');
-            
-            if (new URLSearchParams(location.search).get('fbclid')) {
-              fbq('track','PageView');
-            }
+            fbq('track','PageView');
           `}
         </Script>
       </body>
