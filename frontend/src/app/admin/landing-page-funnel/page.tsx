@@ -156,7 +156,7 @@ export default function LandingPageFunnelPage() {
                 <CardTitle className="text-lg flex items-center justify-between">
                   <span>{getLandingPageName(data.landing_source)}</span>
                   <Badge className={getLandingPageColor(data.landing_source)}>
-                    {data.overall_visit_to_signup}% CVR
+                    {data.conversion_rates.overall_visit_to_signup}% CVR
                   </Badge>
                 </CardTitle>
               </CardHeader>
