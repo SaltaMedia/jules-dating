@@ -100,16 +100,9 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Link href="/admin/analytics">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  View Analytics Dashboard
-                </Button>
-              </Link>
-              <Link href="/admin/analytics-v2">
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                  View New Analytics Dashboard
-                </Button>
-              </Link>
+              <p className="text-sm text-gray-500 text-center">
+                Analytics are available through Mixpanel dashboard
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -157,12 +150,10 @@ const AdminDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/admin/analytics">
-              <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <h3 className="font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
-                <p className="text-sm text-gray-600">View detailed analytics and metrics</p>
-              </div>
-            </Link>
+            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <h3 className="font-medium text-gray-500 mb-2">Analytics Dashboard</h3>
+              <p className="text-sm text-gray-400">Available through Mixpanel</p>
+            </div>
             <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
               <h3 className="font-medium text-gray-500 mb-2">User Management</h3>
               <p className="text-sm text-gray-400">Coming soon - manage user accounts</p>
