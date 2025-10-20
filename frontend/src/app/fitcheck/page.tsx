@@ -6,37 +6,7 @@ import { apiClient, default as api } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
 import { track } from '@/analytics/client';
 
-interface Outfit {
-  _id?: string;
-  id?: string;
-  name?: string;
-  description?: string;
-  imageUrl?: string;
-  items: any[];
-  occasion?: string;
-  season?: string;
-  createdAt?: string;
-  rating?: number;
-  feedback?: string;
-  context?: {
-    event?: string;
-    season?: string;
-    formality?: string;
-  };
-  score?: number;
-  visualCollage?: {
-    type: string;
-    mainImage: string;
-    allImages: string[];
-    layout: string;
-  };
-  aiGeneratedImage?: {
-    type: string;
-    imageUrl: string;
-    description: string;
-  };
-  hasVisualData?: boolean;
-}
+// Outfit interface removed - not needed for dating app
 
 interface FitCheck {
   _id: string;
@@ -70,7 +40,7 @@ export default function FitCheckPage() {
   const [error, setError] = useState<string>('');
   const [showNotesPrompt, setShowNotesPrompt] = useState(false);
   const [savedNotes, setSavedNotes] = useState('');
-  const [outfits, setOutfits] = useState<Outfit[]>([]);
+  // Outfits state removed - not needed for dating app
   const [fitChecks, setFitChecks] = useState<FitCheck[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFitCheck, setSelectedFitCheck] = useState<FitCheck | null>(null);
@@ -106,12 +76,9 @@ export default function FitCheckPage() {
       setIsLoading(true);
       const token = localStorage.getItem('token');
       
-      const [outfitsResponse, fitChecksResponse] = await Promise.all([
-        apiClient.get('/api/outfits'),
-        apiClient.get('/api/fit-check/history')
-      ]);
+      const fitChecksResponse = await apiClient.get('/api/fit-check/history');
 
-      setOutfits(outfitsResponse.data.outfits || []);
+      // No outfits needed for dating app
       setFitChecks(fitChecksResponse.data.fitChecks || []);
     } catch (error) {
       console.error('Error fetching fit check data:', error);
@@ -557,7 +524,7 @@ export default function FitCheckPage() {
                       }}
                       className="flex-1 bg-white/20 text-white py-2 rounded-lg hover:bg-white/30 transition-colors"
                     >
-                      Try Another Outfit
+                      Try Another Photo
                     </button>
                     <button
                       onClick={async () => {
@@ -630,7 +597,7 @@ export default function FitCheckPage() {
           
 
           {/* Saved Fits and Fit Checks */}
-          {outfits.length === 0 && fitChecks.length === 0 ? (
+          {fitChecks.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">

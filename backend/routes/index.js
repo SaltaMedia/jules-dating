@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const chatRoutes = require('./chat');
 const authRoutes = require('./auth');
-const productsRoutes = require('./products');
 const imagesRoutes = require('./images');
 const onboardingRoutes = require('./onboarding');
 const fitCheckRoutes = require('./fitCheck');
@@ -15,7 +14,7 @@ const analyticsRoutes = require('./analytics');
 const chatSessionsRoutes = require('./chatSessions');
 const anonymousRoutes = require('./anonymous');
 const monitoringRoutes = require('./monitoring');
-const feedbackRoutes = require('./feedback');
+// Feedback routes removed - not needed for dating app
 const dataProtectionRoutes = require('./dataProtection');
 // const insightsRoutes = require('./insights'); // Removed - using Segment → Mixpanel
 
@@ -81,9 +80,6 @@ router.use('/chat', chatRoutes);
 // Chat sessions routes
 router.use('/chat-sessions', chatSessionsRoutes);
 
-// Products routes (for shopping recommendations)
-router.use('/products', productsRoutes);
-
 // Images routes (for profile pic uploads)
 router.use('/images', imagesRoutes);
 
@@ -110,8 +106,7 @@ router.use('/anonymous', anonymousRoutes);
 // Monitoring routes (for production monitoring)
 router.use('/monitoring', monitoringRoutes);
 
-// Feedback routes
-router.use('/feedback', feedbackRoutes);
+// Feedback routes removed - not needed for dating app
 
 // Data protection routes
 router.use('/data-protection', dataProtectionRoutes);
