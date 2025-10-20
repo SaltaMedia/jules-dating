@@ -106,8 +106,6 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
                        pathname?.startsWith('/admin/') ||
                        pathname === '/free-experience' ||
                        pathname?.startsWith('/free-experience/'));
-
-
   
   return (
     <>

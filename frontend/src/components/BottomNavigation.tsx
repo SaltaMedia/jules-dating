@@ -10,6 +10,14 @@ export default function BottomNavigation() {
   const [isMobile, setIsMobile] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
 
+  // Debug logging
+  console.log('🔍 BottomNavigation Debug:', {
+    pathname,
+    isMobile,
+    isVisible,
+    componentMounted: true
+  });
+
   // Detect mobile device and handle visibility
   useEffect(() => {
     const checkMobile = () => {
