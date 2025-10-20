@@ -3,21 +3,21 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { track } from '@/analytics/client';
+import { segment } from '@/utils/segment';
 import MeetJulesCarousel from '@/components/MeetJulesCarousel';
 
 export default function FreeExperiencePage() {
   // Free experience landing page
   useEffect(() => {
     // Track page view
-    track('page_visited', {
+    segment.track('Page Visited', {
       page: '/free-experience',
       category: 'free_experience',
       action: 'landing_page_visited'
     });
     
     // Track landing page session
-    track('landing_page_session', {
+    segment.track('Landing Page Session', {
       page: '/free-experience',
       category: 'free_experience',
       action: 'landing_page_session_started'
@@ -33,7 +33,7 @@ export default function FreeExperiencePage() {
       'join_jules_beta': 'Get Started for Free'
     };
     
-    track('landing_page_cta_clicked', {
+    segment.track('Landing Page CTA Clicked', {
       cta_type: ctaType,
       source: source,
       category: 'free_experience',

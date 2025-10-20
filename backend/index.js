@@ -94,6 +94,11 @@ app.use('/api/chat', chatLimiter); // More generous for chat
 app.use('/api', generalLimiter); // General limit for other endpoints
 
 // Middleware
+// Universal tracking middleware (temporarily disabled for testing)
+// const { trackAPICalls, trackUserSessions } = require('./middleware/universalTracking');
+// app.use('/api', trackAPICalls);
+// app.use('/api', trackUserSessions);
+
 // CORS configuration
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3002'],
@@ -168,18 +173,13 @@ app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Analytics middleware - ENABLED for launch
-const { 
-  sessionMiddleware, 
-  pageViewMiddleware, 
-  userIdentificationMiddleware,
-  performanceMiddleware 
-} = require('./middleware/analytics');
-
-app.use(userIdentificationMiddleware);
-app.use(sessionMiddleware);
-app.use(pageViewMiddleware);
-app.use(performanceMiddleware);
+// Initialize Segment Analytics
+try {
+  const segment = require('./utils/segment');
+  console.log('📊 Segment Analytics service loaded');
+} catch (error) {
+  console.warn('⚠️  Segment Analytics failed to load:', error.message);
+}
 
 // MongoDB connection options - optimized for performance and reliability
 const mongooseOptions = {

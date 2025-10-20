@@ -2,7 +2,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 const { logInfo, logError } = require('../utils/logger');
-const analyticsService = require('../utils/analyticsService');
+// const segment = require('../utils/segment'); // Temporarily disabled
 
 // Serialize user for the session
 passport.serializeUser((user, done) => {
@@ -19,10 +19,20 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+// Determine callback URL based on environment
+const getCallbackURL = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.GOOGLE_CALLBACK_URL || "https://jules-dating.onrender.com/api/auth/google/callback";
+  } else {
+    // For localhost, callback goes to backend (4002), not frontend (3002)
+    return "http://localhost:4002/api/auth/google/callback";
+  }
+};
+
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:4002/api/auth/google/callback",
+  callbackURL: getCallbackURL(),
   passReqToCallback: true
 }, async (req, accessToken, refreshToken, profile, done) => {
   try {
@@ -87,24 +97,16 @@ passport.use(new GoogleStrategy({
       emailDomain: user.email?.split('@')[1] || 'unknown'
     });
 
-    // Track new user registration in analytics
+    // Track new user registration with Segment
     try {
-      await analyticsService.trackEvent({
-        userId: user._id.toString(),
-        sessionId: 'oauth_registration_' + Date.now(),
-        eventType: 'conversion',
-        category: 'engagement',
-        action: 'account_created',
-        page: '/auth/google/callback',
-        properties: {
-          email: user.email,
-          name: user.name,
-          method: 'google_oauth',
-          source: 'google_oauth',
-          feature: 'oauth_registration'
-        }
+      const segment = require('../utils/segment');
+      await segment.trackSignup(user._id.toString(), 'google_oauth', {
+        email: user.email,
+        name: user.name,
+        source: 'google_oauth',
+        feature: 'oauth_registration'
       });
-      logInfo('✅ Google OAuth user registration tracked in analytics:', user.email);
+      logInfo('✅ Google OAuth user registration tracked with Segment:', user.email);
     } catch (analyticsError) {
       logError('❌ Failed to track Google OAuth user registration:', analyticsError);
       // Don't fail OAuth if analytics fails

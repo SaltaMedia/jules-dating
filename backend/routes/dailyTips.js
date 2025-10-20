@@ -18,18 +18,20 @@ router.get('/today', auth, async (req, res) => {
       return res.status(404).json({ error: 'No tip available for today' });
     }
     
-    // Track analytics
-    analyticsService.trackEvent({
-      userId: req.user.userId,
-      sessionId: req.sessionId || 'authenticated',
-      eventType: 'feature_usage',
-      category: 'tips',
-      action: 'daily_tip_viewed',
-      properties: {
+    // Track analytics with Segment
+    try {
+      const segment = require('../utils/segment');
+      await segment.track(req.user.userId, 'Daily Tip Viewed', {
+        sessionId: req.sessionId || 'authenticated',
+        category: 'tips',
+        action: 'daily_tip_viewed',
         tipId: tip._id,
         tipCategory: tip.category
-      }
-    });
+      });
+    } catch (analyticsError) {
+      console.error('❌ Failed to track daily tip analytics:', analyticsError);
+      // Don't fail the request if analytics fails
+    }
     
     res.json({ tip });
   } catch (error) {

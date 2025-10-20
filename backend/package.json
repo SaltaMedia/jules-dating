@@ -12,6 +12,7 @@
     "generate-test-data": "node scripts/generate-test-data.js"
   },
   "dependencies": {
+    "@segment/analytics-node": "^2.3.0",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.0",

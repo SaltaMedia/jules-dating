@@ -3,7 +3,7 @@ const ClosetItem = require('../models/ClosetItem');
 const User = require('../models/User');
 const OpenAI = require('openai');
 const { logInfo, logWarn, logError } = require('../utils/logger');
-const analyticsService = require('../utils/analyticsService');
+// Removed old analyticsService - now using Segment
 const UserContextCache = require('../utils/userContextCache');
 
 // Lazy initialization of OpenAI client
@@ -349,61 +349,28 @@ const submitFitCheck = async (req, res) => {
     }
     await Promise.all(savePromises);
 
-    // Track analytics events
+    // Track analytics events with Segment
     try {
-      const sessionId = req.sessionId || 'authenticated';
+      const segment = require('../utils/segment');
       const userId = req.user?.id || 'anonymous';
       
-      await analyticsService.trackEvent({
-        userId: userId,
-        sessionId: sessionId,
-        eventType: 'feature_usage',
-        category: 'fit_check',
-        action: 'fit_check_submitted',
-        page: '/fit-check',
-        properties: {
-          eventContext,
-          specificQuestion: !!specificQuestion,
-          hasImage: !!imageUrl,
-          rating: analysis.overallRating,
-          tone: analysis.tone,
-          isAuthenticated: !!userId
-        },
-        userAgent: req.get('User-Agent'),
-        ipAddress: req.ip
+      // Track fit check submission
+      await segment.trackFitCheckSubmitted(userId, {
+        eventContext,
+        rating: analysis.overallRating,
+        hasSpecificQuestion: !!specificQuestion,
+        anonymous: !req.user?.id,
+        tone: analysis.tone
       });
 
-      await analyticsService.trackEvent({
-        userId: userId,
-        sessionId: sessionId,
-        eventType: 'conversion',
-        category: 'fit_check',
-        action: 'fit_check_completed',
-        page: '/fit-check',
-        properties: {
-          eventContext,
-          rating: analysis.overallRating,
-          isAuthenticated: !!userId,
-          savedToCloset: !!closetItem
-        },
-        userAgent: req.get('User-Agent'),
-        ipAddress: req.ip
-      });
-
-      // Also track wardrobe item creation if closet item was saved
+      // Track wardrobe item creation if closet item was saved
       if (closetItem && userId !== 'anonymous') {
-        await analyticsService.trackFeatureUsage(
-          userId,
-          sessionId,
-          'wardrobe',
-          'item_from_fit_check',
-          req,
-          {
-            itemType: 'outfit',
-            eventContext: eventContext,
-            rating: analysis.overallRating
-          }
-        );
+        await segment.trackWardrobeItemAdded(userId, {
+          itemType: 'outfit',
+          source: 'fit_check',
+          eventContext: eventContext,
+          rating: analysis.overallRating
+        });
       }
     } catch (analyticsError) {
       logError('Failed to track fit check analytics:', analyticsError);
@@ -606,40 +573,18 @@ const submitAnonymousFitCheck = async (req, res) => {
 
     await fitCheck.save();
 
-    // Track analytics events
+    // Track analytics events with Segment
     try {
-      await analyticsService.trackEvent({
-        userId: 'anonymous',
-        sessionId: session?.sessionId || 'unknown',
-        eventType: 'feature_usage',
-        category: 'fit_check',
-        action: 'fit_check_submitted',
-        page: '/free-experience/fit-check',
-        properties: {
-          eventContext,
-          specificQuestion: !!specificQuestion,
-          hasImage: !!imageUrl,
-          rating: analysis.overallRating,
-          tone: analysis.tone
-        },
-        userAgent: req.get('User-Agent'),
-        ipAddress: req.ip
-      });
-
-      await analyticsService.trackEvent({
-        userId: 'anonymous',
-        sessionId: session?.sessionId || 'unknown',
-        eventType: 'conversion',
-        category: 'fit_check',
-        action: 'fit_check_completed',
-        page: '/free-experience/fit-check',
-        properties: {
-          eventContext,
-          rating: analysis.overallRating,
-          upgradeRequired: true
-        },
-        userAgent: req.get('User-Agent'),
-        ipAddress: req.ip
+      const segment = require('../utils/segment');
+      const userId = 'anonymous';
+      
+      // Track fit check submission
+      await segment.trackFitCheckSubmitted(userId, {
+        eventContext,
+        rating: analysis.overallRating,
+        hasSpecificQuestion: !!specificQuestion,
+        anonymous: true,
+        tone: analysis.tone
       });
     } catch (analyticsError) {
       logError('Failed to track fit check analytics:', analyticsError);
@@ -695,18 +640,18 @@ const saveFitCheck = async (req, res) => {
       return res.status(404).json({ error: 'Fit check not found' });
     }
 
-    // Track analytics
-    analyticsService.trackEvent({
-      userId,
-      sessionId: req.sessionId || 'authenticated',
-      eventType: 'feature_usage',
-      category: 'fit_check',
-      action: 'fit_check_saved',
-      properties: {
+    // Track analytics with Segment
+    try {
+      const segment = require('../utils/segment');
+      await segment.track(userId, 'Fit Check Saved', {
         rating: fitCheck.rating,
-        eventContext: fitCheck.eventContext
-      }
-    });
+        eventContext: fitCheck.eventContext,
+        action: 'fit_check_saved'
+      });
+    } catch (analyticsError) {
+      console.error('❌ Failed to track fit check save analytics:', analyticsError);
+      // Don't fail the request if analytics fails
+    }
 
     logInfo(`Fit check saved for user ${userId}, fit check ID: ${id}`);
 

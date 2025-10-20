@@ -575,24 +575,19 @@ const analyzeImage = async (req, res) => {
     await wardrobeItem.save();
     console.log('Wardrobe item saved successfully');
     
-    // Track analytics
+    // Track analytics with Segment
     try {
-      const analyticsService = require('../utils/analyticsService');
-      await analyticsService.trackFeatureUsage(
-        userId,
-        req.sessionId || 'default-session',
-        'wardrobe',
-        'item_analyzed',
-        req,
-        {
-          category: wardrobeItem.tags.category,
-          subcategory: wardrobeItem.tags.subcategory,
-          colors: wardrobeItem.tags.colors,
-          material: wardrobeItem.tags.material,
-          formality: wardrobeItem.tags.formality,
-          brandGuess: wardrobeItem.tags.brandGuess
-        }
-      );
+      const segment = require('../utils/segment');
+      await segment.trackWardrobeItemAdded(userId, {
+        itemType: wardrobeItem.tags.category,
+        category: wardrobeItem.tags.category,
+        subcategory: wardrobeItem.tags.subcategory,
+        brand: wardrobeItem.tags.brandGuess || 'unknown',
+        source: 'ai_analysis',
+        colors: wardrobeItem.tags.colors,
+        material: wardrobeItem.tags.material,
+        formality: wardrobeItem.tags.formality
+      });
       console.log(`✅ Wardrobe item analytics tracked for user ${userId}`);
     } catch (analyticsError) {
       console.error('❌ Analytics tracking error:', analyticsError);

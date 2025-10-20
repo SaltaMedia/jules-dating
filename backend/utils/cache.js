@@ -17,8 +17,9 @@ const CACHE_CONFIG = {
   REAL_TIME_RECOMMENDATIONS: { ttl: 0 } // Never cache
 };
 
-// Redis client
+// Redis client - TEMPORARILY DISABLED
 let redisClient = null;
+const REDIS_DISABLED = true; // Temporary fix for Redis connection issues
 
 // Initialize Redis connection
 async function initializeCache() {
@@ -33,6 +34,11 @@ async function initializeCache() {
     redisClient = redis.createClient({
       url: redisUrl,
       retry_strategy: (options) => {
+        // Stop retrying on authentication errors
+        if (options.error && options.error.message && options.error.message.includes('WRONGPASS')) {
+          logWarn('Redis authentication failed, using memory cache fallback');
+          return null; // Stop retrying
+        }
         if (options.error && options.error.code === 'ECONNREFUSED') {
           logWarn('Redis server refused connection, using memory cache fallback');
           return null; // Stop retrying
@@ -41,11 +47,11 @@ async function initializeCache() {
           logError('Redis retry time exhausted');
           return null;
         }
-        if (options.attempt > 10) {
+        if (options.attempt > 5) {
           logError('Redis max retry attempts reached');
           return null;
         }
-        return Math.min(options.attempt * 100, 3000);
+        return Math.min(options.attempt * 200, 5000);
       }
     });
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient, default as api } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
-import { track } from '@/analytics/client';
+import { segment } from '@/utils/segment';
 import { trackFreePicReview } from '@/lib/metaPixel';
 
 interface ProfilePicReview {
@@ -49,14 +49,18 @@ export default function FreeExperienceProfilePicReviewPage() {
     const landingSource = localStorage.getItem('landing_source') || 'direct';
     const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
     
-    // Track that user came from free experience
-    track('page_visited', {
-      page: '/free-experience/profile-pic-review',
-      category: 'free_experience',
-      action: 'profile_pic_review_accessed_from_free_experience',
-      landing_source: landingSource,
-      landing_variant: landingVariant
-    });
+    // Track that user came from free experience (only once per session)
+    const hasTracked = sessionStorage.getItem('free_pic_review_page_tracked');
+    if (!hasTracked) {
+      segment.track('Free Profile Pic Review Page Visited', {
+        page: '/free-experience/profile-pic-review',
+        category: 'free_experience',
+        action: 'profile_pic_review_accessed_from_free_experience',
+        landing_source: landingSource,
+        landing_variant: landingVariant
+      });
+      sessionStorage.setItem('free_pic_review_page_tracked', 'true');
+    }
 
     // Initialize anonymous session
     const initSession = async () => {
@@ -193,7 +197,7 @@ export default function FreeExperienceProfilePicReviewPage() {
       const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
 
       // Track profile pic review upload success
-      track('anonymous_profile_pic_review_uploaded', { 
+      segment.track('Free Profile Pic Review Completed', { 
         has_specific_question: !!specificQuestion,
         rating: responseData.profilePicReview.rating,
         landing_source: landingSource,
@@ -393,7 +397,7 @@ export default function FreeExperienceProfilePicReviewPage() {
                           onClick={() => {
                             const landingSource = localStorage.getItem('landing_source') || 'direct';
                             const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
-                            track('conversion_prompt_clicked', {
+                            segment.track('Sign Up Clicked After Profile Pic Review', {
                               source: 'profile_pic_review',
                               action: 'signup_from_conversion_prompt',
                               landing_source: landingSource,

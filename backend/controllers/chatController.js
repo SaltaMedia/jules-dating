@@ -13,6 +13,8 @@ const { buildJulesContext } = require('../utils/contextBuilder');
 const ConversationLearning = require('../utils/conversationLearning');
 const AIContextAnalyzer = require('../utils/aiContextAnalyzer');
 const UserContextCache = require('../utils/userContextCache');
+const segment = require('../utils/segment');
+const universalTracker = require('../utils/universalTracker');
 // Removed getRemainingUsage import - using direct calculation instead
 
 
@@ -382,6 +384,7 @@ function detectContextSwitch(message, hasNewImage, reviewContext, conversationMe
 // Main chat function with JSON mode integration
 async function chat(req, res) {
   console.log('🚨 DEBUG: CHAT FUNCTION CALLED - This should appear for follow-up messages');
+  const startTime = Date.now(); // Track response time for analytics
   try {
     
     const { message, context, reviewContext } = req.body;
@@ -924,37 +927,19 @@ You've used all 5 of your free messages! Sign up to continue chatting with Jules
 
       // Track chat analytics
       try {
-        const analyticsService = require('../utils/analyticsService');
-        const sessionId = req.sessionId || 'default-session';
+        await segment.trackChatMessage(actualUserId, 'user', {
+          messageLength: message.length,
+          intent: intent,
+          conversationId: conversation._id,
+          responseTime: Date.now() - startTime,
+          hasImage: false
+        });
         
-        // Track user message
-        await analyticsService.trackChatMessage(
-          actualUserId,
-          sessionId,
-          {
-            role: 'user',
-            content: message,
-            intent: intent
-          },
-          req
-        );
+        // Chat tracking handled by segment.js above to avoid duplicates
         
-        // Track assistant response
-        await analyticsService.trackChatMessage(
-          actualUserId,
-          sessionId,
-          {
-            role: 'assistant',
-            content: cleanedFinalResponse,
-            intent: intent
-          },
-          req
-        );
-        
-        console.log(`✅ Chat analytics tracked for user ${actualUserId}`);
-      } catch (analyticsError) {
-        console.error('❌ Analytics tracking error:', analyticsError);
-        // Don't fail the chat if analytics fails
+        console.log(`📊 Chat analytics tracked for user ${actualUserId}`);
+      } catch (error) {
+        console.error('Analytics tracking error:', error);
       }
 
       // Also create/update ChatSession for Chat History feature

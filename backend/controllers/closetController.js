@@ -69,23 +69,17 @@ const addClosetItem = async (req, res) => {
 
     await item.save();
 
-    // Track analytics
+    // Track analytics with Segment
     try {
-      const analyticsService = require('../utils/analyticsService');
-      await analyticsService.trackFeatureUsage(
-        userId,
-        req.sessionId || 'default-session',
-        'wardrobe',
-        'item_added',
-        req,
-        {
-          itemType: type,
-          itemName: name,
-          itemBrand: brand || 'unknown',
-          hasTags: tags && tags.length > 0,
-          hasJulesFeedback: !!julesFeedback
-        }
-      );
+      const segment = require('../utils/segment');
+      await segment.trackWardrobeItemAdded(userId, {
+        itemType: type,
+        category: type,
+        brand: brand || 'unknown',
+        source: 'manual',
+        hasTags: tags && tags.length > 0,
+        hasJulesFeedback: !!julesFeedback
+      });
       console.log(`✅ Closet item analytics tracked for user ${userId}`);
     } catch (analyticsError) {
       console.error('❌ Analytics tracking error:', analyticsError);

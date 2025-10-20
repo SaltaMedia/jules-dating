@@ -83,6 +83,11 @@ anonymousSessionSchema.statics.createSession = function(sessionId, ipAddress = n
 
 // Instance method to increment usage count
 anonymousSessionSchema.methods.incrementUsage = function(type) {
+  // Ensure usageCounts exists
+  if (!this.usageCounts) {
+    this.usageCounts = {};
+  }
+  
   if (this.usageCounts[type] !== undefined) {
     this.usageCounts[type] += 1;
     this.lastActivityAt = new Date();
@@ -93,12 +98,18 @@ anonymousSessionSchema.methods.incrementUsage = function(type) {
 
 // Instance method to check if usage limit is reached
 anonymousSessionSchema.methods.isLimitReached = function(type, limit) {
+  if (!this.usageCounts) {
+    return false; // No usage counts means no limit reached
+  }
   return this.usageCounts[type] >= limit;
 };
 
 // Instance method to get remaining usage
 anonymousSessionSchema.methods.getRemainingUsage = function(type, limit) {
-  return Math.max(0, limit - this.usageCounts[type]);
+  if (!this.usageCounts) {
+    return limit; // No usage counts means full limit available
+  }
+  return Math.max(0, limit - (this.usageCounts[type] || 0));
 };
 
 // Instance method to add fit check reference

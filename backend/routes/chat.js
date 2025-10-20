@@ -36,7 +36,14 @@ const upload = multer({
 
 router.post('/', auth, chat);
 
-// Anonymous chat removed - unauthenticated users only get profile-pic-review, not chat
+// Anonymous chat route for free users (limited to 5 messages)
+router.post('/anonymous', 
+  anonymousSession,
+  requireAnonymousSession,
+  rateLimiter({ chatMessages: FREE_LIMITS.chatMessages }),
+  incrementUsage('chatMessages'),
+  chat
+);
 
 // Test routes removed - all chat should go through regular routes
 

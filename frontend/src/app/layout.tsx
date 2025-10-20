@@ -23,6 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1106342377922798';
+  const segmentWriteKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
   
   return (
     <html lang="en">
@@ -55,6 +56,8 @@ export default function RootLayout({
             console.log('Meta Pixel PageView event fired');
           `}
         </Script>
+
+        {/* Segment Analytics is handled by snippet-based implementation in utils/segment.ts */}
       </head>
       <body>
         <ToastProvider>

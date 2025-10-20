@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { track } from '@/analytics/client';
+import { segment } from '@/utils/segment';
 
 export default function OnboardingExperiencePage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +12,7 @@ export default function OnboardingExperiencePage() {
     setIsLoading(true);
     
     // Track the onboarding option selection
-    track('onboarding_experience_option_selected', {
+    segment.track('Onboarding Experience Option Selected', {
       option: option,
       route: route,
       category: 'onboarding'
@@ -25,7 +25,7 @@ export default function OnboardingExperiencePage() {
   };
 
   const handleSkip = () => {
-    track('onboarding_experience_skipped', {
+    segment.track('Onboarding Experience Skipped', {
       category: 'onboarding'
     });
     router.push('/chat');

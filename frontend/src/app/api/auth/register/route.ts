@@ -4,8 +4,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // Forward the request to the backend
-    const backendUrl = 'https://jules-dating.onrender.com'; // Use production for testing
+    // Determine backend URL based on environment
+    let backendUrl: string;
+    
+    if (process.env.NODE_ENV === 'development') {
+      // Development - use localhost backend
+      backendUrl = 'http://localhost:4002';
+    } else {
+      // Production - use production backend
+      backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jules-dating.onrender.com';
+    }
+    
     const fullUrl = `${backendUrl}/api/auth/register`;
     
     console.log('Registration route - Backend URL:', backendUrl);

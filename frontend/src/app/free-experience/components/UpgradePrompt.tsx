@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { track } from '@/analytics/client';
+import { segment } from '@/utils/segment';
 
 interface UpgradePromptProps {
   featureName: string;
@@ -24,7 +24,7 @@ export default function UpgradePrompt({
   const handleDismiss = () => {
     setIsVisible(false);
     onDismiss?.();
-    track('upgrade_prompt_dismissed', {
+    segment.track('Upgrade Prompt Dismissed', {
       feature_name: featureName,
       category: 'free_experience',
       action: 'prompt_dismissed'
@@ -32,7 +32,7 @@ export default function UpgradePrompt({
   };
 
   const handleUpgradeClick = () => {
-    track('upgrade_prompt_clicked', {
+    segment.track('Upgrade Prompt Clicked', {
       feature_name: featureName,
       category: 'free_experience',
       action: 'upgrade_button_clicked',
@@ -41,7 +41,7 @@ export default function UpgradePrompt({
   };
 
   const handleSignInClick = () => {
-    track('upgrade_prompt_signin_clicked', {
+    segment.track('Upgrade Prompt Sign In Clicked', {
       feature_name: featureName,
       category: 'free_experience',
       action: 'signin_button_clicked',

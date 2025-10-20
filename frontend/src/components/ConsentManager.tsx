@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { track } from '@/analytics/client';
+import { segment } from '@/utils/segment';
 
 interface ConsentPreferences {
   necessary: boolean;
@@ -49,8 +49,8 @@ export default function ConsentManager({ onConsentChange, showBanner = true }: C
     setShowConsentBanner(false);
     setShowConsentModal(false);
     
-    // Track consent given
-    track('consent_given', {
+    // Track consent given with Segment
+    segment.track('Consent Given', {
       category: 'privacy',
       action: 'consent_updated',
       properties: newPreferences

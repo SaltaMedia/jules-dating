@@ -38,6 +38,8 @@ export default function ProfilePicReviewPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
+  // Page visit tracking is handled by LayoutWrapper.tsx to avoid duplicates
+
   // Function to convert star emojis to visual star icons
   const renderStarRating = (text: string) => {
     return text.replace(/(\*\*Overall Rating:\*\*)\s*([⭐]+)/g, (match, label, stars) => {
@@ -178,6 +180,8 @@ export default function ProfilePicReviewPage() {
         has_specific_question: !!specificQuestion,
         rating: response.data.profilePicReview.rating
       });
+
+      // Profile pic review tracking is handled by backend to avoid duplicates
     } catch (error: any) {
       console.error('Error submitting profile pic review:', error);
       

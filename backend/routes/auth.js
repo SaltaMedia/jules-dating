@@ -5,7 +5,6 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const ChatLog = require('../models/ChatLog');
-const AnalyticsEvent = require('../models/AnalyticsEvent');
 const { 
   validateLogin, 
   validateRegister, 
@@ -108,7 +107,6 @@ router.delete('/gdpr/delete', auth, async (req, res) => {
     // Delete related data
     await UserProfile.deleteOne({ userId: userId.toString() });
     await ChatLog.deleteMany({ userId });
-    await AnalyticsEvent.deleteMany({ userId: userId.toString() });
 
     res.json({ success: true, message: 'Data deleted successfully' });
   } catch (error) {

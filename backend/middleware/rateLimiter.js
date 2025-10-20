@@ -230,10 +230,10 @@ const getUsageInfo = async (req, res) => {
 
 // Middleware to require anonymous session
 const requireAnonymousSession = (req, res, next) => {
-  if (!req.anonymousSessionId) {
+  if (!req.anonymousSession) {
     return res.status(400).json({
       error: 'Anonymous session required',
-      message: 'Please provide a valid anonymous session'
+      message: 'Please refresh the page to start a new session'
     });
   }
   next();

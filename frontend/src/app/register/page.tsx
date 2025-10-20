@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '../../lib/api';
-import { track } from '@/analytics/client';
+import { segment } from '@/utils/segment';
 import { trackRegistration } from '@/lib/metaPixel';
 
 export default function RegisterPage() {
@@ -90,17 +90,8 @@ export default function RegisterPage() {
       const landingSource = localStorage.getItem('landing_source') || 'direct';
       const landingVariant = localStorage.getItem('landing_variant') || 'unknown';
       
-      // Track account creation
-      track('account_created', { 
-        source: source,
-        feature: feature,
-        has_name: !!formData.name,
-        has_email: !!formData.email,
-        category: 'conversion',
-        action: 'account_created',
-        landing_source: landingSource,
-        landing_variant: landingVariant
-      });
+      // Registration tracking is handled by backend authController.js
+      // to avoid duplicate events
 
       // Track Meta Pixel CompleteRegistration event
       trackRegistration({

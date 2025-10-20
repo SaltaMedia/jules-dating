@@ -18,7 +18,7 @@ const {
 } = require('../utils/cache');
 const { queryOptimizers } = require('../utils/databaseOptimizer');
 const { sendPasswordResetEmail } = require('../utils/emailService');
-const analyticsService = require('../utils/analyticsService');
+// Removed old analyticsService - now using Segment
 
 // Get JWT secret with proper error handling
 function getJWTSecret() {
@@ -107,24 +107,29 @@ const register = asyncHandler(async (req, res) => {
     // Don't fail registration if email fails
   }
 
-  // Track user registration in analytics
+  // Track user registration with Segment
   try {
-    await analyticsService.trackEvent({
-      userId: user._id.toString(),
-      sessionId: req.sessionId || 'registration_' + Date.now(),
-      eventType: 'conversion',
-      category: 'engagement',
+    const segment = require('../utils/segment');
+    
+    // First alias anonymous user to new user ID if they have an anonymous session
+    if (req.anonymousId) {
+      await segment.alias(req.anonymousId, user._id.toString());
+      logInfo('✅ Anonymous user aliased to new user:', req.anonymousId, '->', user._id.toString());
+    }
+    
+    // Track registration completion
+    await segment.track(user._id.toString(), 'Registration Completed', {
+      source: 'backend_registration',
+      method: 'email',
+      has_name: !!user.name,
+      has_email: !!user.email,
+      category: 'conversion',
       action: 'account_created',
-      page: '/register',
-      properties: {
-        email: user.email,
-        name: user.name,
-        method: 'email',
-        source: req.body.source || 'direct',
-        feature: req.body.feature || 'registration'
-      }
+      app_name: 'jules-dating',
+      app_environment: process.env.NODE_ENV === 'production' ? 'production' : 'localhost'
     });
-    logInfo('✅ User registration tracked in analytics:', user.email);
+    
+    logInfo('✅ User registration tracked with Segment:', user.email);
   } catch (analyticsError) {
     logError('❌ Failed to track user registration:', analyticsError);
     // Don't fail registration if analytics fails
@@ -218,23 +223,23 @@ const login = asyncHandler(async (req, res) => {
     }
 
 
-    // Track user login in analytics
+    // Track user login with Segment
     try {
-      await analyticsService.trackEvent({
-        userId: user._id.toString(),
-        sessionId: req.sessionId || 'login_' + Date.now(),
-        eventType: 'session_start',
-        category: 'engagement',
-        action: 'login',
-        page: '/login',
-        properties: {
-          email: user.email,
-          name: user.name,
-          method: 'email',
-          isAdmin: user.isAdmin
-        }
+      const segment = require('../utils/segment');
+      
+      // Track user login
+      await segment.track(user._id.toString(), 'User Logged In', {
+        source: 'backend_login',
+        method: 'email',
+        has_name: !!user.name,
+        has_email: !!user.email,
+        category: 'authentication',
+        action: 'login_successful',
+        app_name: 'jules-dating',
+        app_environment: process.env.NODE_ENV === 'production' ? 'production' : 'localhost'
       });
-      logInfo('✅ User login tracked in analytics:', user.email);
+      
+      logInfo('✅ User login tracked with Segment:', user.email);
     } catch (analyticsError) {
       logError('❌ Failed to track user login:', analyticsError);
       // Don't fail login if analytics fails
@@ -402,26 +407,36 @@ const googleCallback = asyncHandler(async (req, res) => {
     // Continue with token generation even if onboarding update fails
   }
   
-  // Track Google OAuth login in analytics
+  // Track Google OAuth login with Segment
   try {
-    await analyticsService.trackEvent({
-      userId: req.user._id.toString(),
-      sessionId: req.sessionId || 'oauth_login_' + Date.now(),
-      eventType: 'session_start',
-      category: 'engagement',
-      action: 'login',
-      page: '/auth/google/callback',
-      properties: {
-        email: req.user.email,
-        name: req.user.name,
-        method: 'google_oauth',
-        isAdmin: req.user.isAdmin
-      }
+    const segment = require('../utils/segment');
+    
+    // First alias anonymous user to new user ID if they have an anonymous session
+    if (req.anonymousId) {
+      await segment.alias(req.anonymousId, req.user._id.toString());
+      logInfo('✅ Anonymous user aliased to OAuth user:', req.anonymousId, '->', req.user._id.toString());
+    }
+    
+    // Then identify the user
+    await segment.identify(req.user._id.toString(), {
+      email: req.user.email,
+      name: req.user.name,
+      isAdmin: req.user.isAdmin,
+      signupMethod: 'google_oauth',
+      wasAnonymous: !!req.anonymousId
     });
-    logInfo('✅ Google OAuth login tracked in analytics:', req.user.email);
+    
+    // Track the login
+    await segment.track(req.user._id.toString(), 'User Logged In', {
+      method: 'google_oauth',
+      isAdmin: req.user.isAdmin
+    });
+    
+    logInfo('✅ Google OAuth login tracked with Segment:', req.user.email);
   } catch (analyticsError) {
     logError('❌ Failed to track Google OAuth login:', analyticsError);
     // Don't fail OAuth if analytics fails
+    logInfo('🔧 Continuing OAuth flow despite analytics error');
   }
 
   const token = jwt.sign(

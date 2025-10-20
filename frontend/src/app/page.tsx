@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { track } from '@/analytics/client';
+// import { track } from '@/analytics/client'; // Replaced with Segment
+import { segment } from '@/utils/segment';
 import MeetJulesCarousel from '@/components/MeetJulesCarousel';
 import { trackSignupClick, trackMetaPixelEvent, META_EVENTS } from '@/lib/metaPixel';
 
@@ -15,21 +16,23 @@ export default function WelcomePage() {
     localStorage.setItem('landing_variant', 'default');
     localStorage.setItem('landing_timestamp', new Date().toISOString());
     
-    // Track page view
-    track('page_visited', {
-      page: '/',
-      category: 'free_experience',
-      action: 'landing_page_visited',
-      landing_source: '/'
-    });
+    // Track page view with Segment - add delay to ensure Segment client is ready
+    const urlParams = new URLSearchParams(window.location.search);
+    setTimeout(() => {
+      console.log('🎯 Tracking landing page visit with Segment...');
+      segment.trackLandingPageVisit('direct', {
+        utm_source: urlParams.get('utm_source'),
+        utm_medium: urlParams.get('utm_medium'),
+        utm_campaign: urlParams.get('utm_campaign'),
+        referrer: document.referrer
+      }).then(() => {
+        console.log('✅ Landing page visit tracked');
+      }).catch(err => {
+        console.error('❌ Landing page visit tracking failed:', err);
+      });
+    }, 500); // Wait 500ms for Segment client to be ready
     
-    // Track landing page session
-    track('landing_page_session', {
-      page: '/',
-      category: 'free_experience',
-      action: 'landing_page_session_started',
-      landing_source: '/'
-    });
+    // Legacy tracking removed - now using Segment only
   }, []);
 
   const handleCTAClick = (ctaType: string, source: string) => {
@@ -42,14 +45,20 @@ export default function WelcomePage() {
       'sign_up_free': 'Sign Up for FREE!'
     };
     
-    track('landing_page_cta_clicked', {
+    const buttonText = buttonTextMap[ctaType] || 'Unknown Button';
+    
+    // Track with Segment
+    console.log('🎯 Tracking CTA click with Segment:', buttonText);
+    segment.trackCTAClick(buttonText, source, {
       cta_type: ctaType,
-      source: source,
-      category: 'free_experience',
-      action: 'cta_button_clicked',
-      button_text: buttonTextMap[ctaType] || 'Unknown Button',
-      landing_source: '/'
+      landing_source: localStorage.getItem('landing_source') || '/'
+    }).then(() => {
+      console.log('✅ Segment CTA tracking sent successfully');
+    }).catch(err => {
+      console.error('❌ Segment CTA tracking failed:', err);
     });
+    
+    // Legacy tracking removed - now using Segment only
 
     // Track Meta Pixel events for key conversion actions
     if (ctaType === 'try_free_profile_pic_review' || ctaType === 'get_profile_pic_review') {

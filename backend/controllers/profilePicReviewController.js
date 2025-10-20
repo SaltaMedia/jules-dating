@@ -2,7 +2,6 @@ const ProfilePicReview = require('../models/ProfilePicReview');
 const User = require('../models/User');
 const OpenAI = require('openai');
 const { logInfo, logWarn, logError } = require('../utils/logger');
-const analyticsService = require('../utils/analyticsService');
 
 // Lazy initialization of OpenAI client
 let openai = null;
@@ -225,18 +224,18 @@ const submitProfilePicReview = async (req, res) => {
 
     await profilePicReview.save();
 
-    // Track analytics
-    analyticsService.trackEvent({
-      userId,
-      sessionId: req.sessionId || 'authenticated',
-      eventType: 'feature_usage',
-      category: 'profile_pic_review',
-      action: 'profile_pic_review_submitted',
-      properties: {
+    // Track analytics with Segment
+    try {
+      const segment = require('../utils/segment');
+      await segment.trackProfilePicReview(userId, {
         rating,
-        hasSpecificQuestion: !!specificQuestion
-      }
-    });
+        hasSpecificQuestion: !!specificQuestion,
+        anonymous: false
+      });
+    } catch (analyticsError) {
+      console.error('Failed to track profile pic review analytics:', analyticsError);
+      // Don't fail the request if analytics fails
+    }
 
     logInfo(`Profile pic review submitted for user ${userId}, rating: ${rating}`);
 
@@ -304,18 +303,18 @@ const submitAnonymousProfilePicReview = async (req, res) => {
 
     await profilePicReview.save();
 
-    // Track analytics
-    analyticsService.trackEvent({
-      userId: sessionId,
-      sessionId: sessionId,
-      eventType: 'feature_usage',
-      category: 'profile_pic_review',
-      action: 'anonymous_profile_pic_review_submitted',
-      properties: {
+    // Track analytics with Segment
+    try {
+      const segment = require('../utils/segment');
+      await segment.trackProfilePicReview('anonymous', {
         rating,
-        hasSpecificQuestion: !!specificQuestion
-      }
-    });
+        hasSpecificQuestion: !!specificQuestion,
+        anonymous: true
+      });
+    } catch (analyticsError) {
+      console.error('Failed to track anonymous profile pic review analytics:', analyticsError);
+      // Don't fail the request if analytics fails
+    }
 
     logInfo(`Anonymous profile pic review submitted for session ${sessionId}, rating: ${rating}`);
 
@@ -431,18 +430,18 @@ const saveProfilePicReview = async (req, res) => {
       return res.status(404).json({ error: 'Profile pic review not found' });
     }
 
-    // Track analytics
-    analyticsService.trackEvent({
-      userId,
-      sessionId: req.sessionId || 'authenticated',
-      eventType: 'feature_usage',
-      category: 'profile_pic_review',
-      action: 'profile_pic_review_saved',
-      properties: {
+    // Track analytics with Segment
+    try {
+      const segment = require('../utils/segment');
+      await segment.track(userId, 'Profile Pic Review Saved', {
         rating: profilePicReview.rating,
-        hasSpecificQuestion: !!profilePicReview.specificQuestion
-      }
-    });
+        hasSpecificQuestion: !!profilePicReview.specificQuestion,
+        action: 'profile_pic_review_saved'
+      });
+    } catch (analyticsError) {
+      console.error('❌ Failed to track profile pic review save analytics:', analyticsError);
+      // Don't fail the request if analytics fails
+    }
 
     logInfo(`Profile pic review saved for user ${userId}, review ID: ${id}`);
 

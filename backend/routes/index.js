@@ -10,14 +10,14 @@ const onboardingRoutes = require('./onboarding');
 const fitCheckRoutes = require('./fitCheck');
 const outfitsRoutes = require('./outfits');
 const profilePicReviewRoutes = require('./profilePicReview');
+// Analytics routes - only keeping simple tracking for Segment → Mixpanel
 const analyticsRoutes = require('./analytics');
-const analyticsV2Routes = require('./analytics-v2');
 const chatSessionsRoutes = require('./chatSessions');
 const anonymousRoutes = require('./anonymous');
 const monitoringRoutes = require('./monitoring');
 const feedbackRoutes = require('./feedback');
 const dataProtectionRoutes = require('./dataProtection');
-const insightsRoutes = require('./insights');
+// const insightsRoutes = require('./insights'); // Removed - using Segment → Mixpanel
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -99,11 +99,10 @@ router.use('/outfits', outfitsRoutes);
 // Profile pic review routes (for dating profile optimization)
 router.use('/profile-pic-review', profilePicReviewRoutes);
 
-// Analytics routes
+// Analytics routes - only simple tracking for Segment → Mixpanel
+const analyticsQueriesRoutes = require('./analyticsQueries');
 router.use('/analytics', analyticsRoutes);
-
-// Analytics V2 routes (new dashboard)
-router.use('/analytics-v2', analyticsV2Routes);
+router.use('/analytics-queries', analyticsQueriesRoutes);
 
 // Anonymous routes (for free user flow)
 router.use('/anonymous', anonymousRoutes);
@@ -117,8 +116,7 @@ router.use('/feedback', feedbackRoutes);
 // Data protection routes
 router.use('/data-protection', dataProtectionRoutes);
 
-// Insights routes (for weekly reports and user insights)
-router.use('/insights', insightsRoutes);
+// Insights routes removed - using Segment → Mixpanel for analytics
 
 // Development test endpoint - must be last
 if (process.env.NODE_ENV !== 'production') {

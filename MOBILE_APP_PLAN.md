@@ -423,3 +423,5 @@ eas submit --platform android
 
 **Total: 2-3 months for full mobile app with feature parity**
 
+
+

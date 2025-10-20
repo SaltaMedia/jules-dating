@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { track } from '@/analytics/client';
+import { segment } from '@/utils/segment';
 import BottomNavigation from '@/components/BottomNavigation';
 
 export default function OnboardingPage() {
@@ -11,29 +11,37 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Track page view
-    track('page_visited', {
-      page: '/onboarding',
-      category: 'onboarding',
-      action: 'onboarding_modal_viewed'
-    });
+    // Track onboarding started only once
+    const hasTracked = sessionStorage.getItem('onboarding_started_tracked');
+    if (!hasTracked) {
+      segment.track('Onboarding Started', {
+        page: '/onboarding',
+        category: 'onboarding',
+        action: 'onboarding_modal_viewed'
+      });
+      sessionStorage.setItem('onboarding_started_tracked', 'true');
+    }
   }, []);
 
   const handleClose = () => {
     setIsVisible(false);
-    track('onboarding_modal_closed', {
+    segment.track('Onboarding Abandoned', {
       category: 'onboarding',
-      action: 'modal_closed_with_x'
+      action: 'modal_closed_with_x',
+      step: 'modal_view'
     });
     // Redirect to chat page after closing
     router.push('/chat');
   };
 
   const handleOptionClick = (option: string) => {
-    track('onboarding_option_clicked', {
+    segment.track('Onboarding Step Completed', {
       option: option,
       category: 'onboarding',
-      action: 'option_selected'
+      action: 'option_selected',
+      step: 'initial_selection',
+      stepNumber: 1,
+      totalSteps: 3
     });
   };
 

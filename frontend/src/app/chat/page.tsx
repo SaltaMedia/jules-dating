@@ -256,8 +256,12 @@ function ChatPageContent() {
       localStorage.removeItem('prefillMessage'); // Clear the flag
     }
 
-    // Track chat opened
-    track('chat_opened', { source: 'home' });
+    // Track chat opened (only once per session)
+    const hasTrackedChatOpened = sessionStorage.getItem('chat_opened_tracked');
+    if (!hasTrackedChatOpened) {
+      track('chat_opened', { source: 'home' });
+      sessionStorage.setItem('chat_opened_tracked', 'true');
+    }
 
     // Check if we're loading a specific session from URL parameters
     const urlSessionId = searchParams.get('session');
@@ -417,7 +421,7 @@ function ChatPageContent() {
     setTimeout(() => {
       appendContextToMessages();
     }, 0);
-  }, [messages.length]); // Only depend on messages length to avoid resetting on every navigation
+  }, []); // Remove messages.length dependency to prevent infinite loop
 
   useEffect(() => {
     // Only scroll when new messages are added, not on every render
@@ -427,65 +431,69 @@ function ChatPageContent() {
   }, [messages.length]); // Only depend on messages length, not the full messages array
 
 
-  // Save messages to localStorage with proper image handling
+  // Save messages to localStorage with debouncing to prevent typing delays
   useEffect(() => {
-    console.log('🔍 DEBUG: Messages useEffect triggered, messages.length:', messages.length, 'sessionId:', sessionId);
-    
     if (messages.length > 0 && sessionId) {
-      try {
-        // Create a sanitized version of messages for localStorage
-        // Convert base64 images to smaller representations or remove them to prevent quota issues
-        const messagesToSave = messages.map(msg => {
-          const sanitizedMsg = { ...msg };
-          
-          // For user images (base64), keep them but truncate if too large
-          if (sanitizedMsg.userImage && sanitizedMsg.userImage.startsWith('data:image')) {
-            // Keep user images as they're typically small profile photos
-            // But add a size check to prevent quota issues
-            if (sanitizedMsg.userImage.length > 1000000) { // 1MB limit
-              console.warn('User image too large for localStorage, skipping save');
-              sanitizedMsg.userImage = undefined;
-            }
-          }
-          
-          // Remove large image arrays from assistant messages to prevent quota issues
-          if (sanitizedMsg.images && Array.isArray(sanitizedMsg.images)) {
-            // Keep only essential image data, not full base64
-            sanitizedMsg.images = sanitizedMsg.images.map(img => ({
-              id: img.id,
-              url: img.url,
-              image: img.image,
-              thumb: img.thumb,
-              thumbnail: img.thumbnail,
-              alt: img.alt,
-              title: img.title,
-              photographer: img.photographer,
-              photographerUrl: img.photographerUrl,
-              downloadUrl: img.downloadUrl,
-              width: img.width,
-              height: img.height
-            }));
-          }
-          
-          return sanitizedMsg;
-        });
-        
-        localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(messagesToSave));
-        console.log('🔍 DEBUG: Messages saved to localStorage for session:', sessionId);
-      } catch (error) {
-        console.error('Error saving messages to localStorage:', error);
-        // If localStorage quota is exceeded, try to save without images
+      // Debounce the localStorage save to prevent blocking UI during typing
+      const timeoutId = setTimeout(() => {
         try {
-          const messagesWithoutImages = messages.map(msg => {
-            const { userImage, images, ...msgWithoutImages } = msg;
-            return msgWithoutImages;
+          // Create a sanitized version of messages for localStorage
+          // Convert base64 images to smaller representations or remove them to prevent quota issues
+          const messagesToSave = messages.map(msg => {
+            const sanitizedMsg = { ...msg };
+            
+            // For user images (base64), keep them but truncate if too large
+            if (sanitizedMsg.userImage && sanitizedMsg.userImage.startsWith('data:image')) {
+              // Keep user images as they're typically small profile photos
+              // But add a size check to prevent quota issues
+              if (sanitizedMsg.userImage.length > 1000000) { // 1MB limit
+                console.warn('User image too large for localStorage, skipping save');
+                sanitizedMsg.userImage = undefined;
+              }
+            }
+            
+            // Remove large image arrays from assistant messages to prevent quota issues
+            if (sanitizedMsg.images && Array.isArray(sanitizedMsg.images)) {
+              // Keep only essential image data, not full base64
+              sanitizedMsg.images = sanitizedMsg.images.map(img => ({
+                id: img.id,
+                url: img.url,
+                image: img.image,
+                thumb: img.thumb,
+                thumbnail: img.thumbnail,
+                alt: img.alt,
+                title: img.title,
+                photographer: img.photographer,
+                photographerUrl: img.photographerUrl,
+                downloadUrl: img.downloadUrl,
+                width: img.width,
+                height: img.height
+              }));
+            }
+            
+            return sanitizedMsg;
           });
-          localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(messagesWithoutImages));
-          console.log('🔍 DEBUG: Messages saved without images due to quota limit');
-        } catch (fallbackError) {
-          console.error('Error saving messages even without images:', fallbackError);
+          
+          localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(messagesToSave));
+          console.log('🔍 DEBUG: Messages saved to localStorage for session:', sessionId);
+        } catch (error) {
+          console.error('Error saving messages to localStorage:', error);
+          // If localStorage quota is exceeded, try to save without images
+          try {
+            const messagesWithoutImages = messages.map(msg => {
+              const { userImage, images, ...msgWithoutImages } = msg;
+              return msgWithoutImages;
+            });
+            localStorage.setItem(`chatMessages_${sessionId}`, JSON.stringify(messagesWithoutImages));
+            console.log('🔍 DEBUG: Messages saved without images due to quota limit');
+          } catch (fallbackError) {
+            console.error('Error saving messages even without images:', fallbackError);
+          }
         }
-      }
+      }, 500); // Debounce for 500ms
+
+      // Cleanup timeout on unmount or dependency change
+      return () => clearTimeout(timeoutId);
     }
   }, [messages, sessionId]);
 
@@ -531,16 +539,7 @@ function ChatPageContent() {
     const fileToSend = selectedFile;
     
 
-    // Track chat message sent
-    const contentLength = input.trim().length;
-    const tokensEstimateBucket = contentLength <= 50 ? '1-50' : contentLength <= 200 ? '51-200' : '201+';
-    track('chat_message_sent', { 
-      author: 'user', 
-      content_type: 'text', 
-      tokens_estimate_bucket: tokensEstimateBucket,
-      message_length: contentLength,
-      has_products: false // Will be updated when products are shown
-    });
+    // Chat message tracking is handled by backend to avoid duplicates
 
     try {
       // Validate messages before sending
